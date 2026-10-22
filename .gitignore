@@ -1,0 +1,16 @@
+Output/
+.gocache/
+.vscode/
+*.exe
+
+__pycache__/
+*.pyc
+
+# Reports a plan run leaves behind. The sink in a plan file is relative to the
+# plan, so a run drops these next to it - correct on a production PC, noise in
+# a checkout.
+src/plans/reports/
+TestCase/host/porttool_plan/reports/
+
+# This machine's tool paths, written by tools/build.sh find-tools.
+tools/local.json
