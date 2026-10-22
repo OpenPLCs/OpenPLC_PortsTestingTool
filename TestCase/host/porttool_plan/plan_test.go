@@ -75,7 +75,7 @@ func TestCheckOperators(t *testing.T) {
 		// A field the firmware stopped reporting must fail, not be skipped:
 		// a silently skipped limit is how an untested board ships.
 		{"absent field fails", ptcheck.Check{Field: "nosuch", Op: ptcheck.OpEq, Value: "1"}, false},
-		// if_present (STG-07): absent passes, present is still judged.
+		// if_present: absent passes, present is still judged.
 		{"if_present absent passes", ptcheck.Check{Field: "overrun", Op: ptcheck.OpCountZero, IfPresent: true}, true},
 		{"if_present nonzero fails", ptcheck.Check{Field: "miss", Op: ptcheck.OpCountZero, IfPresent: true}, false},
 	}
@@ -102,7 +102,7 @@ func TestCheckOperators(t *testing.T) {
 
 // TestShippedRS485OverrunJudgedOnlyWhenReported: both shipped plans fail the
 // fixture firmware's frame on overrun>0 and pass FixtureDemo's frame, which
-// has no overrun (STG-07).
+// has no overrun.
 func TestShippedRS485OverrunJudgedOnlyWhenReported(t *testing.T) {
 	for _, name := range []string{"station6-poweron.json", "station6-poweron-relaxed.json"} {
 		p, err := ptplan.Load(filepath.Join("..", "..", "..", "src", "plans", name))
@@ -1278,7 +1278,7 @@ func TestStation6PlanRuns(t *testing.T) {
 		"can":            true,
 		"can-pc":         true,
 		"high-side-drop": true,
-		// A person counting the DO toggles (STG-33); the panel asks it.
+		// A person counting the DO toggles; the panel asks it.
 		"dout-blink-seen": true,
 		// AI / AO per-point limits: the panel's item runner walks the points
 		// (ptlib/analog.go); a plan run has no walk.

@@ -82,7 +82,7 @@ type looped struct {
 }
 
 // runTimed runs the timed phase: every job at once until dur is up, stopping
-// at the first failure (decision 102, STG-26). A session with nothing else on
+// at the first failure (decision 102). A session with nothing else on
 // its port stays running and every frame is judged; the rest repeat on their
 // own port. Relays run once to their count alongside, and the phase does not
 // end before they got there (decision 123).

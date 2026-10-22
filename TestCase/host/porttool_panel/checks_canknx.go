@@ -12,7 +12,7 @@ import (
 func checkCanWindow(p *Page, com string) {
 	Section("CAN: the analyser window")
 	if !isSim(com) {
-		check(true, "a real bench: needs the CANable - see TODO-fixture, not run here")
+		check(true, "a real bench: needs the CANable - not run here")
 		return
 	}
 	p.L(`.mi[data-menu="rd"]`).Click()
@@ -65,7 +65,7 @@ func checkCanWindow(p *Page, com string) {
 	} else {
 		check(false, "both sides show they are repeating", rep("board")+" | "+rep("pc"))
 	}
-	check(p.L("#canwin [data-cwstop]").Count() == 0, "neither side has its own 停止连发: only 停止发包 at the top (STG-40 row 12)")
+	check(p.L("#canwin [data-cwstop]").Count() == 0, "neither side has its own 停止连发: only 停止发包 at the top")
 	p.L("#cwstopall").Click()
 	if try(func() {
 		p.WaitFunc("() => ['board', 'pc'].every(s => !document.querySelector("+
@@ -91,7 +91,7 @@ func checkCanWindow(p *Page, com string) {
 }
 
 // checkKnxPortVerdict: the KNX port verdict comes from the judged items alone,
-// whatever the diagnostics ended as (decision 103, STG-20). Runs right after
+// whatever the diagnostics ended as (decision 103). Runs right after
 // checkKnxFrames, which leaves knx.frames STOPPED.
 func checkKnxPortVerdict(p *Page) {
 	Section("KNX: the port verdict ignores the diagnostics")
@@ -128,7 +128,7 @@ func checkKnxWindow(p *Page, com string) {
 	Section("KNX: the analyser window")
 	check(p.L(`#connrows [data-conn="knxusb"]`).Count() == 1, "the connection block has a KNX USB interface row")
 	if !isSim(com) {
-		check(true, "a real bench: needs the KNX USB interface - see TODO-fixture 88, not run here")
+		check(true, "a real bench: needs the KNX USB interface - not run here")
 		return
 	}
 	p.L(`.mi[data-menu="rd"]`).Click()
@@ -177,7 +177,7 @@ func checkKnxWindow(p *Page, com string) {
 	} else {
 		check(false, "the board shows it is repeating", p.L(rep).Text())
 	}
-	check(p.L("#knxwin [data-kwstop]").Count() == 0, "neither side has its own 停止连发: only 停止发包 at the top (STG-40 row 12)")
+	check(p.L("#knxwin [data-kwstop]").Count() == 0, "neither side has its own 停止连发: only 停止发包 at the top")
 	p.L("#kwstopall").Click()
 	if try(func() { p.WaitFunc("s => !document.querySelector(s).textContent", rep, 5000) }) == nil {
 		check(true, "停止发包 stops the repeat")

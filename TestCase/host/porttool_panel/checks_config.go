@@ -113,7 +113,7 @@ func checkRefPage(p *Page) {
 }
 
 // checkStageConfigs: functional / aging / user-level are configurations
-// (decision 97, STG-26): every change is remembered at once, an exclusive pair
+// (decision 97): every change is remembered at once, an exclusive pair
 // cannot both be ticked, and clicking any of it sends no pt.start.
 func checkStageConfigs(p *Page) {
 	Section("stage configurations")
@@ -156,7 +156,7 @@ func checkStageConfigs(p *Page) {
 			"a configured AO test point on the 5000 mV calibration point is pointed out", wt)
 	}
 	// Decision 129: outside R&D the AO load targets are filled in before the run;
-	// blank, step 4 cannot be picked and its tile says why. One per AO (STG-38).
+	// blank, step 4 cannot be picked and its tile says why. One per AO.
 	out1 := p.L(`#itemcards input[data-cfgparam="aout.load|out1"]`)
 	out2 := p.L(`#itemcards input[data-cfgparam="aout.load|out2"]`)
 	simRef := p.Eval("api('/api/ref', {port: 'sim'})").K("connected").Truthy()
@@ -177,7 +177,7 @@ func checkStageConfigs(p *Page) {
 		setRefAI1(p, "v")
 	}
 	if check(out1.Count() == 1 && out2.Count() == 1 && out1.Value() == "" && out2.Value() == "",
-		"aging: the AO load has one target per AO, both blank (STG-38)") && simRef {
+		"aging: the AO load has one target per AO, both blank") && simRef {
 		tile := p.L(`#subtiles .subtile[data-sub="aging"]`)
 		tileHas("目标值没填")
 		check(strings.Contains(tile.Text(), "目标值没填") && step4.Disabled(),
@@ -185,7 +185,7 @@ func checkStageConfigs(p *Page) {
 		out1.Fill("20")
 		out1.Dispatch("change")
 		p.Wait(800)
-		check(step4.Disabled(), "with only AO1's target filled in, step 4 still cannot be picked (STG-38)", tile.Text())
+		check(step4.Disabled(), "with only AO1's target filled in, step 4 still cannot be picked", tile.Text())
 		out2.Fill("20")
 		out2.Dispatch("change")
 		_ = try(func() {

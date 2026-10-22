@@ -42,7 +42,7 @@ function canWinForm(side) {
   go.dataset.cwsend = side;
   go.onclick = () => canWinAct({ op: "can_send", side, can_id: id.value, data: data.value,
     every: Number(every.value) || 0, count: Number(count.value) || 1 });
-  // No stop of its own: 停止发包 at the top stops both sides (STG-40 row 12).
+  // No stop of its own: 停止发包 at the top stops both sides.
   f.appendChild(go);
   const rep = el("div", "hint"); rep.dataset.cwrepeat = side;
   f.appendChild(rep);

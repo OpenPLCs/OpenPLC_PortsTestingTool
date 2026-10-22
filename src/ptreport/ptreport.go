@@ -41,7 +41,7 @@ const (
 	OutcomeSkipped Outcome = "SKIPPED"
 	// OutcomeStopped is a step cut short by the operator, a lost control port
 	// or a disconnect - kept apart from FAIL, since nothing was judged
-	// (decision 96, STG-08).
+	// (decision 96).
 	OutcomeStopped Outcome = "STOPPED"
 )
 

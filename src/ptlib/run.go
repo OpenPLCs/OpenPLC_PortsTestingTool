@@ -110,7 +110,7 @@ type Engine struct {
 	// leaves them ERROR (analog.go).
 	Analog AnalogSource
 	// RefAnalog is the reference board's own calibration and ranges, for an
-	// AI read / AO output walk with it as the peer (STG-31, decision 134); nil
+	// AI read / AO output walk with it as the peer (decision 134); nil
 	// leaves those ERROR.
 	RefAnalog AnalogSource
 	// AnalogNominal is a channel's range with k = 1, b = 0, for a live card

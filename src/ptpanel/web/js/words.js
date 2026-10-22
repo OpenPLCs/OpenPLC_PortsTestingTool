@@ -157,7 +157,7 @@ function paramCN(name) { return PARAM_CN[name] || name; }
 // The AO an AO load target belongs to (ptitems.LoadChannel); "" for any other.
 function loadChannelOf(k) { return { out1: "AO1", out2: "AO2" }[k] || ""; }
 
-// A parameter's name; an AO load target adds its AO's registered unit (STG-38).
+// A parameter's name; an AO load target adds its AO's registered unit.
 function paramLabel(it, k) {
   const ch = it.load ? loadChannelOf(k) : "";
   if (!ch) { return paramCN(k); }

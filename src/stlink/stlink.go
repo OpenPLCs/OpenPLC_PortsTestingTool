@@ -225,7 +225,7 @@ func (p Programmer) FlashBootloader(image string) error {
 // FactoryReset erases everything but the bootloader and the calibration
 // values: the calibration area is read out, handed to keep (which must save it
 // on the PC before anything is erased), sectors 1-15 are erased, and the area
-// is written back (decision 94, STG-01 option A).
+// is written back (decision 94).
 func (p Programmer) FactoryReset(keep func([]byte) error) error {
 	cal, err := p.Read(Sector15, CalAreaSize)
 	if err != nil {

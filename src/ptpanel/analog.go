@@ -429,7 +429,7 @@ func (s *Server) analogSourceOn(ranges calstore.Ranges) ptlib.AnalogSource {
 }
 
 // RefAnalogSource is AnalogSource for the reference board: its own k, b over
-// pt.cal and the ranges registered for its UID (STG-31, decision 97).
+// pt.cal and the ranges registered for its UID (decision 97).
 func (s *Server) RefAnalogSource() ptlib.AnalogSource {
 	return func(channel string) (ptlib.AnalogCal, error) {
 		b := s.refBoard()

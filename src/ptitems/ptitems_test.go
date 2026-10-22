@@ -231,7 +231,7 @@ func TestDefaultPeerFollowsTheConnection(t *testing.T) {
 			t.Errorf("%s with no reference board: %s, want human", id, got)
 		}
 	}
-	// CAN falls back to the PC: the reference board is parked (TODO-fixture.md).
+	// CAN falls back to the PC: the reference board is parked.
 	can := byID["can.peer"]
 	if got := DefaultPeer(can, true); got != PeerRef {
 		t.Errorf("can.peer with the reference board connected: %s, want ref", got)

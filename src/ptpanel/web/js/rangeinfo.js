@@ -105,7 +105,7 @@ function rngSummary(ch, c, opts) {
   if (kb) {
     sm.appendChild(el("span", "mono", "  " + T("ana.kb", { k: rngNum(kb.k, 5), b: rngNum(kb.b, 4), unit: s ? s.unit : "" }) + " "));
     sm.appendChild(el("span", "pill pass", T("rng.kb_board")));
-    // With a gate reason the mark is that reason, one sentence (Server.refCannot, STG-40 row 11).
+    // With a gate reason the mark is that reason, one sentence (Server.refCannot).
     if (s && opts.calRange && opts.calRange !== s.id && !opts.cannot) {
       sm.appendChild(el("span", "pill fail", T("rng.kb_other_range", { r: anaRangeName(opts.calRange) })));
     }

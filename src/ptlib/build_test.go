@@ -41,10 +41,10 @@ func TestStepsFollowThePeer(t *testing.T) {
 		{"can.peer", ptitems.PeerPC, "|can-pc"},
 		// The chain reads DO through the relays, not plan steps (chain.go, decision 133).
 		{"dout.load", ptitems.PeerRef, "|"},
-		// A person measures each channel while it is on (drop.go, STG-32): only the drop step judges.
+		// A person measures each channel while it is on (drop.go): only the drop step judges.
 		{"dout.load", ptitems.PeerHuman, "|high-side-drop"},
 		{"aout.out1", ptitems.PeerHuman, "|ao1-out"},
-		// The reference board's own k, b give the reference value (analog.go, STG-31).
+		// The reference board's own k, b give the reference value (analog.go).
 		{"aout.out1", ptitems.PeerRef, "|ao1-out"},
 		// Any AI may be served by a reference AO the settings page wires to it (decision 135).
 		{"ain.read1", ptitems.PeerRef, "|ai1-read"},

@@ -38,8 +38,8 @@ func trimmed(ss []string) []string {
 
 // checkDoutBlink: the R&D DO card (decision 137): no 开始, each table one 输出 /
 // 停止输出 for its ticked rows. PWM duty is checked on the page; the toggle count
-// stops by itself after the plan's toggles and is judged by the count typed
-// (STG-33). The simulated board has no LEDs: the count typed is the board's own.
+// stops by itself after the plan's toggles and is judged by the count typed.
+// The simulated board has no LEDs: the count typed is the board's own.
 func checkDoutBlink(p *Page) {
 	Section("DO card: ticked rows, one 输出 per table, no 开始 (decision 137)")
 	p.L(`.mi[data-menu="rd"]`).Click()
@@ -188,7 +188,7 @@ func checkLiveCards(p *Page, com string) {
 	keys := p.Eval("async () => { const m = await api('/api/memo'); return [rdUid, Object.keys(m.rd || {}).filter(k => k.startsWith('snap|'))]; }")
 	uid, snaps := keys.I(0), keys.I(1).Strings()
 	check(uid.Truthy() && slices.Contains(snaps, "snap|"+uid.S()+"|din") && !slices.Contains(snaps, "snap|din"),
-		"the kept round is filed under the board's UID (snap|<UID>|din, STG-39)", keys.String())
+		"the kept round is filed under the board's UID (snap|<UID>|din)", keys.String())
 	check(p.L(`#itemcards select[data-diostd="level|1"]`).Value() == "1" && p.L(`#itemcards input[data-rdtick="quad|1"]`).Checked() &&
 		p.L(`#itemcards [data-liveref="din.quad|1"]`).Value() == "27",
 		"the standard values, ticks and typed steps are still there")
@@ -208,7 +208,7 @@ func checkLiveCards(p *Page, com string) {
 		all8 = append(all8, fmt.Sprintf("DI%d:STOPPED", c))
 	}
 	waitJS(p, "w => ("+lv8+")() === w", strings.Join(all8, ","),
-		"no standard chosen on any DI: leaving still records all eight stopped (STG-40 row 1)", lv8)
+		"no standard chosen on any DI: leaving still records all eight stopped", lv8)
 	p.L(`#itemcards input[data-rdtick="drop|3"]`).SetChecked(true)
 	p.L(`#itemcards button[data-rdout="dout:drop"]`).Click()
 	waitJS(p, "() => { const lv = rdLive('dout'); return !!lv && !!lv.duty && lv.duty[2] > 0 && lv.duty[3] === 0 && lv.duty[0] === 0; }", nil,

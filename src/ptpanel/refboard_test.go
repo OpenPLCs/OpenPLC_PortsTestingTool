@@ -62,7 +62,7 @@ func TestRefImpactFollowsTheWiring(t *testing.T) {
 	}
 }
 
-// STG-40 row 11: a channel of the board under test calibrated on another
+// A channel of the board under test calibrated on another
 // range than the configurations' cannot be tested, in the card's own words.
 func TestRefImpactRefusesAnotherCalibrationRange(t *testing.T) {
 	w := refboard.Default()
@@ -89,7 +89,7 @@ func TestRefImpactRefusesAnotherCalibrationRange(t *testing.T) {
 	}
 }
 
-// STG-40 补充: a run's channel calibrated on another range is worded as the
+// A run's channel calibrated on another range is worded as the
 // configuration card's 「校准时是……」 mark.
 func TestChannelCalibratedOnAnotherRangeIsTheCardsSentence(t *testing.T) {
 	code := ptlib.ReasonDUTCalRange

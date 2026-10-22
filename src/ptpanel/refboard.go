@@ -129,8 +129,8 @@ type refCalInfo struct {
 // this registration and these ranges. A nil dut skips the voltage / current
 // match: the settings page leaves it to whoever wires (decision 140). dutCal
 // is the range each channel of the board under test was calibrated on (its
-// archive); a channel calibrated on another range than dut cannot be tested
-// (STG-40 row 11). Nil skips it.
+// archive); a channel calibrated on another range than dut cannot be tested.
+// Nil skips it.
 func refImpact(w refboard.Wiring, dut, refR calstore.Ranges, cal refCalInfo, dutCal calstore.Ranges) []impactRow {
 	var out []impactRow
 	item := func(id string) ptitems.Item { it, _ := catalogueItem(id); return it }

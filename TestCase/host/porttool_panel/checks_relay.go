@@ -13,7 +13,7 @@ func relayState(p *Page) J {
 // checkRelayRd: the R&D relay card on the simulated board: empty or too short
 // values block Start, 101 still starts, serial runs one relay after the other
 // with the count going up on the card, and the person is asked at the end
-// (decision 123, TODO-fixture row 67).
+// (decision 123).
 func checkRelayRd(p *Page) {
 	Section("relay card in R&D")
 	p.L(`.mi[data-menu="rd"]`).Click()

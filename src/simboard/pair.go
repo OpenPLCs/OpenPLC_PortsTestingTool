@@ -1,9 +1,9 @@
 package simboard
 
 // Two simulated boards wired as the board under test and the reference board
-// (STG-02, decision 133): the reference DO1-8 drive DI1-8 under test; DO1-6
+// (decision 133): the reference DO1-8 drive DI1-8 under test; DO1-6
 // under test drive the reference DI1-6 through relays RY1-RY6 under test, and
-// DO7 / DO8 drive the reference DI7 / DI8 directly (STG-36 A). The two
+// DO7 / DO8 drive the reference DI7 / DI8 directly. The two
 // simulator processes have no wire between them, so it is played here: !dout
 // and !relay frames from one become a sim.din on the other, and an !aout
 // frame's current a sim.ain on the other's current-range input, AOn -> AIn
@@ -60,7 +60,7 @@ func Link(a, b io.ReadWriteCloser) bool {
 }
 
 // relayMask is the DOs under test that reach the reference DI through a
-// relay: 1-6; DO7 / DO8 go straight (decision 133, STG-36 A).
+// relay: 1-6; DO7 / DO8 go straight (decision 133).
 const relayMask = 0x3F
 
 // wired is one simulated board's end. Its reads are watched for !dout and

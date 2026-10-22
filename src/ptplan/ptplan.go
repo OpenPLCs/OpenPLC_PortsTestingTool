@@ -42,7 +42,7 @@ const (
 	TypeUserConfirm Type = "UserConfirm"
 
 	// TypeUserReading asks a person for a number - a meter reading - and judges
-	// it by the step's checks on field "value" (decision 103, STG-19).
+	// it by the step's checks on field "value" (decision 103).
 	TypeUserReading Type = "UserReading"
 
 	// TypeReadSN brings a serial number in from outside. One half of the
@@ -101,7 +101,7 @@ func (p *Params) UnmarshalJSON(data []byte) error {
 }
 
 // Which board a step runs on. The reference board is the executor's second
-// board connection (decision 103, STG-18).
+// board connection (decision 103).
 const (
 	OnDUT = "dut"
 	OnRef = "ref"
@@ -258,7 +258,7 @@ type Plan struct {
 }
 
 // Safety is the questionnaire on the step-5 safety card: one yes/no question
-// per entry, shown as written (STG-09). See PRODUCTION-FRAMEWORK.md, "安规问卷".
+// per entry, shown as written. See PRODUCTION-FRAMEWORK.md, "安规问卷".
 type Safety struct {
 	Note      string   `json:"_note,omitempty"`
 	Questions []string `json:"questions"`

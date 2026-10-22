@@ -14,7 +14,7 @@
     ]
   },
   "safety": {
-    "_note": "Questions on the step-5 safety card, one yes/no each, shown as written. None given yet (STG-09).",
+    "_note": "Questions on the step-5 safety card, one yes/no each, shown as written. None given yet.",
     "questions": []
   },
   "steps": [
@@ -276,7 +276,7 @@
     {
       "id": "eth-down",
       "type": "PtSession",
-      "_note": "Download, PC to board (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged (limit pending TODO-fixture 41). rx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Download, PC to board (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged (limit still to be measured). rx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "eth",
       "params": {
         "mode": "sink",
@@ -300,7 +300,7 @@
     {
       "id": "eth-up",
       "type": "PtSession",
-      "_note": "Upload, board to PC (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged (limit pending TODO-fixture 41). tx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Upload, board to PC (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged (limit still to be measured). tx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "eth",
       "params": {
         "mode": "source",
@@ -324,7 +324,7 @@
     {
       "id": "eth-throughput",
       "type": "PtSession",
-      "_note": "The other half of 'Ethernet communication': carrying frames, not just negotiating a link. mode=mirror: the board sends back every byte unchanged while the station PC floods numbered packets at it, so one run gives rate, loss and latency (DECISIONS.md 98, PORTTOOL-FLOW.md B.9). Loss is judged zero (peer_lost, peer_bad; STG-03). Latency (peer_rtt_*) is recorded, not judged (DECISIONS.md 92). peer_kbps is recorded, not judged: the lower limit is the lowest of several good boards x 0.8, still to be measured (TODO-fixture 41). peer_sent at least 1 is what stops a flood that never ran from passing on zero losses. Needs the station PC on the board's subnet; the address comes from the frame's ip= (tcp auto).",
+      "_note": "The other half of 'Ethernet communication': carrying frames, not just negotiating a link. mode=mirror: the board sends back every byte unchanged while the station PC floods numbered packets at it, so one run gives rate, loss and latency (DECISIONS.md 98, PORTTOOL-FLOW.md B.9). Loss is judged zero (peer_lost, peer_bad). Latency (peer_rtt_*) is recorded, not judged (DECISIONS.md 92). peer_kbps is recorded, not judged: the lower limit is the lowest of several good boards x 0.8, still to be measured. peer_sent at least 1 is what stops a flood that never ran from passing on zero losses. Needs the station PC on the board's subnet; the address comes from the frame's ip= (tcp auto).",
       "port": "eth",
       "params": {
         "mode": "mirror",
@@ -375,7 +375,7 @@
       "type": "PtSession",
       "enabled": false,
       "execute_condition": "ALWAYS",
-      "_note": "The panel's USB enumeration item (usb.info): mode=info moves no data and reports how the board's USB device stands with the PC. state=cfg is the enumeration standard value (STG-03). Off for whole-plan runs; the panel turns it on for that item.",
+      "_note": "The panel's USB enumeration item (usb.info): mode=info moves no data and reports how the board's USB device stands with the PC. state=cfg is the enumeration standard value. Off for whole-plan runs; the panel turns it on for that item.",
       "port": "usb",
       "params": {
         "mode": "info",
@@ -395,7 +395,7 @@
       "id": "usb-down",
       "type": "PtSession",
       "execute_condition": "ALWAYS",
-      "_note": "Download, PC to board (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged (limit pending TODO-fixture 41). rx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Download, PC to board (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged (limit still to be measured). rx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "usb",
       "params": {
         "mode": "sink",
@@ -417,7 +417,7 @@
     {
       "id": "usb-up",
       "type": "PtSession",
-      "_note": "Upload, board to PC (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged (limit pending TODO-fixture 41). tx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Upload, board to PC (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged (limit still to be measured). tx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "usb",
       "params": {
         "mode": "source",
@@ -440,7 +440,7 @@
       "id": "usb-link",
       "type": "PtSession",
       "execute_condition": "ALWAYS",
-      "_note": "'USB communication', in the tool image (the bootloader does not exist as far as the tool image is concerned - user, 2026-09-08). mode=mirror: the board sends back every byte unchanged while the station PC floods numbered packets through the virtual COM port, so one run gives rate, loss and latency (DECISIONS.md 98, PORTTOOL-FLOW.md B.9). Loss is judged zero (peer_lost, peer_bad, and the board's own drop=; STG-03). Latency (peer_rtt_*) and peer_kbps are recorded, not judged (DECISIONS.md 92; rate limit pending TODO-fixture 41). state=cfg means enumerated AND opened; enum= counts how many times that changed, which is how a cable or a host that keeps re-enumerating shows up.",
+      "_note": "'USB communication', in the tool image (the bootloader does not exist as far as the tool image is concerned - user, 2026-09-08). mode=mirror: the board sends back every byte unchanged while the station PC floods numbered packets through the virtual COM port, so one run gives rate, loss and latency (DECISIONS.md 98, PORTTOOL-FLOW.md B.9). Loss is judged zero (peer_lost, peer_bad, and the board's own drop=). Latency (peer_rtt_*) and peer_kbps are recorded, not judged (DECISIONS.md 92; rate limit still to be measured). state=cfg means enumerated AND opened; enum= counts how many times that changed, which is how a cable or a host that keeps re-enumerating shows up.",
       "port": "usb",
       "params": {
         "mode": "mirror",
@@ -568,7 +568,7 @@
       "type": "UserReading",
       "enabled": false,
       "execute_condition": "ALWAYS",
-      "_note": "STG-03, the person as the peer: output >= supply - 1 V, asked as the drop across the switch so one reading carries it. Proposed value with no measurement behind it yet. Off here because a plan run cannot keep DO driven while it waits for the answer; the panel asks it per channel while the output is on.",
+      "_note": "The person as the peer: output >= supply - 1 V, asked as the drop across the switch so one reading carries it. Proposed value with no measurement behind it yet. Off here because a plan run cannot keep DO driven while it waits for the answer; the panel asks it per channel while the output is on.",
       "prompt": "With the output driven full on under load, measure the volts between the 24 V supply and the output's terminal",
       "unit": "V",
       "checks": [
@@ -583,7 +583,7 @@
     {
       "id": "dout-blink",
       "type": "PtSession",
-      "_note": "Square wave on all eight outputs (STG-03). Research-test item; a person counts the toggles in dout-blink-seen (decision 133).",
+      "_note": "Square wave on all eight outputs. Research-test item; a person counts the toggles in dout-blink-seen (decision 133).",
       "port": "dout",
       "params": {
         "ch": "1,2,3,4,5,6,7,8",
@@ -606,7 +606,7 @@
       "type": "UserReading",
       "enabled": false,
       "execute_condition": "ALWAYS",
-      "_note": "STG-33, a person as the peer: counts the DO lights toggling during dout-blink, which makes six; within one passes. Off here: the panel asks it after dout-blink.",
+      "_note": "A person as the peer: counts the DO lights toggling during dout-blink, which makes six; within one passes. Off here: the panel asks it after dout-blink.",
       "prompt": "How many times did the DO lights toggle?",
       "checks": [{"field": "value", "op": "range", "min": 5, "max": 7, "unit": "count"}]
     },
@@ -615,7 +615,7 @@
       "type": "PtSession",
       "on": "ref",
       "execute_condition": "ALWAYS",
-      "_note": "DI walk beat 1 of 8 (STG-03): the reference board drives only its DO1, wired to this board's DI1 (STG-02 row 1).",
+      "_note": "DI walk beat 1 of 8: the reference board drives only its DO1, wired to this board's DI1.",
       "port": "dout",
       "params": {
         "ch": "1",
@@ -636,7 +636,7 @@
     {
       "id": "digital-in",
       "type": "PtSession",
-      "_note": "DI walk beat 1: only DI1 may read 1, which also catches two inputs shorted together - the old all-ones check could not (STG-03). miss is NOT judged: din is loop=ctrl. The id stays digital-in because the test-item catalogue names it.",
+      "_note": "DI walk beat 1: only DI1 may read 1, which also catches two inputs shorted together - the old all-ones check could not. miss is NOT judged: din is loop=ctrl. The id stays digital-in because the test-item catalogue names it.",
       "port": "din",
       "params": {
         "ch": "1,2,3,4,5,6,7,8",
@@ -657,7 +657,7 @@
       "type": "PtSession",
       "on": "ref",
       "execute_condition": "ALWAYS",
-      "_note": "DI walk beat 2 of 8 (STG-03): the reference board drives only its DO2, wired to this board's DI2 (STG-02 row 1).",
+      "_note": "DI walk beat 2 of 8: the reference board drives only its DO2, wired to this board's DI2.",
       "port": "dout",
       "params": {
         "ch": "2",
@@ -678,7 +678,7 @@
     {
       "id": "digital-in-2",
       "type": "PtSession",
-      "_note": "DI walk beat 2: only DI2 may read 1, which also catches two inputs shorted together - the old all-ones check could not (STG-03). miss is NOT judged: din is loop=ctrl.",
+      "_note": "DI walk beat 2: only DI2 may read 1, which also catches two inputs shorted together - the old all-ones check could not. miss is NOT judged: din is loop=ctrl.",
       "port": "din",
       "params": {
         "ch": "1,2,3,4,5,6,7,8",
@@ -699,7 +699,7 @@
       "type": "PtSession",
       "on": "ref",
       "execute_condition": "ALWAYS",
-      "_note": "DI walk beat 3 of 8 (STG-03): the reference board drives only its DO3, wired to this board's DI3 (STG-02 row 1).",
+      "_note": "DI walk beat 3 of 8: the reference board drives only its DO3, wired to this board's DI3.",
       "port": "dout",
       "params": {
         "ch": "3",
@@ -720,7 +720,7 @@
     {
       "id": "digital-in-3",
       "type": "PtSession",
-      "_note": "DI walk beat 3: only DI3 may read 1, which also catches two inputs shorted together - the old all-ones check could not (STG-03). miss is NOT judged: din is loop=ctrl.",
+      "_note": "DI walk beat 3: only DI3 may read 1, which also catches two inputs shorted together - the old all-ones check could not. miss is NOT judged: din is loop=ctrl.",
       "port": "din",
       "params": {
         "ch": "1,2,3,4,5,6,7,8",
@@ -741,7 +741,7 @@
       "type": "PtSession",
       "on": "ref",
       "execute_condition": "ALWAYS",
-      "_note": "DI walk beat 4 of 8 (STG-03): the reference board drives only its DO4, wired to this board's DI4 (STG-02 row 1).",
+      "_note": "DI walk beat 4 of 8: the reference board drives only its DO4, wired to this board's DI4.",
       "port": "dout",
       "params": {
         "ch": "4",
@@ -762,7 +762,7 @@
     {
       "id": "digital-in-4",
       "type": "PtSession",
-      "_note": "DI walk beat 4: only DI4 may read 1, which also catches two inputs shorted together - the old all-ones check could not (STG-03). miss is NOT judged: din is loop=ctrl.",
+      "_note": "DI walk beat 4: only DI4 may read 1, which also catches two inputs shorted together - the old all-ones check could not. miss is NOT judged: din is loop=ctrl.",
       "port": "din",
       "params": {
         "ch": "1,2,3,4,5,6,7,8",
@@ -783,7 +783,7 @@
       "type": "PtSession",
       "on": "ref",
       "execute_condition": "ALWAYS",
-      "_note": "DI walk beat 5 of 8 (STG-03): the reference board drives only its DO5, wired to this board's DI5 (STG-02 row 1).",
+      "_note": "DI walk beat 5 of 8: the reference board drives only its DO5, wired to this board's DI5.",
       "port": "dout",
       "params": {
         "ch": "5",
@@ -804,7 +804,7 @@
     {
       "id": "digital-in-5",
       "type": "PtSession",
-      "_note": "DI walk beat 5: only DI5 may read 1, which also catches two inputs shorted together - the old all-ones check could not (STG-03). miss is NOT judged: din is loop=ctrl.",
+      "_note": "DI walk beat 5: only DI5 may read 1, which also catches two inputs shorted together - the old all-ones check could not. miss is NOT judged: din is loop=ctrl.",
       "port": "din",
       "params": {
         "ch": "1,2,3,4,5,6,7,8",
@@ -825,7 +825,7 @@
       "type": "PtSession",
       "on": "ref",
       "execute_condition": "ALWAYS",
-      "_note": "DI walk beat 6 of 8 (STG-03): the reference board drives only its DO6, wired to this board's DI6 (STG-02 row 1).",
+      "_note": "DI walk beat 6 of 8: the reference board drives only its DO6, wired to this board's DI6.",
       "port": "dout",
       "params": {
         "ch": "6",
@@ -846,7 +846,7 @@
     {
       "id": "digital-in-6",
       "type": "PtSession",
-      "_note": "DI walk beat 6: only DI6 may read 1, which also catches two inputs shorted together - the old all-ones check could not (STG-03). miss is NOT judged: din is loop=ctrl.",
+      "_note": "DI walk beat 6: only DI6 may read 1, which also catches two inputs shorted together - the old all-ones check could not. miss is NOT judged: din is loop=ctrl.",
       "port": "din",
       "params": {
         "ch": "1,2,3,4,5,6,7,8",
@@ -867,7 +867,7 @@
       "type": "PtSession",
       "on": "ref",
       "execute_condition": "ALWAYS",
-      "_note": "DI walk beat 7 of 8 (STG-03): the reference board drives only its DO7, wired to this board's DI7 (STG-02 row 1).",
+      "_note": "DI walk beat 7 of 8: the reference board drives only its DO7, wired to this board's DI7.",
       "port": "dout",
       "params": {
         "ch": "7",
@@ -888,7 +888,7 @@
     {
       "id": "digital-in-7",
       "type": "PtSession",
-      "_note": "DI walk beat 7: only DI7 may read 1, which also catches two inputs shorted together - the old all-ones check could not (STG-03). miss is NOT judged: din is loop=ctrl.",
+      "_note": "DI walk beat 7: only DI7 may read 1, which also catches two inputs shorted together - the old all-ones check could not. miss is NOT judged: din is loop=ctrl.",
       "port": "din",
       "params": {
         "ch": "1,2,3,4,5,6,7,8",
@@ -909,7 +909,7 @@
       "type": "PtSession",
       "on": "ref",
       "execute_condition": "ALWAYS",
-      "_note": "DI walk beat 8 of 8 (STG-03): the reference board drives only its DO8, wired to this board's DI8 (STG-02 row 1).",
+      "_note": "DI walk beat 8 of 8: the reference board drives only its DO8, wired to this board's DI8.",
       "port": "dout",
       "params": {
         "ch": "8",
@@ -930,7 +930,7 @@
     {
       "id": "digital-in-8",
       "type": "PtSession",
-      "_note": "DI walk beat 8: only DI8 may read 1, which also catches two inputs shorted together - the old all-ones check could not (STG-03). miss is NOT judged: din is loop=ctrl.",
+      "_note": "DI walk beat 8: only DI8 may read 1, which also catches two inputs shorted together - the old all-ones check could not. miss is NOT judged: din is loop=ctrl.",
       "port": "din",
       "params": {
         "ch": "1,2,3,4,5,6,7,8",
@@ -1247,7 +1247,7 @@
       "type": "PtSession",
       "on": "ref",
       "execute_condition": "ALWAYS",
-      "_note": "The reference board answers on the bus (STG-02 row 6): mode=echo returns every frame on the same id with the payload plus one.",
+      "_note": "The reference board answers on the bus: mode=echo returns every frame on the same id with the payload plus one.",
       "port": "can",
       "params": {
         "baud": 500000,

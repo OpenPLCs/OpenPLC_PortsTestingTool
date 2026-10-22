@@ -177,7 +177,7 @@ function rdEnter(port) {
   if (!rdUid) { rdAskUid(); }
 }
 
-// Snapshots are kept per board (STG-39): without a UID nothing is kept or shown.
+// Snapshots are kept per board: without a UID nothing is kept or shown.
 async function rdAskUid() {
   if (rdUidAsking || !state.connected) { return; }
   rdUidAsking = true;

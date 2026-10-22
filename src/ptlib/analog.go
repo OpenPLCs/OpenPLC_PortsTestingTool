@@ -33,7 +33,7 @@ type AnalogCal struct {
 	Min    float64 // the lowest settable value when above Lo (calstore Range.Min)
 	Range  calstore.Range
 	// Calibrated is the range the board's archive says the channel was
-	// calibrated on; "" when unknown (STG-40 row 11).
+	// calibrated on; "" when unknown.
 	Calibrated calstore.Range
 	// Nominal turns an AI raw reading into the range's unit, as the app does
 	// before applying k, b. Nil for AO.
@@ -96,7 +96,7 @@ const (
 	ReasonNoTarget      = "no_target"     // an AO load target outside the AO's registered range
 	ReasonRefRange      = "ref_range"     // the two ends of a reference-board wire are on different ranges (decision 134)
 	ReasonBelowMin      = "below_min"     // a point or target under what the range can output; detail is that minimum (decision 136)
-	ReasonDUTCalRange   = "dut_cal_range" // calibrated on another range than set; detail is that range (STG-40 row 11)
+	ReasonDUTCalRange   = "dut_cal_range" // calibrated on another range than set; detail is that range
 )
 
 // aiFrames is how many AI frames are averaged per point (C.3.2).
@@ -181,7 +181,7 @@ func hasPeer(it ptitems.Item, p ptitems.Peer) bool {
 }
 
 // refSide is the reference board's half of a walk: the channel the
-// registration wires to this one (decision 135, STG-31 A).
+// registration wires to this one (decision 135).
 type refSide struct {
 	b   *ptboard.Board
 	cal AnalogCal // the reference board's own k, b and range for ch
@@ -473,8 +473,8 @@ func (e *Engine) noteUsed(j *job, u ...ptreport.AnalogUsed) {
 }
 
 // setLoad turns an AO load item's targets, each in its AO's registered unit,
-// into both channels' DAC mV, each with its own k, b (decisions 106, 134,
-// STG-38); a non-empty outcome ends the item.
+// into both channels' DAC mV, each with its own k, b (decisions 106,
+// 134); a non-empty outcome ends the item.
 func (e *Engine) setLoad(j *job) (ptreport.Outcome, string, string) {
 	if e.Analog == nil {
 		return ptreport.OutcomeError, ReasonNotCalibrated, "no calibration source"

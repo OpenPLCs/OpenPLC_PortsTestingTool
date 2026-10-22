@@ -35,7 +35,7 @@ function knxWinForm(side) {
   go.dataset.kwsend = side;
   go.onclick = () => knxWinAct({ op: "knx_send", side, ga: ga.value, value: val.value, src: src ? src.value : "",
     every: Number(every.value) || 0, count: Number(count.value) || 1 });
-  // No stop of its own: 停止发包 at the top stops both sides (STG-40 row 12).
+  // No stop of its own: 停止发包 at the top stops both sides.
   f.appendChild(go);
   const rep = el("div", "hint"); rep.dataset.kwrepeat = side;
   f.appendChild(rep);

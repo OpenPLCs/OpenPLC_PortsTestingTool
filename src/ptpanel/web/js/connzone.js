@@ -1,6 +1,6 @@
 "use strict";
 
-// The connection block at the top left (STG-10, decision 103): board time under
+// The connection block at the top left (decision 103): board time under
 // the control port, the far ends of the link ports, the reference board, the
 // ST-Link and the reserved instrument row. PORTTOOL-FLOW.md C.3.6, "连接区".
 

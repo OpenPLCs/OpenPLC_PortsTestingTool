@@ -325,7 +325,7 @@ func checkFullTestRelay(p *Page) {
 			"the fixture test asks nobody; the reference DI counted each relay's cycles (decision 133)", cut(st.String(), 300))
 		do := p.Eval("(libData.states || {})['dout.load'] || {}")
 		check(do.K("outcome").S() == "PASS" && !do.K("code").Truthy(),
-			"DO under load passes on the chain, DO7 and DO8 straight to the reference DI (STG-36 A)", cut(do.String(), 300))
+			"DO under load passes on the chain, DO7 and DO8 straight to the reference DI", cut(do.String(), 300))
 		// Decision 129 「多路」: one numbered result row per DO and per relay.
 		p.L("#tabres").Click()
 		p.Wait(300)

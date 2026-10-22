@@ -409,7 +409,7 @@ func TestFullTestDIWalkStopsWhenThePersonStops(t *testing.T) {
 	}
 }
 
-// DO under load with a person (STG-32 A): the drop is asked while that one
+// DO under load with a person: the drop is asked while that one
 // channel is on, judged by high-side-drop, then the channel goes off.
 func TestDOLoadAsksTheDropWhileThatChannelIsOn(t *testing.T) {
 	b := openSim(t)

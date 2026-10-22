@@ -19,7 +19,7 @@
  */
 
 /* Linux libcs hide clock_gettime / nanosleep under -std=c11. Not on macOS:
- * there it hides INADDR_LOOPBACK. See XPT-05 in $PROD. */
+ * there it hides INADDR_LOOPBACK. */
 #if defined(__linux__)
 #define _POSIX_C_SOURCE 200809L
 #endif

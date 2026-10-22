@@ -14,7 +14,7 @@ const (
 
 // PortVerdicts sums item outcomes per port: any failure fails the port, all
 // passes pass it, anything not judged leaves it unjudged. KNX's record-only
-// diagnostics do not count (decision 103, STG-20). Ports with nothing run are
+// diagnostics do not count (decision 103). Ports with nothing run are
 // absent.
 func PortVerdicts(items []ptitems.Item, states []State) map[string]string {
 	byID := map[string]ptitems.Item{}

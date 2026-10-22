@@ -1,7 +1,7 @@
 // Package ptstages runs a full fixture test: the picked steps of 2, 4, 5 and 6
 // in order, stopping at the first that does not pass, and the inside of step 6.
 // Rules: $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.3 and C.3.5; decisions 89,
-// 94, 96; STG-01, STG-08.
+// 94, 96.
 package ptstages
 
 import (
@@ -126,7 +126,7 @@ func joinReason(a, b string) string {
 // after the production root was claimed (decision 96).
 const RootLeft = "board still carries the production root"
 
-// UserLevelOps is what step 6 is made of (STG-01). FlashBootloader and
+// UserLevelOps is what step 6 is made of. FlashBootloader and
 // FactoryReset write flash and are never interrupted: a stop waits for them.
 type UserLevelOps struct {
 	FlashBootloader func() error

@@ -612,7 +612,7 @@ func TestDemoSpeaksTheFixtureProtocol(t *testing.T) {
 // TestDemoRunsEveryFullTestItem: every user-level item of the catalogue, its
 // targets and the criteria steps of the default plan, run on both boards; a
 // check's field missing from the reply or frame fails it (decision 127),
-// except an if_present check on the demo (STG-07).
+// except an if_present check on the demo.
 func TestDemoRunsEveryFullTestItem(t *testing.T) {
 	needBuild(t)
 	fixPath, demoPath := fixtureSim, demoSim

@@ -156,7 +156,7 @@ func checkAnalogCards(p *Page) {
 		"pressing the point in effect again cancels it: AO1 to 0, nothing in effect")
 	row := p.L(`[data-anachan="aout.cal1"] tr[data-row="1"]`).Text()
 	check(strings.Contains(row, "%"), "the error column fills in by itself", row)
-	// STG-12: the error is marked against ±1 % FS for AO as for AI, as a reference only.
+	// The error is marked against ±1 % FS for AO as for AI, as a reference only.
 	head := p.L(`[data-anachan="aout.cal1"] table.anapts tr`).First().Text()
 	check(strings.Contains(head, "±1 %") && strings.Contains(row, "✅"), "the AO error column is judged against ±1 % FS (10.10 mA: +0.5 %)", head+" | "+row)
 	got := p.L(`input[data-anagot="aout.cal1|2"]`)
@@ -374,7 +374,7 @@ func checkAnalogCards(p *Page) {
 	// the question refuses a blank answer, so the way out is Stop, and the item is STOPPED.
 	// The AO load is not a block of the R&D card (decision 137); its run is started through the page.
 	anaPick(p, "aout")
-	// Each target in its range's unit: AO1 mV, AO2 mA (STG-38).
+	// Each target in its range's unit: AO1 mV, AO2 mA.
 	p.Eval("() => { libEdits['aout.load'] = { out1: '1000', out2: '10' }; libStartOnly(['aout.load']); }")
 	if try(func() {
 		p.WaitFunc("() => libData.ask && !document.querySelector('#libask').hidden", nil, 15000)

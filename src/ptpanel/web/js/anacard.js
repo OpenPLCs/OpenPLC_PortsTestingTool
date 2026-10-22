@@ -132,7 +132,7 @@ function anaCalChan(it) {
     tr.appendChild(got);
     // A row with a measured value is a recorded point (decision 151).
     if (meas !== null) { tr.classList.add("done"); tr.dataset.done = "1"; }
-    // Reference only: marked against ±1 % FS, never blocks 存到本地 (STG-12).
+    // Reference only: marked against ±1 % FS, never blocks 存到本地.
     const errOk = v !== null && meas !== null ? Math.abs((meas - v) / c.fs * 100) <= CAL_REF_TOL_PCT : null;
     const err = el("td", errOk === null ? null : errOk ? "ok" : "bad",
       errOk === null ? "" : (errOk ? "✅ " : "❌ ") + anaErrText(meas, v, c.fs));
@@ -171,7 +171,7 @@ function anaCalChan(it) {
   return box;
 }
 
-// The calibration table's per-point reference, AI and AO alike (STG-12).
+// The calibration table's per-point reference, AI and AO alike.
 const CAL_REF_TOL_PCT = 1;
 
 function anaErrText(got, want, fs) {

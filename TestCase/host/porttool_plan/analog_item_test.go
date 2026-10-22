@@ -281,7 +281,7 @@ func TestDefaultTestPointsAvoidTheFitPoints(t *testing.T) {
 }
 
 // Points outside 3-5 are refused before the board is touched (decision 90);
-// the reference board as the peer, when none is connected, says so (STG-31).
+// the reference board as the peer, when none is connected, says so.
 func TestAnalogPicksAreChecked(t *testing.T) {
 	src := func(string) (ptlib.AnalogCal, error) {
 		return ptlib.AnalogCal{K: 1, Unit: "mA", FS: 20, Range: calstore.RangeAO020}, nil
@@ -297,7 +297,7 @@ func TestAnalogPicksAreChecked(t *testing.T) {
 	}
 }
 
-// aout.load drives each channel's own target (out1 / out2, STG-38) through its
+// aout.load drives each channel's own target (out1 / out2) through its
 // own k, b, keeps the targets on the PC, and refuses one the AO cannot drive
 // (decision 106). Each channel's typed reading is judged like AO output,
 // +-1 % FS against its own target (decision 128). An old "ma" fills both.

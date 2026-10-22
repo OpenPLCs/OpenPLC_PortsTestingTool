@@ -121,7 +121,7 @@ function renderFull(j) {
   }
 }
 
-// Step 5 (STG-09): SN, one yes / no per question, the verdict, then Submit.
+// Step 5: SN, one yes / no per question, the verdict, then Submit.
 function safetyCard(questions) {
   const card = el("div", "msg");
   card.dataset.full = "safety";

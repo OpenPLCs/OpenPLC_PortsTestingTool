@@ -1,7 +1,7 @@
 // Package ptlib runs the test items a person ticked: catalogue item -> plan
 // steps -> executor, once or for a duration.
-// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.6 "测试项怎么跑"; STG-26 for the
-// timed part.
+// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.6 "测试项怎么跑" and, for the
+// timed part, "选了时长怎么跑".
 //
 // Nothing here judges: criteria are the plan's steps and ptcheck evaluates
 // them (decision 77).
@@ -65,11 +65,11 @@ func (e *PickError) Error() string {
 }
 
 // askFirst are items whose person acts before the board is read: the reset
-// cause is only worth reading after somebody pressed the key (STG-03).
+// cause is only worth reading after somebody pressed the key.
 var askFirst = map[string]bool{"reset.cause": true}
 
 // askWhileOn are record-only items whose person judges the output while the
-// session still drives it: the PWM on a scope (STG-33).
+// session still drives it: the PWM on a scope.
 var askWhileOn = map[string]bool{"dout.square": true}
 
 // blinkWhileAsk are items whose lamp the PC keeps blinking while the person is
@@ -78,7 +78,7 @@ var askWhileOn = map[string]bool{"dout.square": true}
 var blinkWhileAsk = map[string]bool{"led.blink": true}
 
 // RecordOnly says an item's result never counts toward its port's verdict:
-// KNX diagnostics without criteria (decision 103, STG-20) and recover items
+// KNX diagnostics without criteria (decision 103) and recover items
 // whose plan has no criteria for them (ForPlan, decision 150).
 func RecordOnly(it ptitems.Item) bool {
 	return (it.Port == "knx" || it.Recover) && len(it.Criteria) == 0

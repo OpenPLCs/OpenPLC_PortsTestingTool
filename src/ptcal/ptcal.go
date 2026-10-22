@@ -4,7 +4,7 @@
 // run cannot disagree about the same measurements. The board reports what it
 // intended to put out, a meter what came out; the rest is the host's
 // (DECISIONS.md 22 and 38). Nothing here writes to a board: src/calstore
-// produces the sector-15 image (CAL-04).
+// produces the sector-15 image (PORTTOOL-FLOW.md C.3.2).
 //
 // A straight line is the smallest model that separates gain from offset; the
 // residuals are reported so a non-linear converter shows instead of hiding in

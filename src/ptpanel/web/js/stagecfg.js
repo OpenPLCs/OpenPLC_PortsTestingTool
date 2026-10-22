@@ -1,7 +1,7 @@
 "use strict";
 
-// The functional / aging / user-level configurations (decision 97, STG-26,
-// STG-27). Kept by the panel in porttool_stagecfg.json via /api/stagecfg;
+// The functional / aging / user-level configurations (decision 97).
+// Kept by the panel in porttool_stagecfg.json via /api/stagecfg;
 // every change is saved on the spot and sends nothing to the board.
 // PORTTOOL-FLOW.md C.3.6 "三种配置".
 
@@ -171,7 +171,7 @@ function cfgParamEditor(v, it) {
   return box;
 }
 
-// What the card says when the reference board is unused and this item needed it (STG-27).
+// What the card says when the reference board is unused and this item needed it.
 function cfgSubstNote(v, it) {
   const s = stageCfgs && stageCfgs.ref_unused && (stageCfgs.subst || {})[it.id];
   if (!s || cfgPeer(v, it) !== "ref") { return null; }

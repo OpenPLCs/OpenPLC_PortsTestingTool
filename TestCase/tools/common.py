@@ -1,4 +1,4 @@
-"""Used only by the temporary AO diagnostic aodiag.py (STG-41); goes with it.
+"""Used only by the temporary AO diagnostic aodiag.py; goes with it.
 
     from common import cfg, Section, Ok, Warn, Fail, EXE, ...
 

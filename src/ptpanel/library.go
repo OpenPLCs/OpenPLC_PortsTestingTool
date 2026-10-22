@@ -226,7 +226,7 @@ func askOf(q ptlib.Question) askQuestion {
 	case q.Walk == "relay": // the person counts the load's cycles (decision 130)
 		out.Text = m("lib.ask.relay_count", "ch", q.Channel, "n", set)
 		out.Hint = ref(m("lib.ask.relay_count_hint"))
-	case q.Walk == "drop": // one DO on, the person measures it (STG-32)
+	case q.Walk == "drop": // one DO on, the person measures it
 		out.Text = m("lib.ask.do_drop", "ch", q.Channel)
 		out.Hint = ref(m("lib.ask.do_drop_hint"))
 	case q.Walk == "din": // the person applies 24 V, the board answers (decision 128)

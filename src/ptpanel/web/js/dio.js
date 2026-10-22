@@ -100,7 +100,7 @@ function dioRefs(port) {
 /* ---------------- DI 逐路电平 ---------------- */
 
 // All eight are always judged; a row with no standard level is stopped, so
-// none chosen records eight stopped (decision 151 item 4, STG-40 row 1).
+// none chosen records eight stopped (decision 151 item 4).
 function dioLevelJudged() { return [1, 2, 3, 4, 5, 6, 7, 8]; }
 
 // The sample period is the session's, shared by all eight in the firmware.

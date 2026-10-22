@@ -137,7 +137,7 @@ func TestRetiredRelayRatioIsDroppedNotRefused(t *testing.T) {
 	}
 }
 
-// The AO load's shared "ma" from before STG-38 fills both channels' targets on
+// The AO load's shared "ma" from before each AO had its own target fills both channels' targets on
 // load; each target is checked against its own AO's ranges.
 func TestAOLoadSharedMAFillsBothTargets(t *testing.T) {
 	memoServer(t)
@@ -198,7 +198,7 @@ func TestRetiredSDRAMCRCIsDroppedNotRefused(t *testing.T) {
 }
 
 // A port page's last round is kept per board UID; an old snap|<port> is dropped,
-// not refused (STG-39).
+// not refused.
 func TestPageMemoKeepsEachBoardsSnapshotApart(t *testing.T) {
 	memoServer(t)
 	a, b := "003400413135511439303538", "0011223344556677AABBCCDD"

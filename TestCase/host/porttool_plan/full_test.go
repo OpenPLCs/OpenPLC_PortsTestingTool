@@ -524,7 +524,7 @@ func TestConfigStepNeedsItsTargets(t *testing.T) {
 	load := func(params map[string]any) map[string]any {
 		return map[string]any{"items": map[string]any{"aout.load": map[string]any{"params": params}}}
 	}
-	// Each AO has its own target (STG-38): one of the two is not enough.
+	// Each AO has its own target: one of the two is not enough.
 	if j := postJSON(t, srv, "/api/stagecfg", map[string]any{"stage": "aging", "cfg": load(map[string]any{"out1": "20"})}); j["error"] != nil {
 		t.Fatalf("save aging config: %v", j)
 	}
@@ -535,7 +535,7 @@ func TestConfigStepNeedsItsTargets(t *testing.T) {
 	if j := postJSON(t, srv, "/api/stagecfg", map[string]any{"stage": "aging", "cfg": load(map[string]any{"out1": "20", "out2": "20000"})}); j["error"] == nil {
 		t.Fatalf("20000 on AO2 stored: %v", j)
 	}
-	// A page opened before STG-38 still sends the shared "ma": it fills both.
+	// A page opened before each AO had its own target still sends the shared "ma": it fills both.
 	if j := postJSON(t, srv, "/api/stagecfg", map[string]any{"stage": "aging", "cfg": load(map[string]any{"ma": "20"})}); j["error"] != nil {
 		t.Fatalf("save aging config with the old ma: %v", j)
 	}
@@ -719,7 +719,7 @@ func TestRangeMismatchRefusesTheStep(t *testing.T) {
 	if row := step2(); row["available"] != true {
 		t.Fatalf("the shared AO1 range matches the reference AI1 again: %v", row)
 	}
-	// STG-40 row 11: AO1 calibrated on 0-20 mA, tested on voltage, refuses the
+	// AO1 calibrated on 0-20 mA, tested on voltage, refuses the
 	// step too; the card's mark is the same reason.
 	if _, err := calstore.Store(fakeUID, "AO1", calstore.Channel{Range: calstore.RangeAO020, Unit: "mA", Gain: 1},
 		calstore.Meta{}, time.Now()); err != nil {

@@ -375,7 +375,7 @@ table.rltab .unit{color:var(--ink3);font-size:12px;margin-left:3px}
 .sechd{font-weight:600;color:var(--ink2);margin:4px 0 8px;padding-left:8px;border-left:3px solid var(--accent)}
 @media(max-width:1300px){.subtiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-/* Calibration table: the per-point reference mark (STG-12). */
+/* Calibration table: the per-point reference mark. */
 .anapts td.ok{color:var(--ok)}
 .anapts td.bad{color:var(--err);font-weight:600}
 /* A recorded point (decision 151): the row green, its value bold. */

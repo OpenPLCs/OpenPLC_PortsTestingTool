@@ -71,7 +71,7 @@ type Item struct {
 	// peer is the reference board: the second board connection (decision 103).
 	Ref []Target `json:"ref,omitempty"`
 	// Human says what a person gives when the peer is a person: a number
-	// judged by ptcheck, or a yes/no (decision 103, STG-19).
+	// judged by ptcheck, or a yes/no (decision 103).
 	Human    Answer   `json:"human,omitempty"`
 	Criteria []string `json:"criteria"`          // plan step ids; empty = limits not decided yet
 	Pending  string   `json:"pending,omitempty"` // strings.json key: firmware change still to come
@@ -81,7 +81,7 @@ type Item struct {
 	WatchS int `json:"watch_s,omitempty"`
 	// Load marks the AO load item: its "out1" / "out2" params are each AO's
 	// target in that channel's registered unit, required, no default
-	// (decisions 129, 134, STG-38), kept on the PC and sent as DAC mV from the
+	// (decisions 129, 134), kept on the PC and sent as DAC mV from the
 	// board's own k, b (PORTTOOL-FLOW.md C.3.6).
 	Load bool `json:"load,omitempty"`
 	// Live: with a person as the peer the session stays open, the card follows
@@ -116,7 +116,7 @@ const (
 var retiredParams = map[string]map[string]bool{"relay.cycle": {"ratio": true}}
 
 // renamedParams are retired parameters whose value moves to new ones on read:
-// the AO load's shared "ma" fills both channels' targets (STG-38).
+// the AO load's shared "ma" fills both channels' targets.
 var renamedParams = map[string]map[string][]string{"aout.load": {"ma": {ParamOut1, ParamOut2}}}
 
 // retiredItems are items dropped from the catalogue. Saved configurations and
@@ -232,7 +232,7 @@ type PortInfo struct {
 // NotItems are ports pt.caps reports that are deliberately not test items,
 // with the reason (a strings.json key).
 var NotItems = map[string]string{
-	// Shown as the board time under the control port instead (STG-03).
+	// Shown as the board time under the control port instead.
 	"rtc": "lib.notitem.rtc",
 }
 
@@ -357,7 +357,7 @@ var Catalogue = func() []Item {
 		params(item("rs485", "peer", 0, []Target{session("rs485")}, all3, pc, "rs485"), "baud", "period"),
 		once(item("rs485", "pins", 0, []Target{run("rs485.pins")}, rdOnly, none, "rs485-pins")),
 		onRef(excl(params(item("can", "peer", 0, []Target{session("can", "mode", "normal")}, all3, []Peer{PeerRef, PeerPC}, "can-peer", "can-pc"), "baud", "period"), "can.mode"),
-			session("can", "mode", "echo")), // STG-02 row 6
+			session("can", "mode", "echo")), // the reference board echoes each frame
 		excl(params(item("can", "loop", 0, []Target{session("can", "mode", "loopback")}, rdOnly, none), "baud"), "can.mode"),
 		excl(params(item("can", "ext", 0, []Target{session("can", "mode", "extloop")}, rdOnly, none, "can"), "baud"), "can.mode"),
 		// The CAN analyser window: board in mode=bus, this PC's CANable on the same bus (decision 111).
@@ -372,7 +372,7 @@ var Catalogue = func() []Item {
 		// relay (decisions 133, 135, ptlib/chain.go), or a person's multimeter in R&D.
 		human(onRef(excl(params(item("dout", "load", 0, []Target{session("dout", "mode", "hold", "duty", "255")}, all3, []Peer{PeerRef, PeerHuman}, "high-side-drop"), "ch", "period"), "dout.mode"),
 			session("din", "mode", "level")), AnswerNumber),
-		// Toggles are counted by a person; PWM is checked on a scope (STG-33).
+		// Toggles are counted by a person; PWM is checked on a scope.
 		human(excl(params(item("dout", "blink", 0, []Target{session("dout", "mode", "blink", "duty", "255")}, rdOnly, hum, "dout-blink", "dout-blink-seen"), "period"), "dout.mode"), AnswerNumber),
 		human(excl(params(item("dout", "square", 0, []Target{session("dout", "mode", "hold", "duty", "128")}, rdOnly, hum), "ch", "res", "duty", "freq"), "dout.mode"), AnswerYesNo),
 		live(excl(item("dout", "manual", 0, []Target{session("dout", "mode", "hold")}, rdOnly, hum), "dout.mode")),

@@ -340,7 +340,7 @@ func TestStoreRefusesWithoutAFit(t *testing.T) {
 }
 
 // Registering AI1 as current switches its unit and full scale, and AI1 is
-// then stored in mA (decision 102 / STG-24); the registration is per UID.
+// then stored in mA (decision 102); the registration is per UID.
 func TestRangeRegistrationSwitchesUnits(t *testing.T) {
 	srv, _ := calPanel(t, blankArea())
 	chOf := func(state map[string]any, name string) map[string]any {

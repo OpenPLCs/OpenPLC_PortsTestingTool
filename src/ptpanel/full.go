@@ -567,7 +567,7 @@ func (s *Server) handleFullStop(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, s.fullJSON())
 }
 
-// safetyStep is step 5: the card waits for the person's answers (STG-09).
+// safetyStep is step 5: the card waits for the person's answers.
 func (s *Server) safetyStep(ctx context.Context) ptreport.StepResult {
 	res := ptreport.StepResult{}
 	var questions []string

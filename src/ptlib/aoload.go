@@ -1,7 +1,7 @@
 package ptlib
 
 // AO under load is judged like AO output: each channel's reading against its
-// own target (out1 / out2, STG-38), +-1 % FS by the plan's ao<n>-out step. A person types the
+// own target (out1 / out2), +-1 % FS by the plan's ao<n>-out step. A person types the
 // meter; the reference board's AI1 / AI2 read AO1 / AO2. With a duration the
 // current holds to the end and is read once before it goes off.
 // PORTTOOL-FLOW.md C.3.6 「AO 带负载输出」; decision 128.
@@ -146,7 +146,7 @@ func (e *Engine) measureLoad(ctx context.Context, j *job) (ptreport.Outcome, str
 				e.setChan(j, n, ptreport.OutcomeError, ReasonRefCal)
 				continue
 			}
-			// Only this channel is not tested; the others run (STG-40 补充).
+			// Only this channel is not tested; the others run.
 			if cal.Calibrated != "" && cal.Calibrated != cal.Range {
 				e.setChanDetail(j, n, ptreport.OutcomeError, ReasonDUTCalRange, string(cal.Calibrated))
 				continue

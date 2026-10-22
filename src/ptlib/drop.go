@@ -1,6 +1,6 @@
 package ptlib
 
-// DO under load with a person as the peer (STG-32 A, PORTTOOL-FLOW.md C.3.6
+// DO under load with a person as the peer (PORTTOOL-FLOW.md C.3.6
 // "DO 带负载（研发）"): one channel on at a time, deadman held, the person
 // measures the drop between 24 V and the terminal while it is on, judged by
 // the plan's high-side-drop step; then off and the next channel.

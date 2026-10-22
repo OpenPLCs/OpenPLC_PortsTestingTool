@@ -2,8 +2,7 @@ package ptpanel
 
 // The three configurations - functional (2), aging (4), user-level (6) - and
 // the executor that runs steps 2 and 4 of a full test from them.
-// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.6 "三种配置"; decisions 97, 102;
-// STG-04, STG-26, STG-27.
+// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.6 "三种配置"; decisions 97, 102.
 
 import (
 	"context"
@@ -52,7 +51,7 @@ type stageCfgs struct {
 	Func  stageCfg `json:"func"`
 	Aging stageCfg `json:"aging"`
 	User  stageCfg `json:"user"`
-	// RefUnused is the connection zone's "reference board: unused" (STG-27).
+	// RefUnused is the connection zone's "reference board: unused".
 	RefUnused bool `json:"ref_unused"`
 	// Ranges are the AI / AO ranges all three test the board under test on,
 	// one set shared by them (decision 139); missing channels read as the default.
@@ -584,7 +583,7 @@ func stepProgress(ctx context.Context, frac float64) {
 	}
 }
 
-// runConfig runs picks as STG-26 says: with no duration every pick runs once,
+// runConfig runs picks as PORTTOOL-FLOW.md C.3.6 "选了时长怎么跑" says: with no duration every pick runs once,
 // one by one; with one, once-only and person-answered picks run one by one
 // first, then the rest run together for d. The first non-pass ends the step.
 func runConfig(ctx context.Context, run ItemRunner, picks []ItemPick, d time.Duration) ptreport.StepResult {

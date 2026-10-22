@@ -159,7 +159,7 @@ $("#clear").onclick = () => {
   redrawLog();
 };
 // The export is .txt (opens anywhere, attaches anywhere) and holds the whole
-// buffer, not the filtered view, in English (LANG-05). Timestamps are
+// buffer, not the filtered view, in English. Timestamps are
 // YYYY-MM-DD HH:MM:SS local time in every language.
 function fixedDateTime(d) {
   const p = n => String(n).padStart(2, "0");

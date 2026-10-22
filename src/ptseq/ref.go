@@ -1,6 +1,6 @@
 package ptseq
 
-// The reference board as a peer (decision 103, STG-18): a PtSession with on
+// The reference board as a peer (decision 103): a PtSession with on
 // "ref" runs on the second board connection beside the step after it -
 // started before, stopped after, its deadman renewed meanwhile. The rules are
 // in $PROD/docs/modules/M4/PRODUCTION-FRAMEWORK.md "在标准机上跑（on）".
@@ -228,7 +228,7 @@ func (r *Runner) runPair(ref, dut ptplan.Step, lastRan ptreport.Outcome, anyRan 
 
 // WithChanges adds _changes_<field>: how many times the field differed between
 // consecutive frames. A DO square wave read by the reference DI is judged on
-// it (STG-03).
+// it.
 func WithChanges(look ptcheck.Lookup, frames []ptproto.Frame) ptcheck.Lookup {
 	return func(field string) (string, bool) {
 		name, ok := strings.CutPrefix(field, "_changes_")

@@ -257,7 +257,7 @@ function libLive(it, st) {
   return box;
 }
 
-// DO under load measured by a person, one channel on at a time (STG-32):
+// DO under load measured by a person, one channel on at a time:
 // A din reading as words: which inputs are high.
 function dinBitsText(v) {
   const bits = parseInt(v);   // "0x05" or "5"

@@ -318,7 +318,7 @@ function anaReadBox(it) {
     box.appendChild(v);
   }
   if (a) { box.appendChild(el("div", "sub", T("ana.used_kb", { r: anaRangeName(a.range), k: a.k.toFixed(5), b: a.b.toFixed(4) }))); }
-  // The reference board gave the reference value with its own formula (STG-31).
+  // The reference board gave the reference value with its own formula.
   if (a && a.ref_ch) {
     box.appendChild(el("div", "sub", T("ana.used_kb_ref", { ch: a.ref_ch, r: anaRangeName(a.ref_range), k: a.ref_k.toFixed(5), b: (a.ref_b || 0).toFixed(4) })));
   }

@@ -1,6 +1,6 @@
 package testcase
 
-// DO toggle count and PWM (STG-33, PORTTOOL-FLOW.md C.3.6 "DO 翻转计数 / DO 方波"):
+// DO toggle count and PWM (PORTTOOL-FLOW.md C.3.6 "DO 翻转计数 / DO 方波"):
 // dout.blink is counted by a person, judged within one of the six toggles
 // (decision 133: R&D is done by hand); dout.square asks the person while the
 // PWM is still on.

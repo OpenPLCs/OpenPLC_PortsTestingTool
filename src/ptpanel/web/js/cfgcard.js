@@ -15,7 +15,7 @@ function cfgPortCard(port) {
   const src = el("span", "hint", T("cfg.src_fixed")); src.dataset.cfgsrc = p;
   hd.appendChild(src);
   card.appendChild(hd);
-  // Reference board set to unused: say what each item uses instead (PORTTOOL-FLOW.md C.3.6 「标准机「不用」」, STG-27).
+  // Reference board set to unused: say what each item uses instead (PORTTOOL-FLOW.md C.3.6 「标准机「不用」」).
   for (const it of its) { const n = cfgSubstNote(v, it); if (n) { card.appendChild(n); } }
 
   // AI / AO readings and outputs: one row per channel with its test points.

@@ -381,7 +381,7 @@ func checkPeerErrorLine(p *Page) {
 }
 
 // checkAbsentField: a criterion judged only when reported (RS485 overrun on the
-// step-6 demo, STG-07) says so, and a result without the field says it was not
+// step-6 demo) says so, and a result without the field says it was not
 // reported - not 「✅ 空」. Drawn from an injected result.
 func checkAbsentField(p *Page) {
 	Section("a field judged only when reported")

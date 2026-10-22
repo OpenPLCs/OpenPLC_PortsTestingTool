@@ -64,7 +64,7 @@ function memoBad(key, v) {
     case "blk": return within(0, 1000, "", true);
     case "par": {
       if (/[\s=]/.test(v)) { return T("memo.bad_param"); }
-      // An AO load target is checked against its own AO's range (STG-38).
+      // An AO load target is checked against its own AO's range.
       const li = memoItemOf(p[1]);
       const lc = li && li.load ? loadChannelOf(p[2]) : "";
       if (lc && typeof anaState !== "undefined" && anaState && anaState.channels) {
@@ -170,7 +170,7 @@ function memoApply(f) {
       case "blk": dioStd["blink|" + p[1]] = v; break;
       case "pwmok": dioStd["pwmok|" + p[1]] = v; break;
       case "chk": rdTicks[p[1] + "|" + p[2]] = v === "1"; break;
-      case "snap": // snap|<UID>|<port>; one without a UID is ignored (STG-39)
+      case "snap": // snap|<UID>|<port>; one without a UID is ignored
         if (p.length === 3) { try { rdSnap[p[1] + "|" + p[2]] = JSON.parse(v); } catch (e) { /* a broken one is dropped */ } }
         break;
       case "quad": liveRefTyped["din.quad|" + p[1]] = v; break;

@@ -128,7 +128,7 @@ func (s *Server) askUID() (uid string, sim bool, err error) {
 }
 
 // handleUID is the connected board's UID, asked once per connection: the R&D
-// port pages keep their last round per board (snap|<UID>|<port>, STG-39).
+// port pages keep their last round per board (snap|<UID>|<port>).
 func (s *Server) handleUID(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	b, uid := s.board, s.uid

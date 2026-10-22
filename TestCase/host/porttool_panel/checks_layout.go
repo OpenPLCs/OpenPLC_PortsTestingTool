@@ -253,7 +253,7 @@ func attrs(l *Loc, name string) []string {
 
 func eqStrings(a []string, b ...string) bool { return slices.Equal(a, b) }
 
-// checkFiveBlocks: the redesigned shell (decision 97, STG-10; PORTTOOL-FLOW.md
+// checkFiveBlocks: the redesigned shell (decision 97; PORTTOOL-FLOW.md
 // C.3.6). Left menus only choose what is shown; clicking every menu sends no pt.start.
 func checkFiveBlocks(p *Page) {
 	Section("layout (decision 128)")
@@ -513,7 +513,7 @@ func checkCfgItemNotes(p *Page) {
 	p.L(lport("usb")).Click()
 	p.Wait(250)
 	check(p.L(`#itemcards .item[data-item="usb.info"] table.crit tr`).Count() >= 2,
-		"USB enumeration has a criterion now (state configured, STG-03)")
+		"USB enumeration has a criterion now (state configured)")
 	p.L(lport("din")).Click()
 	p.Wait(250)
 	// Decision 129: outside R&D the AI / AO / DI / DO peer is the reference board, nobody is asked.
@@ -580,7 +580,7 @@ func checkCfgItemNotes(p *Page) {
 }
 
 // checkRdHasCfgItems: R&D is the fullest test type: an item a configuration
-// offers is on its R&D card too, with the same parameters (TODO-fixture 82).
+// offers is on its R&D card too, with the same parameters.
 func checkRdHasCfgItems(p *Page) {
 	Section("R&D has every configuration item, with the same parameters")
 	p.L(`.mi[data-menu="rd"]`).Click()
@@ -648,8 +648,8 @@ func checkSharedRange(p *Page) {
 	p.Wait(300)
 }
 
-// checkConnZone: the connection block and the log column (STG-10;
-// PORTTOOL-FLOW.md C.3.6 "连接区").
+// checkConnZone: the connection block and the log column
+// (PORTTOOL-FLOW.md C.3.6 "连接区").
 func checkConnZone(p *Page) {
 	Section("connection block")
 	check(p.L("#connzone select#ctlport").Count() == 1 && p.L("#connzone #boardclock").Count() == 1,

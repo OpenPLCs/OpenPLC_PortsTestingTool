@@ -41,7 +41,7 @@ type Check struct {
 	Note  string   `json:"_note,omitempty"`
 	// IfPresent passes a field the board does not report and judges it when
 	// it does: for a field one firmware cannot report (RS485 overrun on
-	// FixtureDemo, STG-07).
+	// FixtureDemo).
 	IfPresent bool `json:"if_present,omitempty"`
 }
 

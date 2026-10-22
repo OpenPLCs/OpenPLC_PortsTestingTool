@@ -74,7 +74,7 @@ func loadPageMemo() pageMemo {
 func retiredCell(k string) bool {
 	p := strings.Split(k, "|")
 	// "src": the R&D cards' data source, gone with the reference board in R&D (decision 133).
-	// "snap|<port>": a last round saved before it was kept per board; whose board is unknown (STG-39).
+	// "snap|<port>": a last round saved before it was kept per board; whose board is unknown.
 	// Any cell of a retired item (decision 141).
 	return (len(p) == 3 && p[0] == "par" && ptitems.Retired(p[1], p[2])) || (len(p) == 2 && (p[0] == "src" || p[0] == "snap")) ||
 		(len(p) >= 2 && ptitems.RetiredItem(p[1]))
@@ -267,7 +267,7 @@ func memoCellBad(section, key, v string, all map[string]string, caps ptproto.Cap
 			return nil
 		}
 	case parts[0] == "snap" && len(parts) == 3:
-		// A port page's last round per board (decision 137, STG-39): kept as the page wrote it, bounded.
+		// A port page's last round per board (decision 137): kept as the page wrote it, bounded.
 		if uidCell(parts[1]) && knownPort(parts[2]) && len(v) <= 64<<10 && json.Valid([]byte(v)) {
 			return nil
 		}
@@ -318,7 +318,7 @@ func knownPort(port string) bool {
 // channelBounds is the widest span any of the channel's ranges allows; the
 // page checks the registered range itself, which is narrower.
 // loadTargetBad checks an AO load target against every range of its own AO
-// (STG-38, C.3.6 「填数超量程」); nil for any other parameter.
+// (C.3.6 「填数超量程」); nil for any other parameter.
 func loadTargetBad(k, v string) *msg {
 	ch := ptitems.LoadChannel(k)
 	if ch == "" {

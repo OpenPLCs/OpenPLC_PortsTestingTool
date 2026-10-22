@@ -10,8 +10,8 @@ import (
 )
 
 // The panel's own preferences, beside the executable in porttool_settings.json.
-// Kept apart from porttool_ports.json, which says only which COM is which
-// (LANG-02). A missing or unreadable file means Chinese.
+// Kept apart from porttool_ports.json, which says only which COM is which.
+// A missing or unreadable file means Chinese.
 
 // SettingsFile overrides where the preferences are kept; tests set it.
 var SettingsFile string

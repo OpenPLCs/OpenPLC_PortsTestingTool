@@ -1,7 +1,7 @@
 package testcase
 
-// AI2 read and AO output with the reference board as the peer (STG-31 A,
-// PORTTOOL-FLOW.md C.3.2 "读数 / 输出项"): the reference side gives the
+// AI2 read and AO output with the reference board as the peer
+// (PORTTOOL-FLOW.md C.3.2 "读数 / 输出项"): the reference side gives the
 // reference value through its own k, b, nobody is asked.
 //
 // Bench: two simulated boards; simboard plays the default same-number wires
@@ -124,7 +124,7 @@ func TestAOLoadWithOneChannelUnwired(t *testing.T) {
 	}
 }
 
-// STG-40 补充: AO2 calibrated on another range than set is that channel's
+// AO2 calibrated on another range than set is that channel's
 // error, named with the range it was calibrated on; AO1 is still judged.
 func TestAOLoadWithOneChannelCalibratedOnAnotherRange(t *testing.T) {
 	dut, ref := openSimPair(t)

@@ -270,7 +270,7 @@ func (s *Server) openRef(port string) (msg, bool) {
 	if err != nil {
 		return m("go.ref.open_failed", "port", port, "detail", err), false
 	}
-	// Two simulated boards get the STG-02 DO->DI wire between them, as
+	// Two simulated boards get the default DO->DI wiring between them, as
 	// porttool run --ref does (simboard.OpenPair; PORTTOOL-FLOW.md C.3.7).
 	if ctrlRW != nil && simboard.IsSim(control) && simboard.IsSim(port) {
 		simboard.Link(ctrlRW, rw)
