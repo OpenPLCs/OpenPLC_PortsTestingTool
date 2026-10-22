@@ -2,7 +2,7 @@
   "schema": 1,
   "name": "Station 6 - PCBA power-on test",
   "limit_version": "2026-10-17-a",
-  "_note": "Covers the items in OPLC-MFG-TEST-001 section 3.6 that the firmware can report and this tool can judge. What is NOT here, and why, is listed step by step in $PROD/maps/production-test-gap/: the power rails, standby and maximum current, high-side and relay voltage/current readback, and the Ethernet / USB / SWD items all need an external instrument or a fixture this build has no driver for. ⚠️ Every limit below is an engineering starting point. Production limits are the ones Quality signs off, and the document itself still says TBD for all of them. Each independent group's first step is ALWAYS, so one failure no longer hides every later port: a board with no SD card still gets its ethernet, USB, relay and analog results in the same run. Steps left on the default PASS are the ones whose immediate predecessor is a genuine precondition - stressing SDRAM whose buses failed, or checking the integrity of a card that is not there, measures nothing.",
+  "_note": "Covers the items in OPLC-MFG-TEST-001 section 3.6 that the firmware can report and this tool can judge. What is NOT here, and why: the power rails, standby and maximum current, high-side and relay voltage/current readback, and the Ethernet / USB / SWD items all need an external instrument or a fixture this build has no driver for. ⚠️ Every limit below is an engineering starting point. Production limits are the ones Quality signs off, and the document itself still says TBD for all of them. Each independent group's first step is ALWAYS, so one failure no longer hides every later port: a board with no SD card still gets its ethernet, USB, relay and analog results in the same run. Steps left on the default PASS are the ones whose immediate predecessor is a genuine precondition - stressing SDRAM whose buses failed, or checking the integrity of a card that is not there, measures nothing.",
   "calibration": {
     "_note": "Each calibrated channel's unit and full scale. The worst residual of the straight-line fit is archived as a percentage of this full scale and NOT judged: calibration keeps the least-squares k and b whatever the residual, and the sector-15 image is produced once all four channels are in (decision 99). temperature_c is recorded, not judged.",
     "temperature_c": 25,
@@ -1000,7 +1000,7 @@
       "id": "relays",
       "type": "PtSession",
       "execute_condition": "ALWAYS",
-      "_note": "'Relay on/off'. ⚠️ Same boundary as the high-side step, and worse: this board has no contact readback at all, so the firmware cannot even say whether a contact closed. The V/I module on the contact side is the whole verdict. This step closes them once and holds - it does not cycle; relay life: OpenPLC_Docs/docs/hardware/HARDWARE-FACTS.md \"继电器 RY1–RY6\".",
+      "_note": "'Relay on/off'. ⚠️ Same boundary as the high-side step, and worse: this board has no contact readback at all, so the firmware cannot even say whether a contact closed. The V/I module on the contact side is the whole verdict. This step closes them once and holds - it does not cycle; relay life: OpenPLC_Instruction/docs/hardware/HARDWARE-FACTS.md \"继电器 RY1–RY6\".",
       "port": "relay",
       "params": {
         "ch": "1,2,3,4,5,6",

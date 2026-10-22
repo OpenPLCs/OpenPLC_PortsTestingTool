@@ -55,4 +55,4 @@ GOOS=windows GOARCH=amd64 go build -o PortTool.exe ./src/cmd/porttool
 | zig | 交叉编别的系统的模拟板 |
 | arduino-cli，并装好 OpenPLC 板卡包 | 编第 6 步的 demo `FixtureDemo` |
 
-包里有什么见 `OpenPLC_Docs` 的 `docs/modules/M4/PORTTOOL-FLOW.md` C.4。
+包里有什么见 `OpenPLC_Instruction` 的 `docs/modules/M4/PORTTOOL-FLOW.md` C.4。

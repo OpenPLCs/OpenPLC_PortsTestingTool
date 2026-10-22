@@ -1,6 +1,5 @@
 /*
  * *** TEMPORARY: fake hardware for pt.aodiag; remove together with it. ***
- * Documented in $PROD/maps/fixture-test-stages/issues/STG-41-where-does-the-ao-noise-come-from.md
  *
  * Every wait returns at once, so the sim exercises the command path only.
  * The real port_aodiag.c (interrupt masking, TIM2, WFI, DAC/VREFBUF

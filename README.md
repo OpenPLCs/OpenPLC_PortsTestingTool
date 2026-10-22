@@ -64,4 +64,4 @@ Packing also needs, beside this repository:
 | arduino-cli with the OpenPLC board package installed | compiles the step-6 demo `FixtureDemo` |
 
 What goes into the folder: `$PROD/docs/modules/M4/PORTTOOL-FLOW.md` (in
-`OpenPLC_Docs`), section C.4.
+`OpenPLC_Instruction`), section C.4.

@@ -5,7 +5,7 @@ package knxusb
 // macOS: IOKit's IOHIDManager lists the HID devices, IOHIDDevice moves the
 // reports; called through purego so the build stays cgo-free and
 // cross-compiles from Windows. See
-// $PROD/maps/porttool-on-linux-and-macos/issues/XPT-06-knx-usb-on-macos.md
+// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.7 ("HID 读写").
 
 import (
 	"errors"

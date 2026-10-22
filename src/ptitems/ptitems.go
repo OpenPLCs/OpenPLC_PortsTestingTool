@@ -1,8 +1,7 @@
 // Package ptitems is the test-item catalogue: every test item of every port,
 // which firmware target runs it, which stages it appears in, what peer it
 // needs and which plan steps hold its criteria.
-// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.6; items from
-// $PROD/maps/fixture-test-stages/issues/STG-03-what-each-port-tests-at-each-level.md
+// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.6.
 //
 // Judging is not here: Criteria names plan steps, and ptcheck evaluates them
 // (decision 77).

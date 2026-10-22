@@ -2,7 +2,7 @@
   "schema": 1,
   "name": "Bench smoke - nothing but the control cable",
   "limit_version": "2026-09-10-a",
-  "_note": "Every step here is judgeable with only the USB-RS232 adapter on C05/C06/C02. No fixture board, no loopback wire, no card. It exists to prove the plan file, the executor and the report work on a real board before any of the wired checks are attempted. Limits are engineering starting points, NOT production limits: see $PROD/maps/production-test-gap/.",
+  "_note": "Every step here is judgeable with only the USB-RS232 adapter on C05/C06/C02. No fixture board, no loopback wire, no card. It exists to prove the plan file, the executor and the report work on a real board before any of the wired checks are attempted. Limits are engineering starting points, NOT production limits.",
 
   "steps": [
     {

@@ -1,8 +1,6 @@
 """TEMPORARY: steps a person through the AO noise experiments (pt.aodiag).
 
-Remove together with pt.aodiag once the noise source is found. Experiments,
-probes and how to read the results:
-$PROD/maps/fixture-test-stages/issues/STG-41-where-does-the-ao-noise-come-from.md
+Remove together with pt.aodiag once the noise source is found.
 
     python tools/aodiag.py --port COM5          # real board, control port
     python tools/aodiag.py --port sim --auto    # simulated board, no prompts
@@ -34,7 +32,6 @@ from common import EXE, IS_WIN, PLATFORM, Section, Ok, Warn, Fail  # noqa: E402
 REPO = HERE.parents[1]
 SIMBOARD = REPO / "Output" / "bin" / ({"windows": "windows", "linux": "linux"}.get(PLATFORM) or "darwin") / ("porttool_simboard" + EXE)
 OUT_DIR = REPO / "Output" / "aodiag"
-TICKET = "$PROD/maps/fixture-test-stages/issues/STG-41-where-does-the-ao-noise-come-from.md"
 
 # (exp, scale or None, English cue, Chinese cue)
 RUNS = [
@@ -195,7 +192,6 @@ def main():
 
         print("Probe: %s (DAC pin), TP3 (VREF+), AO terminal %s; scope AC-coupled." % (pin, term))
         print("探点：%s（DAC 脚）、TP3（VREF+）、AO 端子 %s；示波器 AC 耦合。" % (pin, term))
-        print("How to read results: %s" % TICKET)
 
         for i, (exp, scale, en, zh) in enumerate(runs, 1):
             label = exp if scale is None else "%s scale=%d" % (exp, scale)
@@ -249,7 +245,7 @@ def main():
 
     summary = OUT_DIR / ("%s-summary.txt" % stamp)
     lines = ["AO noise experiments %s  port=%s ch=%d mv=%d secs=%d" %
-             (stamp, a.port, a.ch, a.mv, a.secs), "how to read: " + TICKET, ""]
+             (stamp, a.port, a.ch, a.mv, a.secs), ""]
     lines.append("%-12s %-10s %-10s %-10s %s" % ("run", pin + " Vpp", "TP3 Vpp", term + " Vpp", "board"))
     for r in rows:
         lines.append("%-12s %-10s %-10s %-10s %s" % (

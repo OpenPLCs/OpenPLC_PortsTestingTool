@@ -189,8 +189,8 @@ type multiFlag []string
 func (m *multiFlag) String() string     { return strings.Join(*m, ",") }
 func (m *multiFlag) Set(v string) error { *m = append(*m, v); return nil }
 
-// Output/bin/<platform>: GOOS, plus darwin-arm64 for Apple silicon
-// ($PROD/maps/porttool-on-linux-and-macos/issues/XPT-02-whether-to-ship-arm64.md).
+// Output/bin/<platform>: GOOS, plus darwin-arm64 for Apple silicon (every Mac
+// on sale is arm64; no ARM Linux build, nobody has asked for one).
 var allPlatforms = []string{"windows", "linux", "darwin", "darwin-arm64"}
 
 func hostPlatform() string {

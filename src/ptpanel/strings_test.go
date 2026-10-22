@@ -1,8 +1,7 @@
 package ptpanel
 
-// The panel dictionary is whole and current (decision 82, PORTTOOL-FLOW.md
-// C.4.1 in $PROD; decided in LANG-07 and LANG-08 of
-// $PROD/maps/porttool-panel-languages/):
+// The panel dictionary is whole and current (decision 82,
+// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.4.1):
 //  1. every entry has zh, en and de, none empty, with the same {placeholders};
 //  2. en_of / de_of are the hash of the Chinese each translation was made from;
 //  3. every key the page and the Go code use is in the dictionary, and every

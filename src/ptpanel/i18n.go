@@ -15,7 +15,7 @@ import (
 // (decision 82). Go never sends the page a sentence: it sends a msg, a key into
 // that dictionary plus its arguments, and the page words it in the language the
 // person chose. What Go writes to files is the dictionary's English.
-// $PROD/maps/porttool-panel-languages/map.md
+// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.4.1.
 
 type msg struct {
 	Key  string

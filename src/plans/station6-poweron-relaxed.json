@@ -950,7 +950,7 @@
       "id": "relays",
       "type": "PtSession",
       "execute_condition": "ALWAYS",
-      "_note": "'Relay on/off'. ⚠️ Same boundary as the high-side step, and worse: this board has no contact readback at all, so the firmware cannot even say whether a contact closed. The V/I module on the contact side is the whole verdict. This step closes them once and holds - it does not cycle; relay life: OpenPLC_Docs/docs/hardware/HARDWARE-FACTS.md \"继电器 RY1–RY6\".",
+      "_note": "'Relay on/off'. ⚠️ Same boundary as the high-side step, and worse: this board has no contact readback at all, so the firmware cannot even say whether a contact closed. The V/I module on the contact side is the whole verdict. This step closes them once and holds - it does not cycle; relay life: OpenPLC_Instruction/docs/hardware/HARDWARE-FACTS.md \"继电器 RY1–RY6\".",
       "port": "relay",
       "params": {
         "ch": "1,2,3,4,5,6",
