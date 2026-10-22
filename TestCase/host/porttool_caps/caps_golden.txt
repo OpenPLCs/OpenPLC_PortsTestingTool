@@ -1,5 +1,5 @@
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1,2,3,4,5,6,7,8 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -10,7 +10,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3,4,5,6 mode=hold on=1:0,2:0,3:0,4:0,5:0,6:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -51,11 +51,12 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.id
-OK uid=003400413135511439303538 porttool=0.18.1 rx_errors=0 rx_dropped=0
+OK uid=003400413135511439303538 porttool=0.18.3 rx_errors=0 rx_dropped=0
 >>> pt.cal
 OK cal=4F43414C010004004100340014513531383530390000883F000048C10000783F0000003E0000843F000080BE0000703F0000003F179E8809
 >>> pt.cal
@@ -91,7 +92,7 @@ ERR relay start refused: close="100" must be at least 1000 ms
 OK running=din
 OK running=relay
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=1
 OK vals=din ch=1,3,5 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -102,7 +103,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2 mode=cycle on=1:0,2:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -143,9 +144,10 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.set din ch=2,4
 OK set din
 >>> pt.start din ch=1,9
@@ -171,13 +173,17 @@ OK run=sdram.probe      FMC bring-up, data bus and address bus; reports the wind
 OK run=sdram.sweep      all 64 MiB, four patterns; reports mismatches and where the first was
 OK run=eth.link         PHY identity, link, and the speed/duplex auto-negotiation settled on
 OK run=rtc.read         brings the RTC up if needed and reads the calendar; never writes it
+OK run=lse              LSE drive: drv=low|mlow|mhigh|high restarts LSE and times it; kept after reset
+OK run=lse.freq         LSE frequency and ppm over about 1 s, against the HSE-derived TIM16 clock
 OK run=sdram.crc        CRC32 of one window; reads only, so it checks what a tool wrote there
 OK run=rs485.pins       drives PD4 and PD5 as plain GPIO and reads them back; nothing attached
 OK run=reset.cause      why the board last came up - POR, PIN, IWDG, WWDG, SOFT or BOR
+OK run=vref             analog reference: src=int (VREFBUF 2.5 V) or src=ext (VREF+ wired by hand)
 OK run=led.blink        blinks the system indicator on PE2; a person decides whether it lit
 OK run=knx.edges        single pulses, every KNX_RX edge after each; shots= how many
 OK run=knx.hist         pulse bursts; KNX_RX width and TX->RX delay, min/avg/max and histograms
 OK run=knx.pullup       one burst with PA10's pull-up on, one with it off; leaves it on
+OK run=match            listens on RS485 and CAN for ms= and reports the OPLC-<n> tokens each heard
 >>> pt.run sdram.probe
 SDRAM_TEST: probing (stub)
 OK sdram.probe base=0xC0000000 size=67108864 ready=1 databus=1 addrbus=1
@@ -212,6 +218,20 @@ OK rtc.read init=1 clk=lsi date=26-09-07 time=13:45:07
 OK rtc.read init=1 clk=none date=26-09-07 time=13:45:07
 >>> pt.run rtc.read
 OK rtc.read init=1 clk=lse date=26-09-07 time=13:45:07
+>>> pt.run lse
+OK lse drv=mlow ready=1
+>>> pt.run lse drv=high
+OK lse drv=high ready=1 start_ms=450
+>>> pt.run lse drv=low
+OK lse drv=mlow ready=1 start_ms=5000 fallback=mlow
+>>> pt.run lse drv=max
+OK lse drv=mlow ready=1 error=drv_must_be_low_mlow_mhigh_high
+>>> pt.run lse.freq
+OK lse.freq ready=1 hz=32767.596 ppm=-12.33 ms=1000
+>>> pt.run lse.freq
+OK lse.freq ready=0
+>>> pt.run lse.freq
+OK lse.freq ready=1 error=capture_missed
 >>> pt.run sd.probe
 SDCARD_TEST: probing (stub)
 OK sd.probe detected=1 ready=1 blocks=62333952 block_size=512 mib=30436 v2x=1 class=1461 fs=fat32 err=0x00000000
@@ -553,7 +573,7 @@ OK stopped knx
 >>> pt.stop all
 OK stopped all
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=2,4 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -564,7 +584,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1 mode=hold on=1:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -605,9 +625,10 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.stop all
 OK stopped all
 >>> pt.start sd period=1000
@@ -697,7 +718,7 @@ OK stopped all
 >>> pt.start relay ch=1,2,3 mode=hold on=1:1,2:0,3:1
 OK started relay
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -708,7 +729,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:1,2:0,3:1 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -749,13 +770,14 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.set relay on=2:1
 OK set relay
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -766,7 +788,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:1,2:1,3:1 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -807,9 +829,10 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.start relay on=1:9
 ERR relay start refused: on="1:9" must be like 1:1,2:0 - relays 1..6, level 0 or 1, each relay named at most once
 >>> pt.start relay on=7:1
@@ -819,7 +842,7 @@ ERR relay start refused: on="1:1,1:0" must be like 1:1,2:0 - relays 1..6, level 
 >>> pt.start relay on=1:
 ERR relay start refused: on="1:" must be like 1:1,2:0 - relays 1..6, level 0 or 1, each relay named at most once
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -830,7 +853,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:1,2:1,3:1 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -871,15 +894,16 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.stop all
 OK stopped all
 >>> pt.start din ch=2,4 period=nonsense
 ERR din start refused: period="nonsense" is not a number
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -890,7 +914,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:0,2:0,3:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -931,13 +955,14 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.start dout ch=1,5 mode=hold duty=1:51,5:191 freq=1000
 OK started dout
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -948,7 +973,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:0,2:0,3:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -989,9 +1014,10 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> (host) 1000 ms later
 !dout t=30740 seq=1 rx=0 miss=0 mode=hold res=8 tick=256000 ch1=51 ch5=191
 >>> (host) dout duties now
@@ -1001,7 +1027,7 @@ OK started dout
 >>> (host) 200 ms later
 !dout t=30940 seq=1 rx=0 miss=0 mode=blink res=8 tick=256000 ch1=0 ch2=0
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1012,7 +1038,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:0,2:0,3:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -1053,13 +1079,14 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> (host) 200 ms later
 !dout t=31140 seq=1 rx=0 miss=1 mode=blink res=8 tick=256000 ch1=255 ch2=255
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1070,7 +1097,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:0,2:0,3:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -1111,15 +1138,16 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.stop all
 OK stopped all
 >>> pt.start dout ch=1,2,3 mode=hold res=7 duty=64 freq=1:2000,2:1000,3:250
 OK started dout
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1130,7 +1158,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:0,2:0,3:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -1171,15 +1199,16 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> (host) 1000 ms later
 !dout t=32140 seq=1 rx=0 miss=0 mode=hold res=7 tick=256000 ch1=64 ch2=64 ch3=64
 >>> pt.set dout freq=1:2000,2:1
 OK set dout
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1190,7 +1219,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:0,2:0,3:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -1231,13 +1260,14 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.set dout freq=500
 OK set dout
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1248,7 +1278,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:0,2:0,3:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -1289,9 +1319,10 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> (host) 1000 ms later
 !dout t=33140 seq=1 rx=0 miss=1 mode=hold res=7 tick=64000 ch1=64 ch2=64 ch3=64
 >>> pt.set dout res=10
@@ -1301,7 +1332,7 @@ OK set dout
 >>> pt.set dout res=10 duty=1023
 OK set dout
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1312,7 +1343,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:0,2:0,3:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -1353,9 +1384,10 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> (host) 1000 ms later
 !dout t=34140 seq=1 rx=0 miss=2 mode=hold res=10 tick=256000 ch1=1023 ch2=1023 ch3=1023
 >>> pt.set dout res=4
@@ -1363,7 +1395,7 @@ ERR dout set refused: output 1 keeps duty 1023, over 15 at res=4 - give duty= wi
 >>> pt.set dout res=4 duty=15 freq=16000
 OK set dout
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1374,7 +1406,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:0,2:0,3:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -1415,9 +1447,10 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> (host) 1000 ms later
 !dout t=35140 seq=1 rx=0 miss=3 mode=hold res=4 tick=256000 ch1=15 ch2=15 ch3=15
 >>> (host) dout after res=4
@@ -1484,7 +1517,7 @@ OK started temp
 >>> pt.start aout ch=1,2 mv=1:500,2:1234
 OK started aout
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1495,7 +1528,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3 mode=hold on=1:0,2:0,3:0 close=2000 open=2000 count=10
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=1
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=1 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -1536,9 +1569,10 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> (host) 1000 ms later
 !ain t=36273 seq=1 rx=0 miss=0 vdda=3287 ok=1 ch1=21850/2071 ch2=530/50
 !aout t=36273 seq=1 rx=0 miss=0 ch1=500/500/4882 ef1=0 ch2=1234/1233/12041 ef2=0
@@ -1583,6 +1617,18 @@ OK stopped all
 OK rs485.pins checked=1 busy=0 dir_low=0 tx_low=0 dir_high=1 tx_high=1 follows=1
 >>> pt.run rs485.pins
 OK rs485.pins checked=1 busy=0 dir_low=0 tx_low=0 dir_high=0 tx_high=1 follows=0
+>>> pt.start rs485
+OK started rs485
+>>> pt.run match
+OK match busy=1
+>>> pt.stop all
+OK stopped all
+>>> pt.run match ms=500
+MATCH_TEST: listening on RS485 at 115200 and CAN at 500000 for 500 ms
+OK match busy=0 ms=500 baud=115200 bps=500000 rs485=2,5 rs485_ok=1 rs485_bytes=27 rs485_junk=1 can=7 can_ok=1 can_frames=2 can_junk=1 can_lec=0
+>>> pt.run match ms=50000 baud=12345 bps=7
+MATCH_TEST: listening on RS485 at 115200 and CAN at 500000 for 10000 ms
+OK match busy=0 ms=10000 baud=115200 bps=500000 rs485=- rs485_ok=1 rs485_bytes=0 rs485_junk=0 can=- can_ok=1 can_frames=0 can_junk=0 can_lec=0
 >>> pt.start relay ch=1,2 mode=cycle close=1:1000,2:2000 open=1000 count=1:2,2:1
 OK started relay
 >>> (host) 1 ms later
@@ -1598,7 +1644,7 @@ OK started relay
 >>> (host) 1000 ms later
 TEST relay_cycle_energised=0
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1609,7 +1655,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2 mode=cycle on=1:0,2:0
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -1650,9 +1696,10 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.start relay mode=cycle close=999
 ERR relay start refused: close="999" must be at least 1000 ms
 >>> pt.start relay mode=cycle open=1:500
@@ -1666,7 +1713,7 @@ ERR relay start refused: mode="square" is not hold or cycle
 >>> pt.start relay ch=1,2,3,4,5,6 mode=cycle close=1:1000001,2:1000002,3:1000003,4:1000004,5:1000005,6:1000006 open=1:2000001,2:2000002,3:2000003,4:2000004,5:2000005,6:2000006 count=1:1000000,2:999999,3:999998,4:999997,5:999996,6:999995
 OK started relay
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1677,7 +1724,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3,4,5,6 mode=cycle on=1:0,2:0,3:0,4:0,5:0,6:0
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -1718,9 +1765,10 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.stop all
 OK stopped all
 >>> pt.start rs232 period=200
@@ -1732,7 +1780,7 @@ OK echo rs232 1
 >>> (host) 200 ms later
 !rs232 t=43473 seq=2 rx=1 miss=0 rxlines=0 baud=115200
 >>> pt.caps
-OK porttool=0.18.1 ports=17 lines=54 hold=1 led=1
+OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1743,7 +1791,7 @@ OK port=relay board=lower kind=session blk=B term=B01-B12 channels=6 loop=ctrl p
 OK vals=relay ch=1,2,3,4,5,6 mode=cycle on=1:0,2:0,3:0,4:0,5:0,6:0
 OK terms=relay B01+B02,B03+B04,B05+B06,B07+B08,B09+B10,B11+B12
 OK limits=relay ch:1..6 mode:hold|cycle on:0..1 close:1000.. open:1000.. count:1..1000000
-OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0
+OK port=ain board=upper kind=session blk=D term=D12,D13 channels=2 loop=ctrl params=ch,period running=0 runs=vref
 OK vals=ain ch=1,2 period=500
 OK terms=ain D12,D13
 OK limits=ain ch:1..2 period:50..
@@ -1784,9 +1832,10 @@ OK limits=sd period:50..
 OK port=sdram board=bridge kind=session blk=- term=U6 channels=1 loop=ctrl params=wait,period running=0 runs=sdram.probe,sdram.sweep,sdram.crc
 OK vals=sdram wait=5000 period=1000
 OK limits=sdram wait:1000.. period:50..
-OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read
+OK port=rtc board=bridge kind=run blk=- term=- channels=1 loop=none runs=rtc.read,lse,lse.freq
 OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset.cause
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
+OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.stop all
 OK stopped all
 >>> pt.start rs232 baud=19200 period=200
@@ -1817,4 +1866,4 @@ TEST rx_before=0 isr_raised=0x8
 TEST rx_after=1 icr_written=0xE state=32 error_code=0
 >>> (host) a command delivered one byte at a time through the ISR
 TEST fed=6
-OK uid=003400413135511439303538 porttool=0.18.1 rx_errors=7 rx_dropped=0
+OK uid=003400413135511439303538 porttool=0.18.3 rx_errors=7 rx_dropped=0

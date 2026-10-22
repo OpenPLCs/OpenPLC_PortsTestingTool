@@ -51,5 +51,6 @@ func (s *Server) reconnect(old *ptboard.Board, port string) (*ptboard.Board, err
 	s.mu.Unlock()
 	go s.watchLost(b, rw)
 	s.say(m("go.lost.back", "port", port))
+	s.resendVref(b)
 	return b, nil
 }

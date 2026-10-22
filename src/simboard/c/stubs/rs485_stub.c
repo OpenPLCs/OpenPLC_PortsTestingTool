@@ -20,6 +20,10 @@ static uint32_t rx_head, rx_tail;
 /* Queues one line as if the far end had sent it; adds the terminator. */
 void test_rs485_reply(const char *line)
 {
+    /* Drained: start over, so a long simulated run keeps taking replies. */
+    if (rx_head >= rx_tail) {
+        rx_head = rx_tail = 0;
+    }
     while (*line != '\0' && rx_tail < sizeof(rx_queue)) {
         rx_queue[rx_tail++] = (uint8_t)*line++;
     }

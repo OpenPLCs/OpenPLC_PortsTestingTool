@@ -89,6 +89,15 @@ type State struct {
 	Chans []ptreport.ChannelResult `json:"chans,omitempty"`
 	// Round: the last finished round of the timed phase (timed.go, decision 151).
 	Round *Round `json:"round,omitempty"`
+	// Runs: every pt.run of a criteria-less item, in order; Values keeps only the
+	// last. The LSE margin card shows one row per drive (decision 160).
+	Runs []RunReply `json:"runs,omitempty"`
+}
+
+// RunReply is one pt.run a criteria-less item sent and the fields it got back.
+type RunReply struct {
+	Sent   string      `json:"sent"`
+	Values [][2]string `json:"values"`
 }
 
 // maxEvents is how many event frames a card keeps (PORTTOOL-FLOW.md C.3.6).
@@ -741,7 +750,11 @@ func (e *Engine) record(ctx context.Context, j *job) (ptreport.Outcome, string) 
 			}
 			att.Outcome = Recorded
 			e.addAttempts(j, att)
-			e.change(j.item.ID, func(s *State) { s.Values = valuesOf(att) })
+			vals := valuesOf(att)
+			e.change(j.item.ID, func(s *State) {
+				s.Values = vals
+				s.Runs = append(s.Runs, RunReply{Sent: cmd, Values: vals})
+			})
 			continue
 		}
 		if o, d := e.recordSession(ctx, j, t, &att); o != Recorded {

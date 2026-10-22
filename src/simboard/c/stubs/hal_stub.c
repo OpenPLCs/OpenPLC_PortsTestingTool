@@ -148,8 +148,16 @@ RCC_TypeDef *const RCC      = &test_rcc;
 int      test_din_init_count;
 uint8_t  test_din_bits = 0x16u;
 
+/* Set by the simulated board while a pt.run target listens in real time
+ * (pt.run match): moves the tick and lets queued sim.tok lines in. NULL in
+ * T4-01, whose clock only moves between commands. */
+void (*test_tick_hook)(void);
+
 uint32_t HAL_GetTick(void)
 {
+    if (test_tick_hook != NULL) {
+        test_tick_hook();
+    }
     return fake_tick_ms;
 }
 

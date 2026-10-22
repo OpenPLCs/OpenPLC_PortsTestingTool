@@ -47,9 +47,10 @@ func needSim(t *testing.T) {
 func clockTime(t *testing.T, srv *httptest.Server) string {
 	t.Helper()
 	// A poll is skipped while another command is on the line, e.g. the board
-	// address lookup right after connecting (boardip.go).
+	// address lookup and the 3 s adapter matching right after connecting
+	// (boardip.go, match.go).
 	var c map[string]any
-	for end := time.Now().Add(3 * time.Second); c == nil && time.Now().Before(end); time.Sleep(200 * time.Millisecond) {
+	for end := time.Now().Add(8 * time.Second); c == nil && time.Now().Before(end); time.Sleep(200 * time.Millisecond) {
 		c, _ = call(t, srv, "/api/conn", nil)["clock"].(map[string]any)
 	}
 	if c == nil {
@@ -75,10 +76,15 @@ func TestBoardClockMovesOnTheSimulatedBoard(t *testing.T) {
 		t.Fatalf("connect: %v", st)
 	}
 	first := clockTime(t, srv)
-	time.Sleep(2100 * time.Millisecond)
-	second := clockTime(t, srv)
+	// Polled, not slept: a reading taken while matching holds the line stays
+	// the last one (match.go).
+	second := first
+	for end := time.Now().Add(8 * time.Second); second == first && time.Now().Before(end); {
+		time.Sleep(500 * time.Millisecond)
+		second = clockTime(t, srv)
+	}
 	if first == second {
-		t.Fatalf("board time stood still over two seconds: %s", first)
+		t.Fatalf("board time stood still over eight seconds: %s", first)
 	}
 }
 

@@ -9,7 +9,9 @@ import (
 // that needs no person, reference board or PC peer. Ports not listed must
 // pass; "either" is a verdict this bench cannot decide. On a real bench every
 // port is "either": its wiring decides.
-var sweepExpectSim = map[string][2]string{}
+var sweepExpectSim = map[string][2]string{
+	"rtc": {"unjudged", "the crystal items are recorded only (decision 160)"},
+}
 
 // autoPicks ticks the R&D items of port that run with nobody and nothing
 // attached: peer none, not a calibration walk, not pending, not watched; one

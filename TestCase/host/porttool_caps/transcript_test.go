@@ -92,6 +92,7 @@ func TestFirmwareTranscript(t *testing.T) {
 	x.quadOut()
 	x.echoLoop()
 	x.rs485()
+	x.match()
 	x.rs232Line()
 	x.analogGate()
 	x.levels()
@@ -1172,6 +1173,26 @@ func (x *tc) oneShots() {
 		}
 	}
 
+	// LSE drive, in the order the harness ran it (DECISIONS.md 159).
+	lse := f.frames("OK lse ")
+	x.check(len(lse) == 4, "pt.run lse answered four times", fmt.Sprint(lse))
+	if len(lse) == 4 {
+		x.check(lse[0]["drv"] == "mlow" && !has(lse[0], "start_ms"), "lse without drv= only reports", fmt.Sprint(lse[0]))
+		x.check(lse[1]["drv"] == "high" && lse[1]["ready"] == "1" && has(lse[1], "start_ms"), "lse drv=high restarts LSE on high and times it", fmt.Sprint(lse[1]))
+		x.check(lse[2]["drv"] == "mlow" && lse[2]["fallback"] == "mlow" && lse[2]["ready"] == "1", "a drive that does not start falls back to mlow", fmt.Sprint(lse[2]))
+		x.check(lse[3]["drv"] == "mlow" && has(lse[3], "error") && !has(lse[3], "start_ms"), "a bad drv= is refused and changes nothing", fmt.Sprint(lse[3]))
+	}
+	// LSE frequency (DECISIONS.md 160): the stub's counts are -12.33 ppm.
+	lf := f.frames("OK lse.freq ")
+	x.check(len(lf) == 3, "pt.run lse.freq answered three times", fmt.Sprint(lf))
+	if len(lf) == 3 {
+		x.check(lf[0]["ready"] == "1" && lf[0]["hz"] == "32767.596" && lf[0]["ppm"] == "-12.33" && lf[0]["ms"] == "1000",
+			"lse.freq reports hz and ppm from the capture counts", fmt.Sprint(lf[0]))
+		x.check(lf[1]["ready"] == "0" && !has(lf[1], "hz"), "lse.freq with LSE stopped says ready=0 and nothing else", fmt.Sprint(lf[1]))
+		x.check(lf[2]["error"] == "capture_missed" && !has(lf[2], "hz"), "lse.freq names missed captures", fmt.Sprint(lf[2]))
+	}
+	x.check(x.shapeOf(0, "rtc")["runs"] == "rtc.read,lse,lse.freq", "the rtc row carries rtc.read, lse and lse.freq", x.shapeOf(0, "rtc")["runs"])
+
 	led := f.bodies("pt.run led.blink")
 	x.check(len(led) > 0, "pt.run led.blink answered")
 	if len(led) > 0 {
@@ -1684,4 +1705,29 @@ func (x *tc) led() {
 	if l := f.lines("TEST sdram_probe_count="); len(l) > 0 {
 		x.check(strings.HasSuffix(last(l), "=2"), "the probe ran once per pt.run and not otherwise", last(l))
 	}
+}
+
+// match: the adapter tokens each terminal heard (DECISIONS.md 146, PORTTOOL-FLOW.md A.3).
+func (x *tc) match() {
+	f := x.f
+	x.section("pt.run match")
+	got := f.frames("OK match ")
+	x.check(len(got) == 3, "pt.run match answered all three times", fmt.Sprint(got))
+	if len(got) != 3 {
+		return
+	}
+	busy, heard, empty := got[0], got[1], got[2]
+	x.check(busy["busy"] == "1" && !has(busy, "rs485"), "declined while the rs485 session owns the pair", fmt.Sprint(busy))
+	x.check(heard["busy"] == "0" && heard["ms"] == "500" && heard["baud"] == "115200" && heard["bps"] == "500000",
+		"listens for ms= at the default rates", fmt.Sprint(heard))
+	x.check(heard["rs485"] == "2,5" && heard["rs485_junk"] == "1" && heard["rs485_ok"] == "1",
+		"RS485 lists each token once, in arrival order, and counts the line that was not one", fmt.Sprint(heard))
+	x.check(heard["can"] == "7" && heard["can_frames"] == "2" && heard["can_junk"] == "1" && heard["can_ok"] == "1",
+		"CAN lists the token frame and counts the other frame as junk", fmt.Sprint(heard))
+	x.check(empty["rs485"] == "-" && empty["can"] == "-", "a byte left from before the window is not heard; nothing heard reads -", fmt.Sprint(empty))
+	x.check(empty["ms"] == "10000" && empty["baud"] == "115200" && empty["bps"] == "500000",
+		"ms= is capped at 10000, an unsupported baud= or bps= falls back to the default", fmt.Sprint(empty))
+	listening := f.lines("MATCH_TEST: listening")
+	x.check(len(listening) == 2, "says it is listening before each window it opens", fmt.Sprint(listening))
+	x.check(x.capsLine(0, "OK port=match ")["runs"] == "match", "match has its own caps row", fmt.Sprint(x.capsLine(0, "OK port=match ")))
 }

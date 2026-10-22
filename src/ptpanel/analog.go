@@ -38,6 +38,7 @@ func (s *Server) analogRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/analog/ranges", s.handleRanges)
 	mux.HandleFunc("/api/analog/fit", s.handleAnalogFit)
 	mux.HandleFunc("/api/cal/store", s.handleCalStore)
+	mux.HandleFunc("/api/analog/vref", s.handleVref)
 }
 
 // Board calibration states, as the card and the full-run gate tell them apart.
@@ -177,6 +178,8 @@ func (s *Server) analogState() map[string]any {
 		}
 	}
 	out["channels"], out["registered"] = chanInfos(ranges), registered
+	// The AI pin conversion the card's noise statistics use (decision 158).
+	out["adc_max"], out["vref_nominal_mv"] = calstore.ADCMax, calstore.VrefMV
 
 	local, image := map[string]calstore.Local{}, false
 	if err == nil && !sim {

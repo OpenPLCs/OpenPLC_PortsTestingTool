@@ -230,10 +230,10 @@ type PortInfo struct {
 }
 
 // NotItems are ports pt.caps reports that are deliberately not test items,
-// with the reason (a strings.json key).
+// with the reason (a strings.json key). None at present: rtc carries the LSE
+// items, its board time stays in the connection area (rtc.read).
 var NotItems = map[string]string{
-	// Shown as the board time under the control port instead.
-	"rtc": "lib.notitem.rtc",
+	"match": "lib.notitem.match", // the connection area matches adapters with it (decision 146)
 }
 
 var (
@@ -291,7 +291,7 @@ var Ports = []PortInfo{
 	{"din", "port_label.din"}, {"ain", "port_label.ain"}, {"aout", "port_label.aout"},
 	{"rs232", "lib.port.rs232"}, {"rs485", "lib.port.rs485"}, {"can", "lib.port.can"},
 	{"knx", "lib.port.knx"}, {"dout", "port_label.dout"}, {"relay", "port_label.relay"},
-	{"temp", "port_label.temp"},
+	{"temp", "port_label.temp"}, {"rtc", "lib.port.rtc"},
 }
 
 func analog(port, readID, calID string, ch int) []Item {
@@ -382,6 +382,11 @@ var Catalogue = func() []Item {
 		human(onRef(params(item("relay", "cycle", 0, []Target{session("relay", "mode", "cycle")}, all3, []Peer{PeerRef, PeerHuman}),
 			"ch", "close", "open", "count", ParamOrder, ParamBy, ParamMinutes), session("din", "mode", "level")), AnswerNumber),
 		params(item("temp", "read", 0, []Target{session("temp")}, all3, none, "temperature"), "period"),
+		// The 32.768 kHz crystal, recorded only (decision 160): its frequency against
+		// the HSE-derived TIM16, and a restart on every drive ending back on mlow.
+		once(item("rtc", "lsefreq", 0, []Target{run("lse.freq")}, rdOnly, none)),
+		once(item("rtc", "lsemargin", 0, []Target{run("lse drv=low"), run("lse drv=mlow"), run("lse drv=mhigh"),
+			run("lse drv=high"), run("lse drv=mlow")}, rdOnly, none)),
 	)
 	// Pull and plug back, one per communication port, R&D only (decision 150).
 	for _, r := range []struct {

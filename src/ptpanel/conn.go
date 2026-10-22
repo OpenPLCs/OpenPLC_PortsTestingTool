@@ -94,6 +94,7 @@ func (s *Server) handleConn(w http.ResponseWriter, r *http.Request) {
 	out["links"] = s.linksLocked()
 	out["boardIP"] = s.ipJSON()
 	s.mu.Unlock()
+	out["match"] = s.matchJSON()
 	writeJSON(w, 200, out)
 }
 

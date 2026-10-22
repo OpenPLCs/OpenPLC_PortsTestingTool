@@ -88,6 +88,26 @@ $("#ctlport").onchange = () => {
 
 $("#refresh").onclick = loadPorts;
 
+// Finds the control port by asking every candidate for pt.caps, then connects
+// to the one fixture that answered (decision 146).
+$("#ctlauto").onclick = async () => {
+  if (state && state.connected) { return; }
+  const b = $("#ctlauto");
+  b.disabled = true;
+  b.textContent = T("html.ctl_auto_busy");
+  const j = await api("/api/match/control", {});
+  b.disabled = false;
+  b.textContent = T("html.ctl_auto");
+  if (j.error) {
+    const tried = (j.tried || []).map(t => t.com + ": " + t.why).join("; ");
+    showMessage(tried ? T("html.ctl_auto_tried", { error: j.error, tried: tried }) : j.error, true);
+    return;
+  }
+  chosenPort = j.found;
+  await loadPorts();
+  $("#connect").click();
+};
+
 // Off is a diagnostic: miss climbing while seq stands still proves the counter works.
 $("#autoecho").onchange = async () => {
   applyState(await api("/api/autoecho", {on: $("#autoecho").checked}));
@@ -119,7 +139,10 @@ function startEvents() {
       refreshState().then(() => showMessage(localize(d.msg), true));
       return;
     }
-    if (d.kind === "frame" && d.port) { reads[d.port] = d; }
+    if (d.kind === "frame" && d.port) {
+      reads[d.port] = d;
+      if (d.port === "ain" && typeof anaNoiseFrame === "function") { anaNoiseFrame(d); }
+    }
   };
   evtSource.onerror = () => { /* EventSource retries by itself */ };
 }
@@ -131,6 +154,7 @@ function applyState(j) {
   state = st;
   $("#disconnect").hidden = !st.connected;
   $("#connect").hidden = !!st.connected;
+  $("#ctlauto").hidden = !!st.connected;
   $("#ctlport").disabled = !!st.connected;
   if (st.connected && st.port) { $("#ctlport").value = st.port; }
   $("#menus").classList.toggle("live", !!st.connected);

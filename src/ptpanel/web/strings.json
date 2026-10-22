@@ -3348,13 +3348,6 @@
    "de": "KNX",
    "de_of": "afa53a77"
   },
-  "lib.notitem.rtc": {
-   "zh": "板子时钟不是测试项：连上后在连接区显示板子时间",
-   "en": "The board clock is not a test item: once connected, the board time is shown in the connection area",
-   "en_of": "7577ecf7",
-   "de": "Die Platinenuhr ist kein Prüfpunkt: nach dem Verbinden wird die Platinenzeit im Verbindungsbereich angezeigt",
-   "de_of": "7577ecf7"
-  },
   "lib.pending.speed_limit": {
    "zh": "速率下限还没定：要等满速率回送在良品上实测",
    "en": "Minimum speed not decided yet: waits for full-speed echo measurements on good boards",
@@ -10487,6 +10480,671 @@
    "en_of": "6956fc73",
    "de": "Zwischendurch neu gestartet (1 ja, 0 nein)",
    "de_of": "6956fc73"
+  },
+  "ana.vref.title": {
+   "zh": "基准",
+   "en": "Reference",
+   "en_of": "535e9222",
+   "de": "Referenz",
+   "de_of": "535e9222"
+  },
+  "ana.vref.int": {
+   "zh": "片内 2.5 V",
+   "en": "Internal 2.5 V",
+   "en_of": "ceaa18db",
+   "de": "Intern 2,5 V",
+   "de_of": "ceaa18db"
+  },
+  "ana.vref.ext": {
+   "zh": "外部",
+   "en": "External",
+   "en_of": "2ffba3c5",
+   "de": "Extern",
+   "de_of": "2ffba3c5"
+  },
+  "ana.vref.mv": {
+   "zh": "实测 VREF+ {mv} mV",
+   "en": "Measured VREF+ {mv} mV",
+   "en_of": "d4729030",
+   "de": "Gemessene VREF+ {mv} mV",
+   "de_of": "d4729030"
+  },
+  "ana.vref.unread": {
+   "zh": "实测 VREF+ 还没读到",
+   "en": "Measured VREF+ not read yet",
+   "en_of": "dd401e19",
+   "de": "Gemessene VREF+ noch nicht gelesen",
+   "de_of": "dd401e19"
+  },
+  "ana.vref.bad": {
+   "zh": "VREF+ 没量准或不在 2.0–3.6 V 之间：这时的读数都没有意义",
+   "en": "VREF+ not measured or outside 2.0–3.6 V: readings mean nothing now",
+   "en_of": "8eb4eb29",
+   "de": "VREF+ nicht gemessen oder außerhalb 2,0–3,6 V: die Messwerte sind jetzt bedeutungslos",
+   "de_of": "8eb4eb29"
+  },
+  "ana.vref.ext_note": {
+   "zh": "外部基准：接线由你来做，切回片内前先把它断开。",
+   "en": "External reference: you wire it; disconnect it before switching back to internal.",
+   "en_of": "25ed5554",
+   "de": "Externe Referenz: Sie verdrahten sie; vor dem Zurückschalten auf intern abklemmen.",
+   "de_of": "25ed5554"
+  },
+  "ana.vref.ask_ext": {
+   "zh": "选好再接线：先切到外部，板子的片内基准关掉之后，再把外部基准接到 VREF+（TP3）。现在切到外部吗？",
+   "en": "Select first, then wire: switch to external first; once the board's internal reference is off, connect the external reference to VREF+ (TP3). Switch to external now?",
+   "en_of": "5add9958",
+   "de": "Erst wählen, dann verdrahten: zuerst auf extern schalten; erst wenn die interne Referenz der Platine aus ist, die externe Referenz an VREF+ (TP3) anschließen. Jetzt auf extern schalten?",
+   "de_of": "5add9958"
+  },
+  "ana.vref.ask_int": {
+   "zh": "外部基准已断开了吗？没断开就切回片内，片内基准会和外部电压顶在一起。",
+   "en": "Is the external reference disconnected? Switching back while it is still connected makes the internal reference fight it.",
+   "en_of": "597cbb7e",
+   "de": "Ist die externe Referenz abgeklemmt? Wird zurückgeschaltet, solange sie noch angeschlossen ist, arbeitet die interne Referenz gegen sie.",
+   "de_of": "597cbb7e"
+  },
+  "ana.conv_ext": {
+   "zh": "外部基准下这一列不准：板上 k、b 是在片内 2.5 V 基准下校的。看噪声请看下面的噪声统计。",
+   "en": "Not accurate on the external reference: the board's k, b were calibrated on the internal 2.5 V reference. For noise, see the noise statistics below.",
+   "en_of": "971015cd",
+   "de": "Mit externer Referenz ungenau: k, b der Platine wurden mit der internen 2,5-V-Referenz kalibriert. Für das Rauschen siehe die Rauschstatistik unten.",
+   "de_of": "971015cd"
+  },
+  "ana.noise.title": {
+   "zh": "噪声统计",
+   "en": "Noise statistics",
+   "en_of": "176b94cf",
+   "de": "Rauschstatistik",
+   "de_of": "176b94cf"
+  },
+  "ana.noise.frames": {
+   "zh": "最近几帧",
+   "en": "Last frames",
+   "en_of": "e2f61d1f",
+   "de": "Letzte Messwerte",
+   "de_of": "e2f61d1f"
+  },
+  "ana.noise.clear": {
+   "zh": "清零",
+   "en": "Clear",
+   "en_of": "b3ff9ad9",
+   "de": "Zurücksetzen",
+   "de_of": "b3ff9ad9"
+  },
+  "ana.noise.hint": {
+   "zh": "实测块读数时每路记最近这么多帧；切换基准时自动清零。",
+   "en": "Kept per channel while this block reads, the last this many frames; cleared when the reference is switched.",
+   "en_of": "f922e46f",
+   "de": "Pro Kanal, solange dieser Block liest, die letzten so vielen Messwerte; beim Umschalten der Referenz zurückgesetzt.",
+   "de_of": "f922e46f"
+  },
+  "ana.noise.col.n": {
+   "zh": "帧数",
+   "en": "Frames",
+   "en_of": "ad1f89c4",
+   "de": "Messwerte",
+   "de_of": "ad1f89c4"
+  },
+  "ana.noise.col.min": {
+   "zh": "最小",
+   "en": "Min",
+   "en_of": "31793b67",
+   "de": "Min",
+   "de_of": "31793b67"
+  },
+  "ana.noise.col.max": {
+   "zh": "最大",
+   "en": "Max",
+   "en_of": "ed690ebb",
+   "de": "Max",
+   "de_of": "ed690ebb"
+  },
+  "ana.noise.col.pp": {
+   "zh": "峰峰值",
+   "en": "Peak-to-peak",
+   "en_of": "6de591c7",
+   "de": "Spitze-Spitze",
+   "de_of": "6de591c7"
+  },
+  "ana.noise.col.sd": {
+   "zh": "标准差",
+   "en": "Std. deviation",
+   "en_of": "1f72f8f8",
+   "de": "Standardabweichung",
+   "de_of": "1f72f8f8"
+  },
+  "ana.noise.raw": {
+   "zh": "原始码",
+   "en": "Raw count",
+   "en_of": "b2661a9c",
+   "de": "Rohwert",
+   "de_of": "b2661a9c"
+  },
+  "ana.noise.pin": {
+   "zh": "引脚 mV",
+   "en": "Pin mV",
+   "en_of": "aa40e16a",
+   "de": "Pin-mV",
+   "de_of": "aa40e16a"
+  },
+  "go.vref.failed": {
+   "zh": "板子没回基准切换：{detail}",
+   "en": "The board did not answer the reference switch: {detail}",
+   "en_of": "603b6405",
+   "de": "Die Platine hat auf das Umschalten der Referenz nicht geantwortet: {detail}",
+   "de_of": "603b6405"
+  },
+  "go.vref.bad_src": {
+   "zh": "基准只能选片内或外部",
+   "en": "The reference is internal or external",
+   "en_of": "c449f5b4",
+   "de": "Die Referenz ist intern oder extern",
+   "de_of": "c449f5b4"
+  },
+  "go.vref.err.src_must_be_int_or_ext": {
+   "zh": "板子不认这个基准选项，只认片内或外部",
+   "en": "The board takes only internal or external",
+   "en_of": "45c5aecd",
+   "de": "Die Platine nimmt nur intern oder extern an",
+   "de_of": "45c5aecd"
+  },
+  "go.vref.err.vrefbuf_not_ready": {
+   "zh": "片内基准（VREFBUF）起不来，没切过去",
+   "en": "The internal reference (VREFBUF) did not come up; not switched",
+   "en_of": "2e2d255e",
+   "de": "Die interne Referenz (VREFBUF) ist nicht angelaufen; nicht umgeschaltet",
+   "de_of": "2e2d255e"
+  },
+  "go.vref.err.adc_not_ready": {
+   "zh": "切了基准，但 ADC 没准备好，VREF+ 没重量",
+   "en": "Switched, but the ADC was not ready: VREF+ not measured again",
+   "en_of": "58820f0c",
+   "de": "Umgeschaltet, aber der ADC war nicht bereit: VREF+ nicht neu gemessen",
+   "de_of": "58820f0c"
+  },
+  "go.vref.err.other": {
+   "zh": "板子拒绝了基准切换：{token}",
+   "en": "The board refused the reference switch: {token}",
+   "en_of": "7cd6fcda",
+   "de": "Die Platine hat das Umschalten der Referenz abgelehnt: {token}",
+   "de_of": "7cd6fcda"
+  },
+  "go.vref.resent": {
+   "zh": "板子重新连上了，已按你的选择再切到外部基准",
+   "en": "The board is connected again: switched back to the external reference you chose",
+   "en_of": "2bc26051",
+   "de": "Die Platine ist wieder verbunden: wie gewählt wieder auf die externe Referenz geschaltet",
+   "de_of": "2bc26051"
+  },
+  "go.vref.resend_failed": {
+   "zh": "板子重新连上了，但没能再切到外部基准：{detail}",
+   "en": "The board is connected again, but switching back to the external reference failed: {detail}",
+   "en_of": "b8daa63b",
+   "de": "Die Platine ist wieder verbunden, aber das Zurückschalten auf die externe Referenz ist fehlgeschlagen: {detail}",
+   "de_of": "b8daa63b"
+  },
+  "lib.port.rtc": {
+   "zh": "时钟（晶振）",
+   "en": "Clock (crystal)",
+   "en_of": "2961391e",
+   "de": "Uhr (Quarz)",
+   "de_of": "2961391e"
+  },
+  "lib.item.rtc.lsefreq.name": {
+   "zh": "晶振频率偏差",
+   "en": "Crystal frequency deviation",
+   "en_of": "e52c33b6",
+   "de": "Quarz-Frequenzabweichung",
+   "de_of": "e52c33b6"
+  },
+  "lib.item.rtc.lsefreq.what": {
+   "zh": "用板上 25 MHz 主晶振的时钟，把板子时钟用的 32.768 kHz 晶振量约 1 秒，算出它的实际频率和偏差（ppm）。",
+   "en": "Measures the 32.768 kHz crystal of the board clock for about 1 s against the clock from the on-board 25 MHz main crystal, and works out its actual frequency and deviation (ppm).",
+   "en_of": "66822e55",
+   "de": "Misst den 32,768-kHz-Quarz der Platinenuhr etwa 1 s lang gegen den Takt vom 25-MHz-Hauptquarz der Platine und berechnet seine tatsächliche Frequenz und Abweichung (ppm).",
+   "de_of": "66822e55"
+  },
+  "lib.item.rtc.lsemargin.name": {
+   "zh": "晶振起振余量",
+   "en": "Crystal start-up margin",
+   "en_of": "c944a7e2",
+   "de": "Quarz-Anschwingreserve",
+   "de_of": "c944a7e2"
+  },
+  "lib.item.rtc.lsemargin.what": {
+   "zh": "把 32.768 kHz 晶振按低、中低、中高、高四个驱动档各重新起振一次，记下每档起没起来、用了多久，最后切回中低档。起振那几秒板子时钟停走，日期时间不清零。一档起不来要等 5 秒再退回中低档，所以这一项最长约 50 秒。",
+   "en": "Restarts the 32.768 kHz crystal once on each of the four drive levels (low, medium-low, medium-high, high), records whether it started and how long it took, and finally switches back to medium-low. The board clock stops for those seconds; date and time are kept. A level that does not start waits 5 s and then falls back to medium-low, so this item takes up to about 50 s.",
+   "en_of": "b1ac2b31",
+   "de": "Startet den 32,768-kHz-Quarz einmal in jeder der vier Treiberstufen (niedrig, mittel-niedrig, mittel-hoch, hoch) neu, hält fest, ob er anschwingt und wie lange es dauert, und schaltet zum Schluss auf mittel-niedrig zurück. Die Platinenuhr steht in diesen Sekunden still; Datum und Uhrzeit bleiben erhalten. Eine Stufe, die nicht anschwingt, wartet 5 s und fällt dann auf mittel-niedrig zurück, daher dauert dieser Punkt bis zu etwa 50 s.",
+   "de_of": "b1ac2b31"
+  },
+  "lse.freq.hz": {
+   "zh": "频率（Hz）",
+   "en": "Frequency (Hz)",
+   "en_of": "d5bd4cce",
+   "de": "Frequenz (Hz)",
+   "de_of": "d5bd4cce"
+  },
+  "lse.freq.ppm": {
+   "zh": "偏差（ppm）",
+   "en": "Deviation (ppm)",
+   "en_of": "52265764",
+   "de": "Abweichung (ppm)",
+   "de_of": "52265764"
+  },
+  "lse.freq.ms": {
+   "zh": "量了多久（ms）",
+   "en": "Measured for (ms)",
+   "en_of": "d110d9e7",
+   "de": "Messdauer (ms)",
+   "de_of": "d110d9e7"
+  },
+  "lse.freq.off": {
+   "zh": "时钟晶振没在跑，量不了频率。",
+   "en": "The clock crystal is not running, so its frequency cannot be measured.",
+   "en_of": "be109050",
+   "de": "Der Uhrenquarz läuft nicht, seine Frequenz kann nicht gemessen werden.",
+   "de_of": "be109050"
+  },
+  "lse.freq.note": {
+   "zh": "主晶振的误差也算在里面，所以只记录，不判过不过。",
+   "en": "The main crystal’s own error is included in this number, so it is only recorded, not judged pass or fail.",
+   "en_of": "3039a63f",
+   "de": "Der Fehler des Hauptquarzes steckt mit in dieser Zahl, daher wird sie nur festgehalten und nicht als bestanden oder nicht bestanden bewertet.",
+   "de_of": "3039a63f"
+  },
+  "lse.error": {
+   "zh": "板子报错：{e}",
+   "en": "The board reported an error: {e}",
+   "en_of": "c54b2ed8",
+   "de": "Die Platine meldet einen Fehler: {e}",
+   "de_of": "c54b2ed8"
+  },
+  "lse.col.drv": {
+   "zh": "驱动档",
+   "en": "Drive level",
+   "en_of": "7c40d866",
+   "de": "Treiberstufe",
+   "de_of": "7c40d866"
+  },
+  "lse.col.up": {
+   "zh": "起没起来",
+   "en": "Started",
+   "en_of": "af081880",
+   "de": "Angeschwungen",
+   "de_of": "af081880"
+  },
+  "lse.col.ms": {
+   "zh": "起振用时（ms）",
+   "en": "Start-up time (ms)",
+   "en_of": "80237c9e",
+   "de": "Anschwingzeit (ms)",
+   "de_of": "80237c9e"
+  },
+  "lse.col.fallback": {
+   "zh": "退回中低档",
+   "en": "Fell back to medium-low",
+   "en_of": "8fa59a21",
+   "de": "Auf mittel-niedrig zurückgefallen",
+   "de_of": "8fa59a21"
+  },
+  "lse.drv.low": {
+   "zh": "低",
+   "en": "Low",
+   "en_of": "b9ee259b",
+   "de": "Niedrig",
+   "de_of": "b9ee259b"
+  },
+  "lse.drv.mlow": {
+   "zh": "中低",
+   "en": "Medium-low",
+   "en_of": "93a9d5d5",
+   "de": "Mittel-niedrig",
+   "de_of": "93a9d5d5"
+  },
+  "lse.drv.mhigh": {
+   "zh": "中高",
+   "en": "Medium-high",
+   "en_of": "a95789e6",
+   "de": "Mittel-hoch",
+   "de_of": "a95789e6"
+  },
+  "lse.drv.high": {
+   "zh": "高",
+   "en": "High",
+   "en_of": "b096b3f5",
+   "de": "Hoch",
+   "de_of": "b096b3f5"
+  },
+  "lse.back": {
+   "zh": "{drv}（切回）",
+   "en": "{drv} (switched back)",
+   "en_of": "dbb46278",
+   "de": "{drv} (zurückgeschaltet)",
+   "de_of": "dbb46278"
+  },
+  "lse.up.yes": {
+   "zh": "起来了",
+   "en": "Yes",
+   "en_of": "d96116b1",
+   "de": "Ja",
+   "de_of": "d96116b1"
+  },
+  "lse.up.no": {
+   "zh": "没起来",
+   "en": "No",
+   "en_of": "63d93439",
+   "de": "Nein",
+   "de_of": "63d93439"
+  },
+  "lse.fb.yes": {
+   "zh": "退回了",
+   "en": "Yes",
+   "en_of": "bdfb40dc",
+   "de": "Ja",
+   "de_of": "bdfb40dc"
+  },
+  "lse.fb.no": {
+   "zh": "没有",
+   "en": "No",
+   "en_of": "8dcff1eb",
+   "de": "Nein",
+   "de_of": "8dcff1eb"
+  },
+  "conn.match": {
+   "zh": "自动识别",
+   "en": "Auto-detect",
+   "en_of": "34f7dc93",
+   "de": "Automatisch erkennen",
+   "de_of": "34f7dc93"
+  },
+  "conn.match_d": {
+   "zh": "面板给每个转换器发一个不同的暗号，看板子在哪个端子收到，自动选好 RS485 和 CAN 用哪个口",
+   "en": "The panel sends each converter its own code word and sees at which terminals the board hears it, so RS485 and CAN get the right port by themselves",
+   "en_of": "f38ef000",
+   "de": "Das Panel schickt jedem Wandler ein eigenes Kennwort und sieht, an welchen Klemmen die Platine es hört; so bekommen RS485 und CAN von selbst den richtigen Port",
+   "de_of": "f38ef000"
+  },
+  "conn.match_again": {
+   "zh": "重新识别",
+   "en": "Detect again",
+   "en_of": "5020d33a",
+   "de": "Neu erkennen",
+   "de_of": "5020d33a"
+  },
+  "conn.match_running": {
+   "zh": "正在识别（约 3 秒）…",
+   "en": "Detecting (about 3 s)…",
+   "en_of": "67854baa",
+   "de": "Erkenne (etwa 3 s)…",
+   "de_of": "67854baa"
+  },
+  "conn.match_at": {
+   "zh": "上次识别 {time}",
+   "en": "Last detected {time}",
+   "en_of": "7d10bc4a",
+   "de": "Zuletzt erkannt {time}",
+   "de_of": "7d10bc4a"
+  },
+  "conn.match_never": {
+   "zh": "还没识别",
+   "en": "Not detected yet",
+   "en_of": "c43df9d4",
+   "de": "Noch nicht erkannt",
+   "de_of": "c43df9d4"
+  },
+  "conn.fresh": {
+   "zh": "（刚插上）",
+   "en": " (just plugged in)",
+   "en_of": "668c91c2",
+   "de": " (gerade eingesteckt)",
+   "de_of": "668c91c2"
+  },
+  "html.ctl_auto": {
+   "zh": "自动找",
+   "en": "Find it",
+   "en_of": "260e889a",
+   "de": "Automatisch suchen",
+   "de_of": "260e889a"
+  },
+  "html.ctl_auto_busy": {
+   "zh": "正在找…",
+   "en": "Searching…",
+   "en_of": "21bf961d",
+   "de": "Suche…",
+   "de_of": "21bf961d"
+  },
+  "html.ctl_auto_tried": {
+   "zh": "{error}（试过的口：{tried}）",
+   "en": "{error} (ports tried: {tried})",
+   "en_of": "97bf2668",
+   "de": "{error} (versuchte Ports: {tried})",
+   "de_of": "97bf2668"
+  },
+  "go.match.need_control": {
+   "zh": "先连上控制口，再识别转换器",
+   "en": "Connect the control port first, then detect the converters",
+   "en_of": "87b08ad7",
+   "de": "Zuerst den Steuerport verbinden, dann die Wandler erkennen",
+   "de_of": "87b08ad7"
+  },
+  "go.match.start": {
+   "zh": "开始自动识别转换器：{n} 个转换器各发一个暗号，板子听 3 秒",
+   "en": "Detecting converters: {n} converters each send their own code word while the board listens for 3 s",
+   "en_of": "00031afc",
+   "de": "Wandler werden erkannt: {n} Wandler senden je ein Kennwort, die Platine hört 3 s zu",
+   "de_of": "00031afc"
+  },
+  "go.match.ok_rs485": {
+   "zh": "认出来了：{com} 接在 RS485 端子上，已经接上",
+   "en": "Found: {com} is on the RS485 terminals and is now connected",
+   "en_of": "48543ab8",
+   "de": "Erkannt: {com} hängt an den RS485-Klemmen und ist jetzt verbunden",
+   "de_of": "48543ab8"
+  },
+  "go.match.ok_can": {
+   "zh": "认出来了：CAN 转换器 {com} 接在 CAN 端子上",
+   "en": "Found: CAN converter {com} is on the CAN terminals",
+   "en_of": "783acda1",
+   "de": "Erkannt: CAN-Wandler {com} hängt an den CAN-Klemmen",
+   "de_of": "783acda1"
+  },
+  "go.match.ok_sim": {
+   "zh": "认出来了：{com} 接在 {term} 端子上（模拟板自己扮演对端，不用接上）",
+   "en": "Found: {com} is on the {term} terminals (the simulated board plays its own far end, nothing to connect)",
+   "en_of": "c42d2bff",
+   "de": "Erkannt: {com} hängt an den {term}-Klemmen (die simulierte Platine spielt ihre Gegenstelle selbst, nichts zu verbinden)",
+   "de_of": "c42d2bff"
+  },
+  "go.match.silent": {
+   "zh": "{term} 端子什么都没收到：看看转换器是不是接在 {pins} 上、有没有电，然后手选或点「重新识别」",
+   "en": "The {term} terminals received nothing: check that the converter is wired to {pins} and has power, then choose by hand or press Detect again",
+   "en_of": "8cdfefcf",
+   "de": "An den {term}-Klemmen kam nichts an: prüfen, ob der Wandler an {pins} angeschlossen ist und Strom hat, dann von Hand wählen oder „Neu erkennen“ drücken",
+   "de_of": "8cdfefcf"
+  },
+  "go.match.garbage_rs485": {
+   "zh": "RS485 端子收到了东西，但不是暗号：转换器的波特率可能不是 115200，或者 A、B 两根线接反了",
+   "en": "The RS485 terminals received something, but not a code word: the converter may not be at 115200 baud, or A and B are swapped",
+   "en_of": "903460a7",
+   "de": "An den RS485-Klemmen kam etwas an, aber kein Kennwort: der Wandler läuft vielleicht nicht mit 115200 Baud, oder A und B sind vertauscht",
+   "de_of": "903460a7"
+  },
+  "go.match.garbage_can": {
+   "zh": "CAN 端子上有信号，但不是暗号：CAN 转换器的速率可能不是 500 kbit/s，或者 CANH、CANL 接反了",
+   "en": "There is a signal on the CAN terminals, but not a code word: the CAN converter may not be at 500 kbit/s, or CANH and CANL are swapped",
+   "en_of": "8344f9db",
+   "de": "An den CAN-Klemmen ist ein Signal, aber kein Kennwort: der CAN-Wandler läuft vielleicht nicht mit 500 kbit/s, oder CANH und CANL sind vertauscht",
+   "de_of": "8344f9db"
+  },
+  "go.match.several": {
+   "zh": "{term} 端子收到了好几个转换器的暗号（{coms}）：它们接在同一对线上，请手选",
+   "en": "The {term} terminals heard the code words of several converters ({coms}): they share one pair of wires, choose by hand",
+   "en_of": "34a2c5d6",
+   "de": "Die {term}-Klemmen haben die Kennwörter mehrerer Wandler gehört ({coms}): sie hängen am selben Adernpaar, bitte von Hand wählen",
+   "de_of": "34a2c5d6"
+  },
+  "go.match.crossed": {
+   "zh": "{coms} 的暗号出现在 {term} 端子上：这个转换器接错了端子",
+   "en": "The code word of {coms} arrived at the {term} terminals: that converter is wired to the wrong terminals",
+   "en_of": "36e30df5",
+   "de": "Das Kennwort von {coms} kam an den {term}-Klemmen an: dieser Wandler ist an die falschen Klemmen angeschlossen",
+   "de_of": "36e30df5"
+  },
+  "go.match.not_up": {
+   "zh": "板子的 {term} 没起来，认不了，请手选",
+   "en": "The board's {term} did not start, so it cannot detect; choose by hand",
+   "en_of": "4311449d",
+   "de": "{term} der Platine ist nicht gestartet, Erkennen geht nicht; bitte von Hand wählen",
+   "de_of": "4311449d"
+  },
+  "go.match.no_serial": {
+   "zh": "电脑上除了控制口没有别的串口转换器：插上后点「重新识别」",
+   "en": "This PC has no serial converter besides the control port: plug one in and press Detect again",
+   "en_of": "350f09be",
+   "de": "An diesem PC gibt es außer dem Steuerport keinen seriellen Wandler: einen einstecken und „Neu erkennen“ drücken",
+   "de_of": "350f09be"
+  },
+  "go.match.no_canable": {
+   "zh": "电脑上没找到 CAN 转换器（CANable）：插上后点「重新识别」",
+   "en": "No CAN converter (CANable) on this PC: plug it in and press Detect again",
+   "en_of": "f34d594d",
+   "de": "Kein CAN-Wandler (CANable) an diesem PC: einstecken und „Neu erkennen“ drücken",
+   "de_of": "f34d594d"
+  },
+  "go.match.busy": {
+   "zh": "RS485 或 CAN 的测试正在跑，识别要用这两个端子：先停掉再点「重新识别」",
+   "en": "An RS485 or CAN test is running and detecting needs those terminals: stop it, then press Detect again",
+   "en_of": "4d4ee444",
+   "de": "Ein RS485- oder CAN-Test läuft, und das Erkennen braucht diese Klemmen: erst stoppen, dann „Neu erkennen“ drücken",
+   "de_of": "4d4ee444"
+  },
+  "go.match.old_firmware": {
+   "zh": "这块板子上的工装固件不会自动识别（版本太旧），请手选",
+   "en": "The fixture firmware on this board cannot detect converters (too old); choose by hand",
+   "en_of": "a9a169db",
+   "de": "Die Prüffirmware auf dieser Platine kann keine Wandler erkennen (zu alt); bitte von Hand wählen",
+   "de_of": "a9a169db"
+  },
+  "go.match.failed": {
+   "zh": "识别没做成：{detail}",
+   "en": "Detecting did not work: {detail}",
+   "en_of": "f808913c",
+   "de": "Erkennen hat nicht geklappt: {detail}",
+   "de_of": "f808913c"
+  },
+  "go.match.bind_failed": {
+   "zh": "认出了 {com}，但接不上：{detail}",
+   "en": "Found {com}, but could not connect it: {detail}",
+   "en_of": "345e5312",
+   "de": "{com} erkannt, aber Verbinden ging nicht: {detail}",
+   "de_of": "345e5312"
+  },
+  "go.match.unseen": {
+   "zh": "{com} 的暗号哪个端子都没收到：它没接在板子上，或者接在别的端子上",
+   "en": "The code word of {com} reached no terminal: it is not wired to the board, or to other terminals",
+   "en_of": "0420b391",
+   "de": "Das Kennwort von {com} kam an keiner Klemme an: er hängt nicht an der Platine oder an anderen Klemmen",
+   "de_of": "0420b391"
+  },
+  "go.match.skip.bluetooth": {
+   "zh": "蓝牙串口，不试",
+   "en": "Bluetooth serial port, not tried",
+   "en_of": "910c0953",
+   "de": "Bluetooth-Port, nicht versucht",
+   "de_of": "910c0953"
+  },
+  "go.match.skip.stlink": {
+   "zh": "ST-Link 的虚拟串口，不试",
+   "en": "ST-Link virtual serial port, not tried",
+   "en_of": "94b150fa",
+   "de": "Virtueller Port des ST-Link, nicht versucht",
+   "de_of": "94b150fa"
+  },
+  "go.match.skip.board_usb": {
+   "zh": "板子自己的 USB 口，不试",
+   "en": "The board's own USB port, not tried",
+   "en_of": "83290c35",
+   "de": "Eigener USB-Port der Platine, nicht versucht",
+   "de_of": "83290c35"
+  },
+  "go.match.skip.canable": {
+   "zh": "CAN 转换器，不试",
+   "en": "CAN converter, not tried",
+   "en_of": "f18422a9",
+   "de": "CAN-Wandler, nicht versucht",
+   "de_of": "f18422a9"
+  },
+  "go.match.skip.in_use": {
+   "zh": "已经在用（控制口、标准机或别的连接），不试",
+   "en": "Already in use (control port, reference board or another connection), not tried",
+   "en_of": "d00d789c",
+   "de": "Schon belegt (Steuerport, Referenzplatine oder andere Verbindung), nicht versucht",
+   "de_of": "d00d789c"
+  },
+  "go.match.skip.open_failed": {
+   "zh": "打不开（可能被别的程序占着）：{detail}",
+   "en": "Would not open (another program may hold it): {detail}",
+   "en_of": "a175bdb0",
+   "de": "Lässt sich nicht öffnen (vielleicht von einem anderen Programm belegt): {detail}",
+   "de_of": "a175bdb0"
+  },
+  "go.match.ctl.connected": {
+   "zh": "已经连着控制口，先断开再找",
+   "en": "Already connected; disconnect first, then search",
+   "en_of": "cdd3e6aa",
+   "de": "Schon verbunden; erst trennen, dann suchen",
+   "de_of": "cdd3e6aa"
+  },
+  "go.match.ctl.off": {
+   "zh": "这个面板不能自己找控制口，请手选",
+   "en": "This panel cannot search for the control port; choose by hand",
+   "en_of": "fbcb9617",
+   "de": "Dieses Panel kann den Steuerport nicht suchen; bitte von Hand wählen",
+   "de_of": "fbcb9617"
+  },
+  "go.match.ctl.found": {
+   "zh": "{com} 是控制口（工装固件 {firmware}）",
+   "en": "{com} is the control port (fixture firmware {firmware})",
+   "en_of": "05717d9b",
+   "de": "{com} ist der Steuerport (Prüffirmware {firmware})",
+   "de_of": "05717d9b"
+  },
+  "go.match.ctl.none": {
+   "zh": "试了 {n} 个口，没有一个像工装板子那样回答：看看 RS232 转换器插没插、板子有没有电、烧的是不是工装固件",
+   "en": "Tried {n} ports, none answered like a fixture board: check that the RS232 converter is plugged in, the board has power and runs the fixture firmware",
+   "en_of": "69a6de1b",
+   "de": "{n} Ports versucht, keiner hat wie eine Prüfplatine geantwortet: prüfen, ob der RS232-Wandler steckt, die Platine Strom hat und die Prüffirmware läuft",
+   "de_of": "69a6de1b"
+  },
+  "go.match.ctl.many": {
+   "zh": "{coms} 都像工装板子那样回答了，另一块多半是标准机：请手选",
+   "en": "{coms} all answered like a fixture board; the other one is probably the reference board: choose by hand",
+   "en_of": "60eed853",
+   "de": "{coms} haben alle wie eine Prüfplatine geantwortet; die andere ist wohl die Referenzplatine: bitte von Hand wählen",
+   "de_of": "60eed853"
+  },
+  "go.match.ctl.answered": {
+   "zh": "回答了（工装固件 {firmware}）",
+   "en": "Answered (fixture firmware {firmware})",
+   "en_of": "1c5cded2",
+   "de": "Hat geantwortet (Prüffirmware {firmware})",
+   "de_of": "1c5cded2"
+  },
+  "go.match.ctl.no_answer": {
+   "zh": "没回答",
+   "en": "No answer",
+   "en_of": "638ed413",
+   "de": "Keine Antwort",
+   "de_of": "638ed413"
+  },
+  "lib.notitem.match": {
+   "zh": "连接区用它自动识别转换器，不是测试项",
+   "en": "The connection area uses it to detect converters; it is not a test item",
+   "en_of": "fcc5ff7e",
+   "de": "Der Verbindungsbereich erkennt damit Wandler; kein Prüfpunkt",
+   "de_of": "fcc5ff7e"
   }
  }
 }

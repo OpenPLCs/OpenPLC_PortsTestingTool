@@ -342,6 +342,12 @@ func sortedKeys[V any](m map[string]V) []string {
 func checkPeerBinding(p *Page) {
 	Section("binding a peer serial port")
 	row := p.L(`#connrows .crow[data-conn="rs485"]`)
+	// Found by matching (decision 146): on the simulated board always, so no
+	// serial port on this machine is opened here.
+	if found := p.L(`#connrows [data-matched="rs485"]`); found.Count() > 0 {
+		check(row.L("select").Count() == 0, "RS485 was found by matching, so there is nothing to bind by hand", found.First().Text())
+		return
+	}
 	sel := row.L("select")
 	if sel.Count() == 0 {
 		check(strings.TrimSpace(row.Text()) != "", "with no adapter to offer, the RS485 row says why", row.Text())
@@ -349,7 +355,15 @@ func checkPeerBinding(p *Page) {
 	}
 	check(sel.First().L("option").Count() >= 1, "the RS485 row lists this machine's serial ports")
 	row.L("button").HasText("接上").First().Click()
-	p.Wait(1500)
+	// Opening an unpaired Bluetooth port takes about 5 s to be refused.
+	try(func() {
+		p.WaitFunc(`() => {
+			const m = document.querySelector('#msgbox .msg');
+			const r = document.querySelector('#connrows .crow[data-conn="rs485"]');
+			return (m && m.textContent.trim() !== '') ||
+				[...r.querySelectorAll('button')].some(b => b.textContent.includes('断开'));
+		}`, nil, 10000)
+	})
 	msg := p.L("#msgbox .msg")
 	if msg.Count() > 0 && strings.TrimSpace(msg.First().Text()) != "" {
 		// The port may be in use on this machine: a refusal stated in words is fine.

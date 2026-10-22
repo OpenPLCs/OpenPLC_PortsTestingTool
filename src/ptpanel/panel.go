@@ -90,6 +90,17 @@ type Server struct {
 	// to the person at the bench. library.go, ask.go.
 	lib  libState
 	asks asker
+
+	// The analog reference chosen on the AI card: external is sent again
+	// whenever a board connects (vref.go, decision 158).
+	vrefExt bool
+
+	// MatchPorts and MatchOpen are how adapter matching (match.go, decision
+	// 146) lists and opens this PC's serial ports. New leaves them nil, which
+	// keeps matching off real ports (tests); Serve sets them.
+	MatchPorts func() ([]serialx.PortInfo, error)
+	MatchOpen  func(name string, baud int) (io.ReadWriteCloser, error)
+	matchSt    matchState
 }
 
 // New returns a panel that talks to real serial ports.
@@ -158,6 +169,7 @@ func (s *Server) routes() *http.ServeMux {
 	s.analogRoutes(mux)
 	s.refRoutes(mux)
 	s.sdfileRoutes(mux)
+	s.matchRoutes(mux)
 	return mux
 }
 
@@ -332,14 +344,25 @@ func (s *Server) handleLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.unbindLink(body.Port)
-
-	var l *linkPort
 	var err error
 	if body.TCP != "" {
-		l, err = s.bindTCP(body.Port, body.TCP)
+		s.unbindLink(body.Port)
+		var l *linkPort
+		if l, err = s.bindTCP(body.Port, body.TCP); err == nil {
+			s.mu.Lock()
+			if s.links == nil {
+				s.links = map[string]*linkPort{}
+			}
+			s.links[body.Port] = l
+			s.mu.Unlock()
+			// Bound after the session started: take up its mode (PORTTOOL-FLOW.md B.9).
+			if p.Running {
+				l.setMode(p.Values["mode"])
+			}
+			s.say(m("go.link.tcp_up", "port", body.Port, "addr", body.TCP))
+		}
 	} else {
-		l, err = s.bindLink(body.Port, body.COM, body.Baud)
+		_, err = s.bindSerialPeer(body.Port, body.COM, body.Baud)
 	}
 	if err != nil {
 		// 200, not 4xx: a busy or unplugged adapter is ordinary at a bench and
@@ -350,23 +373,6 @@ func (s *Server) handleLink(w http.ResponseWriter, r *http.Request) {
 		}
 		writeJSON(w, 200, map[string]any{"error": m("go.link.connect_failed", "what", what, "detail", err, "why", why)})
 		return
-	}
-
-	s.mu.Lock()
-	if s.links == nil {
-		s.links = map[string]*linkPort{}
-	}
-	s.links[body.Port] = l
-	s.mu.Unlock()
-	// Bound after the session started: take up its mode (PORTTOOL-FLOW.md B.9).
-	if p.Running {
-		l.setMode(p.Values["mode"])
-	}
-	if body.TCP != "" {
-		s.say(m("go.link.tcp_up", "port", body.Port, "addr", body.TCP))
-	} else {
-		portmap.SetPeer(body.Port, body.COM, l.Baud)
-		s.say(m("go.link.serial_up", "port", body.Port, "com", body.COM, "baud", l.Baud))
 	}
 
 	writeJSON(w, 200, s.stateJSON())
@@ -464,7 +470,19 @@ func (s *Server) handleConnect(w http.ResponseWriter, r *http.Request) {
 	s.mu.Unlock()
 	go s.watchLost(b, port)
 	if capsErr == nil {
+		s.resendVref(b)
 		s.startIPProbe(b, caps)
+		// Once per connect, after the address probe so the two do not take
+		// turns on the command line; then on the row's button (decision 146).
+		s.mu.Lock()
+		ipDone := s.ip.done
+		s.mu.Unlock()
+		go func() {
+			if ipDone != nil {
+				<-ipDone
+			}
+			s.runMatch(b)
+		}()
 	}
 
 	writeJSON(w, 200, s.stateJSON())
@@ -854,6 +872,7 @@ const PanelPort = 65432
 func Serve(open bool, version string) int {
 	s := New()
 	s.Version = version
+	s.MatchPorts, s.MatchOpen = serialx.List, func(name string, baud int) (io.ReadWriteCloser, error) { return serialx.Open(name, baud) }
 	defer s.Close()
 
 	// A fixed port keeps bookmarks working; any free port if it is taken (decision 118).

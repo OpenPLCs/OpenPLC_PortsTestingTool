@@ -18,7 +18,7 @@ const liveChoosing = () => { const a = document.activeElement;
   return !!(a && a.tagName === "SELECT" && a.closest && a.closest("#itemcards")); };
 
 // The data-* keys that name a typed field on the cards, so a redraw can find it again.
-const LIVE_FIELD_KEYS = ["livema", "liveref", "anatarget", "anaactual", "anapt", "anagot", "diostd", "diopwmfreq", "diopwmduty", "libparam"];
+const LIVE_FIELD_KEYS = ["livema", "liveref", "anatarget", "anaactual", "ananoisen", "anapt", "anagot", "diostd", "diopwmfreq", "diopwmduty", "libparam"];
 
 // Redraws without losing what is being typed on a live card: the field with
 // the same key gets the text and the focus back.

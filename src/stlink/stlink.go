@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -209,8 +210,17 @@ func (p Programmer) verify(addr int, want []byte) error {
 	return nil
 }
 
-// FlashBootloader erases sectors 0-14 and writes the bootloader image (a .hex
-// or .elf, which carry their own address). Sector 15 is left alone.
+// Backup-domain reset registers (stm32h743xx.h: PWR_BASE, RCC_BASE + BDCR).
+const (
+	PwrCR1  = 0x58024800
+	PwrDBP  = 1 << 8
+	RccBDCR = 0x58024470
+	BDRST   = 1 << 16
+)
+
+// FlashBootloader erases sectors 0-14, writes the bootloader image (a .hex or
+// .elf, which carry their own address), then resets the backup domain and the
+// board. Sector 15 is left alone.
 func (p Programmer) FlashBootloader(image string) error {
 	sectors := make([]int, 0, 15)
 	for s := 0; s <= 14; s++ {
@@ -219,7 +229,41 @@ func (p Programmer) FlashBootloader(image string) error {
 	if err := p.Erase(sectors...); err != nil {
 		return err
 	}
-	return p.call("-w", image, "-v", "-rst")
+	if err := p.call("-w", image, "-v"); err != nil {
+		return err
+	}
+	return p.resetBackupDomain()
+}
+
+// resetBackupDomain stops LSE so the bootloader restarts it at its own drive
+// level; RTC time and backup registers are lost (decision 157, PORTTOOL-FLOW.md
+// C.3.5). All writes go in one call: every mode=UR connect is a system reset,
+// which clears DBP again.
+func (p Programmer) resetBackupDomain() error {
+	cr1, err := p.read32(PwrCR1)
+	if err != nil {
+		return err
+	}
+	return p.call("-w32", hex32(PwrCR1), hex32(cr1|PwrDBP),
+		"-w32", hex32(RccBDCR), hex32(BDRST),
+		"-w32", hex32(RccBDCR), "0x0",
+		"-rst")
+}
+
+// read32 reads one word with -r32, whose size argument is in bytes and whose
+// output lines read "0x<addr> : <word> ...".
+func (p Programmer) read32(addr int) (int, error) {
+	argv := []string{"-c", "port=SWD", "mode=UR", "-r32", hex32(addr), "0x4"}
+	out, err := Run(p.cli, argv...)
+	if err != nil || strings.Contains(out, "Error") {
+		return 0, fmt.Errorf("STM32_Programmer_CLI -r32 %s: %v\n%s", hex32(addr), err, lastLines(out, 6))
+	}
+	m := regexp.MustCompile(`(?mi)^\s*` + hex32(addr) + `\s*:\s*([0-9a-f]{8})\b`).FindStringSubmatch(out)
+	if m == nil {
+		return 0, fmt.Errorf("STM32_Programmer_CLI -r32 %s: no value in its output\n%s", hex32(addr), lastLines(out, 6))
+	}
+	v, err := strconv.ParseUint(m[1], 16, 32)
+	return int(v), err
 }
 
 // FactoryReset erases everything but the bootloader and the calibration

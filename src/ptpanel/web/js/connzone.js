@@ -18,6 +18,16 @@ let connPick = {};       // row -> COM chosen in its dropdown, kept across redra
 let connSig = "";        // what the rows were last drawn from
 let connPolling = false;
 
+// Adapter matching (decision 146, PORTTOOL-FLOW.md C.3.6 automatic adapter
+// matching): the server's result per terminal, and the ports that appeared
+// after it while a row waits for a manual choice (unplug and replug to find one).
+let matchSeenAt = 0;     // the result the page last reacted to
+let matchBase = null;    // port names present when that result arrived
+let freshPorts = [];     // appeared since, newest last
+let replugTick = 0;
+
+function matchTerm(k) { return (((connInfo.match || {}).terms) || {})[k] || null; }
+
 function connRow(key, label, title) {
   const r = el("div", "crow");
   r.dataset.conn = key;
@@ -73,6 +83,7 @@ function linkConnRow(c) {
     return r;
   }
   const bound = linkNow(c.k);
+  const mt = matchTerm(c.k);
   if (bound) {
     dot.classList.add(bound.error ? "bad" : "ok");
     v.appendChild(el("span", "mono", bound.com));
@@ -84,6 +95,7 @@ function linkConnRow(c) {
     n.textContent = linkCounts(bound);
     r.appendChild(n);
     if (bound.error) { r.appendChild(el("div", "cerr", T("conn.peer_err", { error: bound.error }))); }
+    if (mt && mt.ok && mt.com === bound.com) { r.appendChild(matchWhy(c.k, mt)); }
     return r;
   }
   if (c.k === "eth") {
@@ -106,7 +118,19 @@ function linkConnRow(c) {
     v.appendChild(on);
     return r;
   }
-  const choices = adapterChoices();
+  // Matched and not bound: the CAN adapter (found by USB id when a test needs
+  // it), or anything on the simulated board, which plays its own peers.
+  if (mt && mt.ok) {
+    dot.classList.add("ok");
+    const shown = el("span", "mono", mt.com);
+    shown.dataset.matched = c.k;
+    v.appendChild(shown);
+    r.appendChild(matchWhy(c.k, mt));
+    return r;
+  }
+  if (mt) { r.appendChild(matchWhy(c.k, mt)); }
+  const choices = adapterChoices().map(o => freshPorts.includes(o.name)
+    ? Object.assign({}, o, { label: o.label + T("conn.fresh") }) : o);
   if (!choices.length) {
     v.appendChild(el("span", "sub", T("conn.no_adapter")));
     return r;
@@ -114,7 +138,9 @@ function linkConnRow(c) {
   const was = ((state.saved || {}).peers || {})[c.k];
   // The board's own USB port enumerates as an ST virtual COM port.
   const cdc = c.k === "usb" ? choices.find(o => /0483:5740/i.test(o.label || "")) : null;
-  const sel = connSelect(c.k, choices, (was && was.com) || (cdc && cdc.name));
+  const fresh = mt ? freshPorts.filter(n => choices.some(o => o.name === n)).pop() : null;
+  const sel = connSelect(c.k, choices, fresh || (was && was.com) || (cdc && cdc.name));
+  if (fresh) { sel.value = fresh; sel.dataset.fresh = fresh; }
   v.appendChild(sel);
   const on = el("button", null, T("conn.bind"));
   on.onclick = () => connAct(api("/api/link", { port: c.k, com: sel.value }));
@@ -130,6 +156,77 @@ function linkNow(k) {
   const p = (connInfo.links || {})[k];
   return p && p.com === b.com ? p : b;
 }
+// One terminal's matching result, in a sentence under the row.
+function matchWhy(k, mt) {
+  const d = el("div", mt.ok ? "cok" : "cwhy", mt.why);
+  d.dataset.matchwhy = k;
+  return d;
+}
+
+// The matching row: when it last ran, and the button to run it again.
+function matchConnRow() {
+  const { r, v, dot } = connRow("match", "conn.match", "conn.match_d");
+  if (!state.connected) {
+    v.appendChild(el("span", "sub", T("conn.need_control")));
+    return r;
+  }
+  const mt = connInfo.match || null;
+  const st = el("span", "sub");
+  if (mt && mt.running) {
+    st.dataset.matchstate = "running";
+    st.textContent = T("conn.match_running");
+  } else if (mt && mt.at) {
+    st.dataset.matchstate = "done";
+    st.textContent = T("conn.match_at", { time: new Date(mt.at).toLocaleTimeString() });
+  } else {
+    st.dataset.matchstate = "never";
+    st.textContent = T("conn.match_never");
+  }
+  v.appendChild(st);
+  const again = el("button", null, T("conn.match_again"));
+  again.dataset.matchagain = "1";
+  again.disabled = !!(mt && mt.running);
+  again.onclick = async () => {
+    again.disabled = true;
+    const j = await api("/api/match", {});
+    if (j.error) { showMessage(j.error, true); }
+    else { connInfo.match = j.match; }
+    refreshConnRows(true);
+  };
+  v.appendChild(again);
+  if (mt && mt.error) {
+    dot.classList.add("bad");
+    r.appendChild(el("div", "cerr", mt.error));
+  }
+  for (const u of (mt && mt.unseen) || []) { r.appendChild(el("div", "ccount", u)); }
+  return r;
+}
+
+// While a row waits for a manual choice, the port list is looked at every two
+// seconds: a port that appears (or comes back) is marked and chosen.
+async function watchReplug() {
+  const mt = connInfo.match || {};
+  const waiting = state.connected && mt.at && !mt.running && !mt.sim &&
+    ["rs485", "can"].some(k => { const t = matchTerm(k); return t && !t.ok && !linkNow(k); });
+  if (!waiting) { matchBase = null; freshPorts = []; return; }
+  if (++replugTick % 2 && matchBase) { return; }
+  const j = await api("/api/ports");
+  if (!j.ports) { return; }
+  const now = j.ports.map(p => p.name);
+  if (!matchBase) { matchBase = now.slice(); return; }
+  const before = freshPorts.join(",");
+  matchBase = matchBase.filter(n => now.includes(n));
+  freshPorts = freshPorts.filter(n => now.includes(n));
+  for (const n of now) {
+    if (!matchBase.includes(n) && !freshPorts.includes(n)) { freshPorts.push(n); }
+  }
+  allPorts = j.ports;
+  if (freshPorts.join(",") !== before) {
+    for (const k of ["rs485", "can"]) { delete connPick[k]; }
+    refreshConnRows(true);
+  }
+}
+
 function linkCounts(b) { return T("conn.peer_counts", { rx_lines: b.rxLines || 0, echoed: b.echoed || 0 }); }
 
 function refConnRow() {
@@ -231,6 +328,7 @@ function refreshConnRows(force) {
   const sig = JSON.stringify([state.connected, state.port, Object.keys(state.links || {}),
     Object.keys(state.links || {}).map(k => (linkNow(k) || {}).error || ""),
     (allPorts || []).map(p => p.name), connInfo.ref, connInfo.stlink, eth, LANG,
+    connInfo.match ? [connInfo.match.running, connInfo.match.at, connInfo.match.error] : null, freshPorts,
     !!(typeof stageCfgs !== "undefined" && stageCfgs && stageCfgs.ref_unused)]);
   if (!force && sig === connSig) { return; }
   connSig = sig;
@@ -241,6 +339,7 @@ function refreshConnRows(force) {
   const host = $("#connrows");
   host.textContent = "";
   for (const c of CONN_LINKS) { host.appendChild(linkConnRow(c)); }
+  host.appendChild(matchConnRow());
   host.appendChild(knxConnRow());   // knxwin.js
   host.appendChild(refConnRow());
   host.appendChild(stlinkConnRow());
@@ -265,7 +364,11 @@ async function pollConn() {
   try {
     connInfo = await api("/api/conn");
     renderClock();
+    // A finished match may have bound RS485 on the server: take the state with it.
+    const at = (connInfo.match || {}).at || 0;
+    if (at && at !== matchSeenAt) { matchSeenAt = at; matchBase = null; freshPorts = []; await refreshState(); }
     refreshConnRows(false);
+    watchReplug();
     // Counts change every second: rewritten in place, not by a redraw that
     // would close an open dropdown on another row.
     for (const n of document.querySelectorAll("#connrows [data-linkcounts]")) {

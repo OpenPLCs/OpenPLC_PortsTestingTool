@@ -3,6 +3,8 @@ package stlink_test
 import (
 	"bytes"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -101,6 +103,53 @@ func TestFlashBootloaderLeavesSector15(t *testing.T) {
 	}
 	if !bytes.Equal(f.At(stlink.Sector15, 64), image(0x55)[:64]) {
 		t.Fatal("sector 15 changed")
+	}
+	for _, c := range f.Calls {
+		if strings.Contains(c, "-w32") {
+			t.Fatalf("reset the backup domain after a failed image write: %s", c)
+		}
+	}
+}
+
+// Decision 157: after the image, one call sets DBP (keeping PWR_CR1's other
+// bits), pulses BDRST and resets the board.
+func TestFlashBootloaderResetsBackupDomainAfterTheImage(t *testing.T) {
+	f := fake(t)
+	img := filepath.Join(t.TempDir(), "boot.hex")
+	if err := os.WriteFile(img, bytes.Repeat([]byte{0xB0}, 256), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := open(t).FlashBootloader(img); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{
+		"-c port=SWD mode=UR -e 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14",
+		"-c port=SWD mode=UR -w " + img + " -v",
+		"-c port=SWD mode=UR -r32 0x58024800 0x4",
+		"-c port=SWD mode=UR -w32 0x58024800 0xF000C100 -w32 0x58024470 0x10000 -w32 0x58024470 0x0 -rst",
+	}
+	if strings.Join(f.Calls, "\n") != strings.Join(want, "\n") {
+		t.Fatalf("calls:\n%s\nwant:\n%s", strings.Join(f.Calls, "\n"), strings.Join(want, "\n"))
+	}
+	if f.BackupResets != 1 || f.Regs[stlink.RccBDCR] != 0 {
+		t.Fatalf("backup domain resets = %d, RCC_BDCR = 0x%X; want 1 and 0", f.BackupResets, f.Regs[stlink.RccBDCR])
+	}
+}
+
+func TestFlashBootloaderStopsWhenPwrCR1CannotBeRead(t *testing.T) {
+	f := fake(t)
+	f.FailOn = "-r32"
+	img := filepath.Join(t.TempDir(), "boot.hex")
+	if err := os.WriteFile(img, []byte{0xB0}, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := open(t).FlashBootloader(img); err == nil {
+		t.Fatal("a failed PWR_CR1 read did not fail the operation")
+	}
+	for _, c := range f.Calls {
+		if strings.Contains(c, "-w32") {
+			t.Fatalf("wrote registers without knowing PWR_CR1: %s", c)
+		}
 	}
 }
 

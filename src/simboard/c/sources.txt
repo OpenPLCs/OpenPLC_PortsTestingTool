@@ -11,6 +11,7 @@ stubs/can_stub.c
 stubs/knx_stub.c
 stubs/lwip_stub.c
 stubs/usb_stub.c
+stubs/lse_stub.c
 # TEMPORARY, pt.aodiag
 stubs/aodiag_stub.c
 # The real indicator driver, not a stub: it proves pt.run led.blink drives the pin it claims to.
@@ -30,6 +31,7 @@ $BOOT/TestCase/porttool/porttool_knx.c
 $BOOT/TestCase/porttool/porttool_eth.c
 $BOOT/TestCase/porttool/porttool_usb.c
 $BOOT/TestCase/porttool/porttool_run.c
+$BOOT/TestCase/porttool/porttool_match.c
 $BOOT/TestCase/porttool/porttool_sd.c
 $BOOT/TestCase/porttool/porttool_sdfile.c
 $BOOT/TestCase/porttool/porttool_sdram.c

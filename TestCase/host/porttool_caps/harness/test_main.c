@@ -54,6 +54,8 @@ extern uint32_t test_reset_rsr;
 extern const char *test_reset_cause;
 extern int      test_rtc_init_count;
 extern int      test_rtc_calendar_initialised;
+extern int      test_lse_fail_drv;
+extern int      test_lse_freq_result;
 extern int      test_led_configured;
 extern int      test_led_writes;
 extern int      test_led_high;
@@ -68,6 +70,28 @@ extern int      test_dout_stop_count;
 extern int      test_dout_running;
 
 extern void test_set_tick(uint32_t ms);
+extern void (*test_tick_hook)(void);
+
+/* pt.run match flushes RS485, then opens CAN, then listens: the tokens go in
+ * at the first tick read after CAN opened, as an adapter's bytes would. */
+static int match_feed_opens;
+
+static void match_feed(void)
+{
+    static const uint8_t tok7[] = "OPLC-7";
+    static const uint8_t other[] = { 0x01u, 0x02u };
+
+    if (test_can_open_count <= match_feed_opens) {
+        return;
+    }
+    test_tick_hook = NULL;
+    test_rs485_reply("OPLC-2");
+    test_rs485_reply("OPLC-2");          /* the PC sends every round: counted once */
+    test_rs485_reply("noise");
+    test_rs485_reply("OPLC-5");
+    test_can_inject(0x5A5u, tok7, 6u);
+    test_can_inject(0x123u, other, 2u);
+}
 
 extern void     test_uart_raise(uint32_t isr_bits);
 extern uint32_t test_uart_isr(void);
@@ -292,6 +316,24 @@ int main(void)
     run("pt.run rtc.read");
     test_rcc.BDCR = (1ul << RCC_BDCR_RTCSEL_Pos);   /* back to LSE */
     run("pt.run rtc.read");
+
+    /* LSE drive (DECISIONS.md 159): a drive that starts is kept, one that does
+     * not falls back to mlow, a bad name changes nothing. */
+    run("pt.run lse");
+    run("pt.run lse drv=high");
+    test_lse_fail_drv = 0;   /* low */
+    run("pt.run lse drv=low");
+    test_lse_fail_drv = -1;
+    run("pt.run lse drv=max");
+
+    /* LSE frequency (DECISIONS.md 160): -12.33 ppm from the fake capture
+     * count, then LSE not running, then every capture try missed. */
+    run("pt.run lse.freq");
+    test_lse_freq_result = 0;
+    run("pt.run lse.freq");
+    test_lse_freq_result = -1;
+    run("pt.run lse.freq");
+    test_lse_freq_result = 1;
 
     /* The two SD one-shots. A card that mounts and writes but reads back wrong
      * is a different fault from a card that was never there, and the reply has
@@ -1043,6 +1085,19 @@ int main(void)
     test_gpio_stuck_low[3] |= GPIO_PIN_4;
     run("pt.run rs485.pins");
     test_gpio_stuck_low[3] &= (uint16_t)~GPIO_PIN_4;
+
+    /* ---- pt.run match (DECISIONS.md 146, PORTTOOL-FLOW.md A.3) ----------
+     * Busy while a session owns a terminal; tokens on both terminals; a byte
+     * left from before the window does not count; out-of-range arguments. */
+    run("pt.start rs485");
+    run("pt.run match");
+    run("pt.stop all");
+    match_feed_opens = test_can_open_count;
+    test_tick_hook = match_feed;
+    run("pt.run match ms=500");
+    test_tick_hook = NULL;
+    test_rs485_reply("OPLC-9");
+    run("pt.run match ms=50000 baud=12345 bps=7");
 
     /* ---- Relay mode=cycle: per-relay holds and counts (PORTTOOL-FLOW.md B.2) --
      *

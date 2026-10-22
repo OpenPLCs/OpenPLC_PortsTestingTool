@@ -29,7 +29,9 @@ function anaPortCard(port) {
   const card = el("div", "item anacard"); card.dataset.anacard = p;
   const hd = el("div", "ih");
   hd.appendChild(el("b", null, port.label));
+  if (p === "ain") { hd.appendChild(el("span", "sp")); hd.appendChild(anaVrefBox()); }
   card.appendChild(hd);
+  if (p === "ain") { card.appendChild(anaVrefNotes()); }
   if (!anaState) { card.appendChild(el("div", "hint", T("ana.loading"))); return card; }
 
   const chans = [1, 2].filter(ch => anaCalOf(p, ch) || anaReadOf(p, ch));
@@ -37,6 +39,73 @@ function anaPortCard(port) {
   card.appendChild(anaCalBlock(p, chans));
   card.appendChild(anaMeasBlock(p, chans));
   return card;
+}
+
+/* ---------------- 基准 (decision 158) ---------------- */
+
+let anaVref = null;     // /api/analog/vref for the connected board: {chosen, src, mv, ok, error}
+let anaVrefKey = "";    // which connection anaVref belongs to
+let anaVrefBusy = false;
+
+function anaVrefLoad() {
+  const key = state.connected ? [state.port, state.firmware].join("|") : "";
+  if (key === anaVrefKey) { return; }
+  anaVrefKey = key; anaVref = null;
+  if (!key) { return; }
+  api("/api/analog/vref").then(j => { if (anaVrefKey === key && j.chosen) { anaVref = j; renderRight(); } });
+}
+
+// While the AI reads, each frame's vdda; otherwise the switch's reply.
+function anaVrefNow() {
+  const f = rdLive("ain") && reads.ain ? reads.ain.fields || {} : null;
+  if (f && f.vdda !== undefined) { return { mv: Number(f.vdda), ok: f.ok === "1" }; }
+  return anaVref && anaVref.src ? { mv: anaVref.mv, ok: !!anaVref.ok } : null;
+}
+
+// 片内 2.5 V / 外部 on the AI card head, with the measured VREF+ beside it.
+function anaVrefBox() {
+  anaVrefLoad();
+  const box = el("span", "vrefbox"); box.dataset.vref = "ain";
+  box.appendChild(el("span", "sub", T("ana.vref.title")));
+  const cur = anaVref ? anaVref.chosen : "";
+  for (const [src, key] of [["int", "ana.vref.int"], ["ext", "ana.vref.ext"]]) {
+    const b = el("button", cur === src ? "act on" : "act", T(key)); b.dataset.vrefsrc = src;
+    if (cur === src) { b.dataset.active = "1"; }
+    b.disabled = anaVrefBusy || !anaVref || !state.connected || !!anaCardBusy;
+    b.onclick = () => anaVrefSet(src);
+    box.appendChild(b);
+  }
+  const now = anaVrefNow();
+  const mv = el("span", now && !now.ok ? "mono vrefbad" : "mono", now ? T("ana.vref.mv", { mv: now.mv }) : T("ana.vref.unread"));
+  mv.dataset.vrefmv = now ? (now.ok ? "ok" : "bad") : "";
+  box.appendChild(mv);
+  return box;
+}
+
+// Under the head: what the reading or the switch said, and the wiring rule on external.
+function anaVrefNotes() {
+  const box = el("div", "vrefnotes");
+  const now = anaVrefNow();
+  if (now && !now.ok) { box.appendChild(el("div", "hint vrefbad", T("ana.vref.bad"))).dataset.vrefbad = "1"; }
+  if (anaVref && anaVref.error) { box.appendChild(el("div", "msg bad", anaVref.error)).dataset.vreferr = "1"; }
+  if (anaVref && anaVref.chosen === "ext") { box.appendChild(el("div", "hint warn", T("ana.vref.ext_note"))); }
+  return box;
+}
+
+// Select first, then wire; back to internal only once the external source is off (B.4 「外部基准」).
+async function anaVrefSet(src) {
+  if (!anaVref || anaVref.chosen === src) { return; }
+  if (!confirm(T(src === "ext" ? "ana.vref.ask_ext" : "ana.vref.ask_int"))) { return; }
+  anaVrefBusy = true; renderRight();
+  try {
+    const j = await api("/api/analog/vref", { src });
+    if (j.chosen) { anaVref = j; } else if (j.error) { showMessage(j.error, true); }
+    // Frames from two references must not mix.
+    anaNoiseClear();
+  } finally {
+    anaVrefBusy = false;
+    renderRight();
+  }
 }
 
 /* ---------------- 档位与换算 ---------------- */
@@ -343,6 +412,9 @@ function anaMeasBlock(p, chans) {
     if (it) { tbl.appendChild(anaMeasRow(it, lv)); }
   }
   sec.appendChild(tbl);
+  // The board's k, b were fitted on the internal reference (PORTTOOL-FLOW.md C.3.6 「AI 换算」).
+  if (p === "ain" && anaVref && anaVref.chosen === "ext") { sec.appendChild(el("div", "hint vrefbad", T("ana.conv_ext"))).dataset.convext = "1"; }
+  if (p === "ain") { sec.appendChild(anaNoiseBlock(chans)); }
   for (const a of (lv && lv.analog) || []) {
     if (!a.unit) { sec.appendChild(el("div", "hint", T("lib.live.no_range"))); break; }
     if (!a.calibrated) { sec.appendChild(el("div", "hint", T("lib.live.not_cal", { ch: (p === "ain" ? "AI" : "AO") + a.ch }))); }
@@ -382,7 +454,7 @@ function anaMeasRow(it, lv) {
   if (!ao) {
     const raw = (num(a.raw, 0) ?? "-") + " / " + (a.pin_mv !== undefined && a.pin_mv !== null ? a.pin_mv + " mV" : "-");
     tr.appendChild(el("td", "mono", lv ? raw : "-"));
-    tr.appendChild(el("td", "mono", lv ? (num(a.value, a.unit === "mV" ? 0 : 3) !== null ? num(a.value, a.unit === "mV" ? 0 : 3) + " " + a.unit : T("lib.live.no_conv")) : "-"));
+    tr.appendChild(el("td", !ao && anaVref && anaVref.chosen === "ext" ? "mono vrefbad" : "mono", lv ? (num(a.value, a.unit === "mV" ? 0 : 3) !== null ? num(a.value, a.unit === "mV" ? 0 : 3) + " " + a.unit : T("lib.live.no_conv")) : "-"));
     tr.appendChild(ttd);
   } else {
     tr.appendChild(ttd);
@@ -440,4 +512,82 @@ async function anaOutOne(ch, quiet) {
   const j = await api("/api/lib/live", { id: "aout.manual", op: "ao", ch, ma: Number(anaTarget[anaReadOf("aout", ch).id]) });
   if (j.error) { showMessage(j.error, true); }
   if (!quiet) { libRefresh(); }
+}
+
+/* ---------------- 噪声统计 (decision 158) ---------------- */
+
+let anaNoise = { 1: [], 2: [] };   // AI channel -> [{raw, pin}] of the last frames 实测 read
+let anaNoiseN = 100;               // how many frames are kept
+let anaNoiseText = "100";          // the frame count as typed
+
+function anaNoiseClear() { anaNoise = { 1: [], 2: [] }; }
+
+// Every AI frame while 实测 reads (conn.js). Pin mV on the frame's measured
+// VREF+, the nominal one when the frame says it was not measured.
+function anaNoiseFrame(d) {
+  if (!anaAiOn("meas") || !anaState || !anaState.adc_max) { return; }
+  const f = d.fields || {};
+  const vref = f.ok === "1" && Number(f.vdda) > 0 ? Number(f.vdda) : anaState.vref_nominal_mv;
+  for (const ch of [1, 2]) {
+    const v = String(f["ch" + ch] || "");
+    const raw = Number(v.split("/")[0]);
+    if (!v.includes("/") || !isFinite(raw)) { continue; }
+    const a = anaNoise[ch];
+    a.push({ raw, pin: raw * vref / anaState.adc_max });
+    if (a.length > anaNoiseN) { a.splice(0, a.length - anaNoiseN); }
+  }
+}
+
+// Min, max, peak-to-peak and the sample standard deviation.
+function anaNoiseStats(xs) {
+  const n = xs.length;
+  if (!n) { return null; }
+  const lo = Math.min(...xs), hi = Math.max(...xs), mean = xs.reduce((a, x) => a + x, 0) / n;
+  const sd = n > 1 ? Math.sqrt(xs.reduce((a, x) => a + (x - mean) * (x - mean), 0) / (n - 1)) : 0;
+  return { lo, hi, pp: hi - lo, sd };
+}
+
+function anaNoiseBlock(chans) {
+  const box = el("div", "ananoise"); box.dataset.ananoise = "ain";
+  const hd = el("div", "row");
+  hd.appendChild(el("b", null, T("ana.noise.title")));
+  const lab = el("label", null, T("ana.noise.frames") + " ");
+  const inp = el("input"); inp.type = "number"; inp.min = "2"; inp.step = "1"; inp.dataset.ananoisen = "ain";
+  inp.value = anaNoiseText;
+  inp.oninput = () => {
+    anaNoiseText = inp.value;
+    const n = Number(inp.value);
+    if (!Number.isInteger(n) || n < 2) { return; }
+    anaNoiseN = n;
+    for (const ch of [1, 2]) { const a = anaNoise[ch]; if (a.length > n) { a.splice(0, a.length - n); } }
+  };
+  lab.appendChild(inp);
+  hd.appendChild(lab);
+  const clr = el("button", null, T("ana.noise.clear")); clr.dataset.ananoiseclear = "ain";
+  clr.onclick = () => { anaNoiseClear(); renderRight(); };
+  hd.appendChild(clr);
+  box.appendChild(hd);
+  box.appendChild(el("div", "hint", T("ana.noise.hint")));
+
+  const tbl = el("table", "gtab ananoisetab");
+  const hr = el("tr");
+  for (const h of [T("ana.col.ch"), "", T("ana.noise.col.n"), T("ana.noise.col.min"), T("ana.noise.col.max"),
+                   T("ana.noise.col.pp"), T("ana.noise.col.sd")]) { hr.appendChild(el("th", null, h)); }
+  tbl.appendChild(hr);
+  for (const ch of chans) {
+    const pts = anaNoise[ch] || [];
+    for (const [what, key, d, sdd] of [["raw", "ana.noise.raw", 0, 2], ["pin", "ana.noise.pin", 3, 3]]) {
+      const st = anaNoiseStats(pts.map(x => x[what]));
+      const tr = el("tr"); tr.dataset.noise = ch + "|" + what;
+      tr.appendChild(el("td", "mono", what === "raw" ? "AI" + ch : ""));
+      tr.appendChild(el("td", null, T(key)));
+      tr.appendChild(el("td", "mono", String(pts.length)));
+      for (const v of st ? [st.lo.toFixed(d), st.hi.toFixed(d), st.pp.toFixed(d), st.sd.toFixed(sdd)] : ["-", "-", "-", "-"]) {
+        tr.appendChild(el("td", "mono", v));
+      }
+      tbl.appendChild(tr);
+    }
+  }
+  box.appendChild(tbl);
+  return box;
 }

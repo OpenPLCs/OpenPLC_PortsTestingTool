@@ -26,12 +26,23 @@ type Flash struct {
 	// Programmed counts writes per 32-byte flash word, to catch a word written
 	// twice without an erase in between.
 	programmed map[int]int
+	// Regs holds the registers -r32 / -w32 touch. PWR_CR1.DBP is cleared on
+	// every connect (mode=UR is a system reset) and gates writes to RCC_BDCR,
+	// as on the chip.
+	Regs map[int]uint32
+	// BackupResets counts BDRST pulses that took effect.
+	BackupResets int
 }
+
+// PwrCR1Start is what the fake's PWR_CR1 reads before any write; an arbitrary
+// non-zero value, so a write that drops other bits shows up.
+const PwrCR1Start = 0xF000C000
 
 // Install puts a fresh fake in place of the CLI and returns it; the test's
 // cleanup should call the returned restore.
 func Install(tempDir string) (*Flash, func()) {
-	f := &Flash{Mem: bytes.Repeat([]byte{0xFF}, stlink.Sectors*stlink.SectorSize), programmed: map[int]int{}}
+	f := &Flash{Mem: bytes.Repeat([]byte{0xFF}, stlink.Sectors*stlink.SectorSize), programmed: map[int]int{},
+		Regs: map[int]uint32{stlink.PwrCR1: PwrCR1Start}}
 	wasRun, wasCLI, wasTemp := stlink.Run, stlink.CLI, stlink.TempDir
 	stlink.Run = f.run
 	stlink.CLI = "fake-STM32_Programmer_CLI"
@@ -71,7 +82,42 @@ func (f *Flash) run(cli string, args ...string) (string, error) {
 		return "Error: no connect", fmt.Errorf("exit status 1")
 	}
 	op := args[3:]
+	f.Regs[stlink.PwrCR1] &^= stlink.PwrDBP // connect under reset
 	switch op[0] {
+	case "-r32":
+		addr, _ := num(op[1])
+		v, ok := f.Regs[addr]
+		if !ok {
+			return "Error: fake has no register " + op[1], fmt.Errorf("exit status 1")
+		}
+		return fmt.Sprintf("Reading 32-bit memory content\n0x%08X : %08X\n", addr, v), nil
+	case "-w32":
+		for i := 0; i < len(op); {
+			switch {
+			case op[i] == "-rst":
+				i++
+			case op[i] == "-w32" && i+2 < len(op):
+				addr, err1 := num(op[i+1])
+				v, err2 := num(op[i+2])
+				if err1 != nil || err2 != nil {
+					return "Error: bad -w32 " + op[i+1] + " " + op[i+2], fmt.Errorf("exit status 1")
+				}
+				if addr == stlink.RccBDCR {
+					if f.Regs[stlink.PwrCR1]&stlink.PwrDBP == 0 {
+						i += 3
+						continue // write-protected: ignored, as on the chip
+					}
+					if f.Regs[addr]&stlink.BDRST != 0 && uint32(v)&stlink.BDRST == 0 {
+						f.BackupResets++
+					}
+				}
+				f.Regs[addr] = uint32(v)
+				i += 3
+			default:
+				return "Error: unknown " + line, fmt.Errorf("exit status 1")
+			}
+		}
+		return "Writing 32-bit data done", nil
 	case "-u":
 		addr, _ := num(op[1])
 		n, _ := num(op[2])

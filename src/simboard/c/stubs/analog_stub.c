@@ -26,15 +26,34 @@ uint32_t test_temp_mv[PORT_TEMP_COUNT] = { 738u, 751u };
 
 /* ---- port_vref.c -------------------------------------------------------- */
 
+int test_vref_external;
+
 int PortVref_Enable(void)
 {
+    if (test_vref_external) {
+        return 1;
+    }
     test_vref_enable_count++;
     return test_vref_fails ? 0 : 1;
 }
 
+/* External keeps test_vdda_mv: the simulated source is as good as VREFBUF. */
+int PortVref_Select(int external)
+{
+    test_vref_external = external ? 1 : 0;
+    return (external || !test_vref_fails) ? 1 : 0;
+}
+
+int PortVref_IsExternal(void) { return test_vref_external; }
+
 /* ---- port_adc.c --------------------------------------------------------- */
 
 int PortAdc_Init(void)
+{
+    return 1;
+}
+
+int PortAdc_Remeasure(void)
 {
     return 1;
 }
@@ -71,6 +90,10 @@ int PortDac_Init(void)
 }
 
 uint32_t PortDac_VrefMv(void) { return 2500u; }
+
+void PortDac_RelatchVref(void)
+{
+}
 
 int PortDac_SetMv(int ch, uint32_t mv)
 {

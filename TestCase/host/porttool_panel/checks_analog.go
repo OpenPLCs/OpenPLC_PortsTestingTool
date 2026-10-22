@@ -328,6 +328,23 @@ func checkAnalogCards(p *Page) {
 	anaType(p, `input[data-anatarget="ain.read1"]`, "5000")
 	anaWait(p, aiCmp+" === '1'", "and back to 5000 mV it passes again", aiRow, nil, 0)
 
+	// ---- the reference switch and the noise statistics (decision 158)
+	vrefBox := "() => (document.querySelector('[data-vref=\"ain\"]') || {}).innerText"
+	anaWait(p, "() => !!document.querySelector('[data-vrefsrc=\"int\"][data-active=\"1\"]') && (document.querySelector('[data-vrefmv]') || {dataset: {}}).dataset.vrefmv === 'ok'",
+		"the AI card head shows the reference on 片内 2.5 V and the measured VREF+", vrefBox, nil, 0)
+	anaWait(p, "() => Number((document.querySelector('[data-noise=\"1|raw\"] td:nth-child(3)') || {}).innerText) >= 2",
+		"实测 collects AI1's frames for the noise statistics", "() => (document.querySelector('[data-ananoise]') || {}).innerText", nil, 0)
+	p.Eval("() => { window.confirm = () => true; }") // the hint before switching is a confirm box
+	p.L(`button[data-vrefsrc="ext"]`).Click()
+	anaWait(p, "() => !!document.querySelector('[data-vrefsrc=\"ext\"][data-active=\"1\"]')",
+		"外部 switches the board to the external reference", vrefBox, nil, 0)
+	check(strings.Contains(p.L("#log").Text(), "pt.run vref src=ext"), "外部 sends pt.run vref src=ext")
+	n := p.Eval("() => anaVrefSet('int').then(() => anaNoise[1].length)").v
+	check(fmt.Sprint(n) == "0" || fmt.Sprint(n) == "1", "switching back to 片内 clears the noise statistics", fmt.Sprint(n))
+	anaWait(p, "() => !!document.querySelector('[data-vrefsrc=\"int\"][data-active=\"1\"]')",
+		"and the switch is back on 片内 2.5 V", vrefBox, nil, 0)
+	p.Eval("() => { delete window.confirm; }")
+
 	// ---- leaving and coming back (decision 137): leaving stops and records both
 	// channels, the round is kept, the values stay, nothing reads until a 开始
 	anaPick(p, "aout")

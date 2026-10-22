@@ -12,6 +12,21 @@ let libAskShown = 0;    // id of the question on screen, so typing is not redraw
 const libRunning = () => !!libData.running;
 const libState = id => (libData.states || {})[id];
 
+// A redraw between a press and its release swallows the click (the two land on
+// different elements), so the poll's redraw waits for the release.
+// PORTTOOL-FLOW.md C.3.6 「接口」.
+let libPressed = false, libRedrawHeld = false;
+document.addEventListener("pointerdown", () => { libPressed = true; }, true);
+for (const t of ["pointerup", "pointercancel"]) {
+  document.addEventListener(t, () => {
+    libPressed = false;
+    if (!libRedrawHeld) { return; }
+    libRedrawHeld = false;
+    // Deferred so the click that follows this release lands first.
+    setTimeout(() => { if (!libPressed && !liveChoosing()) { liveKeepFocus(renderShell); } }, 0);
+  }, true);
+}
+
 async function libRefresh() {
   const j = await api("/api/lib");
   if (!j || j.error) { return; }
@@ -19,7 +34,7 @@ async function libRefresh() {
   libLogRounds();
   rdOnRefresh();
   libDrawAsk();
-  if (!liveChoosing()) { liveKeepFocus(renderShell); }
+  if (libPressed) { libRedrawHeld = true; } else if (!liveChoosing()) { liveKeepFocus(renderShell); }
   const busy = j.running || j.ask;
   if (busy && !libTimer) { libTimer = setInterval(libRefresh, 500); }
   if (!busy && libTimer) { clearInterval(libTimer); libTimer = null; }
@@ -333,7 +348,7 @@ function libResult(it) {
   const now = st && libTimedNow(it, st);
   if (now) { box.appendChild(now); }
   // Only the picked peer's criteria, as on a configuration card.
-  box.appendChild(libCritTable(it, st, false, itemPeer["rd|" + it.id] || defaultPeer(it)));
+  box.appendChild(LSE_CARDS[it.id] ? LSE_CARDS[it.id](it, st) : libCritTable(it, st, false, itemPeer["rd|" + it.id] || defaultPeer(it)));
   if (!st) { box.appendChild(el("div", "hint", T("shell.item.empty"))); return box; }
   if (st.running) { box.appendChild(el("div", "hint", T("lib.res.running"))); }
   if (st.answer) {
@@ -366,6 +381,57 @@ function libResult(it) {
   if (st.outcome === "RECORDED") { box.appendChild(el("div", "hint", T("lib.res.recorded"))); }
   return box;
 }
+
+// The crystal page's two cards, recorded only (decision 160, PORTTOOL-FLOW.md
+// C.3.6 「晶振页」).
+const LSE_DRV = { low: "lse.drv.low", mlow: "lse.drv.mlow", mhigh: "lse.drv.mhigh", high: "lse.drv.high" };
+const lseGet = (vals, k) => { const f = (vals || []).find(([x]) => x === k); return f ? f[1] : ""; };
+
+function lseTable(head, rows) {
+  const t = el("table", "crit"), hr = el("tr");
+  for (const h of head) { hr.appendChild(el("th", null, h)); }
+  t.appendChild(hr);
+  for (const r of rows) {
+    const tr = el("tr");
+    for (const c of r) { tr.appendChild(el("td", "mono", c)); }
+    t.appendChild(tr);
+  }
+  return t;
+}
+
+// Frequency, deviation and window; the HSE error is in the number, so it is only recorded.
+function lseFreqCard(it, st) {
+  const box = el("div"), v = (st && st.values) || [];
+  box.dataset.lse = "freq";
+  if (v.length && lseGet(v, "ready") !== "1") {
+    box.appendChild(el("div", "chk bad", T("lse.freq.off")));
+  } else if (lseGet(v, "error")) {
+    box.appendChild(el("div", "chk bad", T("lse.error", { e: lseGet(v, "error") })));
+  } else if (v.length) {
+    box.appendChild(lseTable([T("shell.item.col.item"), T("shell.item.col.got")], [
+      [T("lse.freq.hz"), lseGet(v, "hz")], [T("lse.freq.ppm"), lseGet(v, "ppm")], [T("lse.freq.ms"), lseGet(v, "ms")]]));
+  }
+  box.appendChild(el("div", "hint", T("lse.freq.note")));
+  return box;
+}
+
+// One row per restart, in the order sent; the last is the switch back to mlow.
+function lseMarginCard(it, st) {
+  const box = el("div"), runs = (st && st.runs) || [];
+  box.dataset.lse = "margin";
+  if (!runs.length) { return box; }
+  const rows = runs.map((r, i) => {
+    const m = /drv=(\w+)/.exec(r.sent), name = m && LSE_DRV[m[1]] ? T(LSE_DRV[m[1]]) : r.sent;
+    const fb = lseGet(r.values, "fallback"), err = lseGet(r.values, "error");
+    const up = err ? T("lse.error", { e: err }) : T(lseGet(r.values, "ready") === "1" && !fb ? "lse.up.yes" : "lse.up.no");
+    return [i > 0 && i === (it.targets || []).length - 1 ? T("lse.back", { drv: name }) : name, up,
+      lseGet(r.values, "start_ms"), T(fb ? "lse.fb.yes" : "lse.fb.no")];
+  });
+  box.appendChild(lseTable([T("lse.col.drv"), T("lse.col.up"), T("lse.col.ms"), T("lse.col.fallback")], rows));
+  return box;
+}
+
+const LSE_CARDS = { "rtc.lsefreq": lseFreqCard, "rtc.lsemargin": lseMarginCard };
 
 // Port list: the port's verdict from the last run of its items.
 function libPortBadge(port) {

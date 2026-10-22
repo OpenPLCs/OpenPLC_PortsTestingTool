@@ -77,6 +77,7 @@ func runChecks(p *Page, com string) {
 	checkStageConfigs(p)
 	checkItemRunner(p)
 	checkRelayRd(p)
+	checkLsePage(p)
 	checkEveryPort(p, com)
 	checkCtrlCounts(p)
 	checkNothingInEnglish(p)
@@ -109,6 +110,8 @@ func runChecks(p *Page, com string) {
 	checkRs232Baud(p)
 	checkRecoverCards(p, com)
 	checkLiveCards(p, com)
+	// Last: it rewires the simulated adapters and runs matching three times.
+	checkAdapterMatch(p, com)
 
 	// ---------------------------------------------------- disconnect
 	Section("disconnecting")
@@ -302,9 +305,9 @@ func checkFiveBlocks(p *Page) {
 	check(len(starts) == 0, "menus and the port list send no pt.start, the AI / DI pages included", cut(strings.Join(starts, " "), 200))
 
 	names := attrs(p.L(".lport"), "data-lport")
-	check(!slices.Contains(names, "rtc") && slices.Contains(names, "eth") && slices.Contains(names, "din") &&
+	check(slices.Contains(names, "rtc") && slices.Contains(names, "eth") && slices.Contains(names, "din") &&
 		slices.Contains(names, "can") && slices.Contains(names, "aout"),
-		"the port list comes from the catalogue (rtc is not a test item)", strings.Join(names, " "))
+		"the port list comes from the catalogue (rtc is the crystal page, decision 160)", strings.Join(names, " "))
 	p.L(lport("can")).Click()
 	p.Wait(200)
 	ids := attrs(p.L("#itemcards .item"), "data-item")
@@ -656,8 +659,8 @@ func checkConnZone(p *Page) {
 		"the control port chooser and the board time sit in the connection block")
 	p.WaitSel("#connrows .crow", 0)
 	keys := attrs(p.L("#connrows .crow"), "data-conn")
-	check(eqStrings(keys, "usb", "eth", "rs232", "rs485", "can", "knxusb", "ref", "stlink", "instrument"),
-		"USB, network, RS232 / RS485 / CAN, KNX USB interface, reference board, ST-Link, instrument rows", show(keys))
+	check(eqStrings(keys, "usb", "eth", "rs232", "rs485", "can", "match", "knxusb", "ref", "stlink", "instrument"),
+		"USB, network, RS232 / RS485 / CAN, adapter matching, KNX USB interface, reference board, ST-Link, instrument rows", show(keys))
 	check(p.L(`.crow[data-conn="instrument"] select`).Disabled(), "the instrument row is reserved and cannot be picked")
 	check(p.L(`.crow[data-conn="ref"] button`).Count() >= 1, "the reference board row can be connected from here")
 

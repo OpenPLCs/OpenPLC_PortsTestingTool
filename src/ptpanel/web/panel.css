@@ -249,6 +249,8 @@ table.crit tr.bad td{color:var(--err)}
 .crow .dot.bad{background:var(--err)}
 .crow .cerr{flex-basis:100%;color:var(--err);font-size:11.5px}
 .crow .ccount{flex-basis:100%;color:var(--ink2);font-size:11.5px}
+.crow .cok{flex-basis:100%;color:var(--ok);font-size:11.5px}
+.crow .cwhy{flex-basis:100%;color:var(--warn);font-size:11.5px}
 .crow.reserved{opacity:.6}
 /* One rule instead of disabled on every control, so a new control cannot miss the gate. */
 .gated{opacity:.35;pointer-events:none}
@@ -318,6 +320,12 @@ table.gtab td.ih b{margin:0 6px}
 /* R&D AI / AO card (decision 117, anacard.js) */
 .anacard .anablk{padding:10px 12px;border-top:1px solid var(--line)}
 .anacard .anablk .khead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+/* AI reference switch and noise statistics (decision 158); yellow = VREF+ not trusted */
+.anacard .vrefbox{display:flex;align-items:center;gap:6px}
+.anacard .vrefnotes{padding:0 12px}
+.vrefbad{background:#fff3c4;color:#8a5300;border-radius:3px;padding:0 4px}
+.anacard .ananoise{margin-top:10px}
+.anacard .ananoise .row{display:flex;align-items:center;gap:10px}
 .anachans{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:12px}
 .anachan{border:1px solid var(--line);border-radius:6px;padding:8px}
 .anacard input.pt{width:90px;text-align:center}

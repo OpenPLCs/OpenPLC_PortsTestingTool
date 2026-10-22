@@ -87,9 +87,10 @@ func checkTarget(t *testing.T, c ptproto.Caps, it Item, tg Target) {
 	switch {
 	case tg.Run != "":
 		p, _ := c.Port(it.Port)
+		name := strings.Fields(tg.Run)[0] // "lse drv=low": the target, then its arguments
 		found := false
 		for _, r := range p.Runs {
-			found = found || r == tg.Run
+			found = found || r == name
 		}
 		if !found {
 			t.Errorf("%s: %s is not a run target of %s", it.ID, tg.Run, it.Port)
@@ -303,5 +304,38 @@ func TestDecision138Items(t *testing.T) {
 		if got := strings.Join(byID[id].Criteria, " "); got != want {
 			t.Errorf("%s criteria %q, want %q", id, got, want)
 		}
+	}
+}
+
+// Decision 160: the crystal page is R&D only, both items once, no peer, record only;
+// the margin item tries every drive and ends back on mlow.
+func TestDecision160Items(t *testing.T) {
+	byID := map[string]Item{}
+	for _, it := range Catalogue {
+		byID[it.ID] = it
+	}
+	want := map[string][]string{
+		"rtc.lsefreq":   {"lse.freq"},
+		"rtc.lsemargin": {"lse drv=low", "lse drv=mlow", "lse drv=mhigh", "lse drv=high", "lse drv=mlow"},
+	}
+	for id, runs := range want {
+		it, ok := byID[id]
+		if !ok {
+			t.Fatalf("%s is not in the catalogue", id)
+		}
+		var got []string
+		for _, tg := range it.Targets {
+			got = append(got, tg.Run)
+		}
+		if strings.Join(got, "|") != strings.Join(runs, "|") {
+			t.Errorf("%s runs %q, want %q", id, got, runs)
+		}
+		if !it.Once || len(it.Stages) != 1 || it.Stages[0] != RD || len(it.Peers) != 1 || it.Peers[0] != PeerNone || len(it.Criteria) != 0 {
+			t.Errorf("%s: once %v stages %v peers %v criteria %v; want once, R&D only, no peer, no criteria",
+				id, it.Once, it.Stages, it.Peers, it.Criteria)
+		}
+	}
+	if _, ok := NotItems["rtc"]; ok {
+		t.Errorf("rtc is still listed as not a test item")
 	}
 }

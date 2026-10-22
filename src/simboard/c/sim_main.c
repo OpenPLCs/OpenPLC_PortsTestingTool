@@ -88,6 +88,7 @@ extern int      test_rtc_runs;
 extern int      test_knx_bus;       /* 0 ok, 1 dead */
 extern int      test_knx_loopback;
 extern int      test_can_silent;
+extern void   (*test_tick_hook)(void);
 
 /* ---- sim.cut ------------------------------------------------------------
  * A port's cable out for a while, then back on its own: the recover items'
@@ -510,6 +511,96 @@ static void stimulate(uint32_t now_ms)
     peer_usb();
 }
 
+/* ---- the adapter wiring for pt.run match --------------------------------
+ * The PC's adapters on the simulated board (PORTTOOL-FLOW.md C.3.6, automatic
+ * adapter matching): two serial adapters and a CANable, whose tokens arrive
+ * here as sim.tok and go to whichever terminal sim.wiring puts the adapter on. */
+
+enum { WIRE_NONE, WIRE_RS485, WIRE_CAN };
+static const char *const wire_name[3] = { "none", "rs485", "can" };
+#define SIM_ADAPTERS 3
+static const char *const adapter_name[SIM_ADAPTERS] = { "SIM-A", "SIM-B", "SIM-CAN" };
+static int adapter_wire[SIM_ADAPTERS] = { WIRE_RS485, WIRE_NONE, WIRE_CAN };
+
+/* The CAN identifier a token frame arrives on; the firmware takes any. */
+#define SIM_TOKEN_CAN_ID 0x5A5u
+
+static int adapter_index(const char *name)
+{
+    for (int i = 0; i < SIM_ADAPTERS; i++) {
+        if (strcmp(name, adapter_name[i]) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/* Quiet on purpose: the PC sends a round every 300 ms. */
+static void sim_token(const char *adapter, const char *text)
+{
+    int i = adapter_index(adapter);
+    if (i < 0) {
+        return;
+    }
+    if (adapter_wire[i] == WIRE_RS485 && !cut_on[CUT_RS485]) {
+        test_rs485_reply(text);
+    } else if (adapter_wire[i] == WIRE_CAN && !cut_on[CUT_CAN]) {
+        size_t n = strlen(text);
+        test_can_inject(SIM_TOKEN_CAN_ID, (const uint8_t *)text, (uint8_t)(n > 8u ? 8u : n));
+    }
+}
+
+static void sim_wiring(const char *args)
+{
+    char name[16], term[8];
+    int used = 0;
+
+    while (sscanf(args, " %15[^= ]=%7s%n", name, term, &used) == 2) {
+        int i = adapter_index(name);
+        for (int w = 0; i >= 0 && w < 3; w++) {
+            if (strcmp(term, wire_name[w]) == 0) {
+                adapter_wire[i] = w;
+            }
+        }
+        args += used;
+    }
+    printf("SIM  wiring");
+    for (int i = 0; i < SIM_ADAPTERS; i++) {
+        printf(" %s=%s", adapter_name[i], wire_name[adapter_wire[i]]);
+    }
+    printf("\r\n");
+}
+
+static int sim_command(const char *line);
+
+/* While pt.run match listens: the tick follows the wall clock and sim.tok
+ * lines at the head of the queue are delivered, as bytes reach a board's
+ * terminals while its superloop is busy. */
+static uint64_t sim_started;
+
+static void match_hook(void)
+{
+    char line[PORTTOOL_LINE_MAX];
+
+    test_set_tick((uint32_t)(wall_ms() - sim_started) + 1000u);
+    for (;;) {
+        int got = 0;
+        pthread_mutex_lock(&q_lock);
+        if (q_tail != q_head && strncmp(q[q_tail], "sim.tok ", 8) == 0) {
+            snprintf(line, sizeof(line), "%s", q[q_tail]);
+            q_tail = (q_tail + 1) % QDEPTH;
+            got = 1;
+        }
+        pthread_mutex_unlock(&q_lock);
+        if (!got) {
+            break;
+        }
+        lines_in++;
+        (void)sim_command(line);
+    }
+    nap_ms(1);
+}
+
 /* ---- the sim.* commands -------------------------------------------------
  * Never reach dispatch(): they make this board behave like a broken one.
  * Nothing starting with "sim." exists on a board. */
@@ -546,6 +637,8 @@ static int sim_command(const char *line)
                "SIM  sim.canloop <0|1>  0: what the CAN sends does not come back to it\r\n"
                "SIM  sim.canrx <id> <hex> a CAN frame arrives, e.g. sim.canrx 123 1122\r\n"
                "SIM  sim.cut <port> <ms> eth|usb|rs232|rs485|can|knx: cable out for ms, then back\r\n"
+               "SIM  sim.tok <adapter> <text>  a PC adapter (SIM-A, SIM-B, SIM-CAN) sends text\r\n"
+               "SIM  sim.wiring SIM-A=rs485 SIM-B=none SIM-CAN=can  which terminal each adapter is on\r\n"
                "SIM  none of these exist on a board\r\n");
         return 1;
     }
@@ -627,6 +720,17 @@ static int sim_command(const char *line)
             return 1;
         }
     }
+    {
+        char who[16] = "", text[32] = "";
+        if (sscanf(line, "sim.tok %15s %31s", who, text) == 2) {
+            sim_token(who, text);
+            return 1;
+        }
+    }
+    if (strncmp(line, "sim.wiring", 10) == 0) {
+        sim_wiring(line + 10);
+        return 1;
+    }
     if (sscanf(line, "sim.cal %u", &a) == 1) {
         sim_calib(a != 0u);
         printf("SIM  cal=%u\r\n", a != 0u);
@@ -640,7 +744,6 @@ static int sim_command(const char *line)
 int main(int argc, char **argv)
 {
     pthread_t tid;
-    uint64_t  started;
     char      cmd[PORTTOOL_LINE_MAX];
 
     (void)argc; (void)argv;
@@ -677,7 +780,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    started = wall_ms();
+    sim_started = wall_ms();
     test_set_tick(1000u);
     test_rtc_runs = 1;
 
@@ -694,7 +797,7 @@ int main(int argc, char **argv)
     fflush(stdout);
 
     for (;;) {
-        uint32_t now = (uint32_t)(wall_ms() - started) + 1000u;
+        uint32_t now = (uint32_t)(wall_ms() - sim_started) + 1000u;
 
         test_set_tick(now);
 
@@ -709,7 +812,12 @@ int main(int argc, char **argv)
             /* poll_command() counts this on the board (rs232's rxlines). */
             lines_in++;
             if (!sim_command(cmd)) {
+                /* pt.run match listens in real time (match_hook). */
+                if (strncmp(cmd, "pt.run match", 12) == 0) {
+                    test_tick_hook = match_hook;
+                }
                 dispatch(cmd);
+                test_tick_hook = NULL;
             }
         }
 
