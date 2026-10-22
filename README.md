@@ -58,7 +58,7 @@ Packing also needs, beside this repository:
 | `OpenPLC_BootLoader` | the test firmware sources; its `Debug/OpenPLC_BootLoader.hex`, the bootloader built in STM32CubeIDE, goes into `stage6/` |
 | STM32CubeIDE | builds the test firmware headless |
 | `OpenPLC_IAPTool`, with `Output/windows/IAPTool.exe` and `Output/linux/IAPTool` built | the upload tool in `stage6/` |
-| `open_plc_arduino` | the FQBN the step-6 demo is compiled with |
+| `OpenPLC_Arduino_PKG` | the FQBN the step-6 demo is compiled with |
 | gcc or clang (MinGW on Windows) | the simulated board for this machine |
 | zig | the simulated board for another system, cross-compiled |
 | arduino-cli with the OpenPLC board package installed | compiles the step-6 demo `FixtureDemo` |

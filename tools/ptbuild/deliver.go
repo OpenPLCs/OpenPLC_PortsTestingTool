@@ -305,7 +305,7 @@ func deliver(open, internal bool) error {
 				filepath.Join(coreLive(), demoDir),
 				filepath.Join(cfg["CORE_REPO"], demoDir),
 				filepath.Join(repo, "TestCase", "host"))+
-				"\n  Change the installed board package first, then copy to open_plc_arduino; TestCase/test.sh t4-01\n"+
+				"\n  Change the installed board package first, then copy to OpenPLC_Arduino_PKG; TestCase/test.sh t4-01\n"+
 				"  rewrites caps_golden.txt with the new version."))
 	}
 	tsha, err := toolHash()
