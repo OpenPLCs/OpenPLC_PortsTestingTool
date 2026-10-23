@@ -90,7 +90,7 @@ func build() error {
 		return fmt.Errorf("no FixtureDemo at %s (set CORE_REPO)", demoDir)
 	}
 	if boot == "" || cc == "" {
-		return fmt.Errorf("BOOT_REPO and HOST_CC must be set in %s (tools/build.sh find-tools)", localcfg.Path(repo))
+		return fmt.Errorf("BOOT_REPO and HOST_CC must be set in %s (start.sh find-tools)", localcfg.Path(repo))
 	}
 	if cxx == "" {
 		return fmt.Errorf("no C++ compiler (set CXX)")

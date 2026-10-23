@@ -5,7 +5,7 @@
 //	go run ./tools/ptbuild                 menu
 //	go run ./tools/ptbuild <item> [flags]  one item; see usage below
 //
-// Started through tools/build.sh, which runs it from the repository root.
+// Started through start.sh, which runs it from the repository root.
 //
 // Exit 0 = done, 1 = an item failed or a tool it needs is missing, 2 = bad usage.
 package main
@@ -23,7 +23,7 @@ import (
 	"PortTool/tools/localcfg"
 )
 
-const usage = `usage: tools/build.sh [item] [flags]
+const usage = `usage: start.sh [item] [flags]
 
   (no item)                 menu
   find-tools [--set K=V] [--check]
@@ -83,7 +83,7 @@ func run(item string, args []string) error {
 		v := loadLocal()[args[0]]
 		if v == "" {
 			// stderr, so $(...) in a script captures nothing on a miss
-			fmt.Fprintf(os.Stderr, "%s is not set in %s - run tools/build.sh find-tools\n", args[0], localPath())
+			fmt.Fprintf(os.Stderr, "%s is not set in %s - run start.sh find-tools\n", args[0], localPath())
 			os.Exit(1)
 		}
 		fmt.Println(v)

@@ -80,7 +80,7 @@ def speak(text, enabled):
 class SimLink:
     def __init__(self):
         if not SIMBOARD.exists():
-            raise OSError("%s not built - run: tools/build.sh sim" % SIMBOARD)
+            raise OSError("%s not built - run: start.sh sim" % SIMBOARD)
         self.p = subprocess.Popen([str(SIMBOARD)], stdin=subprocess.PIPE,
                                   stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
         self.q = queue.Queue()

@@ -122,7 +122,7 @@ func findTools(sets []string, check bool) error {
 		ok("wrote " + localPath())
 	}
 	if len(missing) > 0 {
-		return fmt.Errorf("missing: %s - set with tools/build.sh find-tools --set KEY=VALUE", strings.Join(missing, ", "))
+		return fmt.Errorf("missing: %s - set with start.sh find-tools --set KEY=VALUE", strings.Join(missing, ", "))
 	}
 	return nil
 }
@@ -149,9 +149,9 @@ func require(item string, needs ...need) error {
 		fail(fmt.Sprintf("  %-18s %s", n.name, n.what))
 	}
 	if _, err := os.Stat(localPath()); err != nil {
-		warn("  tools/local.json does not exist yet - run tools/build.sh find-tools first")
+		warn("  tools/local.json does not exist yet - run start.sh find-tools first")
 	} else {
-		warn("  run tools/build.sh find-tools, or set one with --set KEY=VALUE")
+		warn("  run start.sh find-tools, or set one with --set KEY=VALUE")
 	}
 	return fmt.Errorf("%s cannot run: %d tool(s) missing (listed above)", item, len(miss))
 }

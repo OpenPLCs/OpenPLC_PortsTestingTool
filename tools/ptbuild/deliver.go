@@ -265,7 +265,7 @@ func deliver(open, internal bool) error {
 		}
 	}
 	if len(missing) > 0 {
-		return fmt.Errorf("missing: %s\n  build first: tools/build.sh fixture, then tools/build.sh tool", strings.Join(missing, ", "))
+		return fmt.Errorf("missing: %s\n  build first: start.sh fixture, then start.sh tool", strings.Join(missing, ", "))
 	}
 	plans, _ := filepath.Glob(filepath.Join(plansDir, "*.json"))
 	sort.Strings(plans)
@@ -299,7 +299,7 @@ func deliver(open, internal bool) error {
 	if last != nil && staleVersion(&verHash{last.Version, last.SHA256}, fwVer, sha) {
 		stale = append(stale, fmt.Sprintf("the fixture firmware differs from the last packed one, but its version is still %s.\n"+
 			"  To release: raise it (third number for a small fix, second together with PortTool when capabilities\n"+
-			"  change) in every place below, then tools/build.sh fixture and pack again.\n%s", fwVer,
+			"  change) in every place below, then start.sh fixture and pack again.\n%s", fwVer,
 			versionSpots(fwVer,
 				filepath.Join(cfg["BOOT_REPO"], "TestCase", "porttool", "porttool.c"),
 				filepath.Join(coreLive(), demoDir),
@@ -315,7 +315,7 @@ func deliver(open, internal bool) error {
 	if last != nil && staleVersion(last.PortTool, tVer, tsha) {
 		stale = append(stale, fmt.Sprintf("PortTool's sources differ from the last packed ones, but its version is still %s.\n"+
 			"  To release: raise it (third number for a small fix, second together with the firmware when capabilities\n"+
-			"  change) in every place below, then tools/build.sh tool and pack again.\n%s", tVer,
+			"  change) in every place below, then start.sh tool and pack again.\n%s", tVer,
 			versionSpots(tVer, filepath.Join(repo, "src", "cmd", "porttool", "main.go"))))
 	}
 	if len(stale) > 0 {
@@ -468,7 +468,7 @@ func packInternal(stale []string, internal bool) (bool, error) {
 		return true, nil
 	}
 	if !interactive {
-		return false, fmt.Errorf("%s\n  For an internal test package run tools/build.sh deliver --internal.", msg)
+		return false, fmt.Errorf("%s\n  For an internal test package run start.sh deliver --internal.", msg)
 	}
 	warn(msg)
 	n, err := ask("Pack anyway?", []string{

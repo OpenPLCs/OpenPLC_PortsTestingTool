@@ -1,7 +1,7 @@
 // Package simboard runs the simulated board and presents it as a port.
 //
 // The simulated board is the real firmware compiled for the PC (see
-// c/sim_main.c; tools/build.sh sim builds it). It speaks the port tool
+// c/sim_main.c; start.sh sim builds it). It speaks the port tool
 // protocol on stdin/stdout, so to ptboard it is just another
 // io.ReadWriteCloser.
 //
@@ -34,7 +34,7 @@ const LabelKey = "go.sim.label"
 // ErrNotBuilt is Find's answer when there is no simulator to run. The panel
 // words it in its own language; this text is for the command line.
 var ErrNotBuilt = errors.New("the simulated board is not built: " +
-	"tools/build.sh sim, or point PORTTOOL_SIM at one that is")
+	"start.sh sim, or point PORTTOOL_SIM at one that is")
 
 // StartError is a simulator that was found but would not start.
 type StartError struct {
@@ -79,7 +79,7 @@ func fileExists(p string) bool {
 	return err == nil && !st.IsDir()
 }
 
-// binDir is this platform's folder under Output/bin, where tools/build.sh
+// binDir is this platform's folder under Output/bin, where start.sh
 // puts PortTool and the simulated board side by side.
 func binDir() string {
 	if runtime.GOOS == "darwin" && runtime.GOARCH == "arm64" {

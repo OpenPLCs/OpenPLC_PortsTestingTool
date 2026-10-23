@@ -12,5 +12,5 @@ __pycache__/
 src/plans/reports/
 TestCase/host/porttool_plan/reports/
 
-# This machine's tool paths, written by tools/build.sh find-tools.
+# This machine's tool paths, written by start.sh find-tools.
 tools/local.json

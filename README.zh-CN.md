@@ -28,20 +28,20 @@ GOOS=windows GOARCH=amd64 go build -o PortTool.exe ./src/cmd/porttool
 
 ## 全部编译、打交付包
 
-`tools/build.sh` 是维护者用的入口，只编 PortTool 用不到它。它在仓库根目录运行 `go run ./tools/ptbuild`，
-所以要装 Go，Windows 上还要 Git Bash。不带参数出菜单，带参数直接跑那一项。仓根的 `start.sh` 打开的是同一个菜单，双击它就行。「全部」会先清空 `Output/`；单项只删自己要重编的那份产物。菜单默认选「全部」、清空的确认默认选「删除并编译」，所以连按两次回车就全部做完；做完后再按一次回车才关窗口。
-先跑一次 `tools/build.sh find-tools`：它找出下面这些工具，写进 `tools/local.json`。
+`start.sh` 是维护者用的入口，只编 PortTool 用不到它。它在仓库根目录运行 `go run ./tools/ptbuild`，
+所以要装 Go，Windows 上还要 Git Bash。不带参数出菜单，带参数直接跑那一项。它就在仓库根目录，双击就行。「全部」会先清空 `Output/`；单项只删自己要重编的那份产物。菜单默认选「全部」、清空的确认默认选「删除并编译」，所以连按两次回车就全部做完；做完后再按一次回车才关窗口。
+先跑一次 `start.sh find-tools`：它找出下面这些工具，写进 `tools/local.json`。
 每一项开始前都查它要的工具，缺哪个就说出来。
 
 | 命令 | 做什么 |
 |---|---|
-| `tools/build.sh find-tools` | 找本机工具，写 `tools/local.json` |
-| `tools/build.sh tool [--os windows\|linux\|darwin\|darwin-arm64\|all]` | 编 PortTool，放进 `Output/bin/<平台>/`，旁边拷好 `plans/` |
-| `tools/build.sh fixture` | 编测试固件，放进 `Output/fixture/` |
-| `tools/build.sh flash` | 经 SWD 把这份固件烧进板子 |
-| `tools/build.sh sim [--os ...]` | 编模拟板，放在 PortTool 旁边，没有板子也能用面板（端口选 `sim`） |
-| `tools/build.sh deliver` | 打交付文件夹 `Output/delivery/`（Windows 和 Linux 在同一个文件夹） |
-| `tools/build.sh all` | 编固件、编所有平台的 PortTool，再打交付文件夹 |
+| `start.sh find-tools` | 找本机工具，写 `tools/local.json` |
+| `start.sh tool [--os windows\|linux\|darwin\|darwin-arm64\|all]` | 编 PortTool，放进 `Output/bin/<平台>/`，旁边拷好 `plans/` |
+| `start.sh fixture` | 编测试固件，放进 `Output/fixture/` |
+| `start.sh flash` | 经 SWD 把这份固件烧进板子 |
+| `start.sh sim [--os ...]` | 编模拟板，放在 PortTool 旁边，没有板子也能用面板（端口选 `sim`） |
+| `start.sh deliver` | 打交付文件夹 `Output/delivery/`（Windows 和 Linux 在同一个文件夹） |
+| `start.sh all` | 编固件、编所有平台的 PortTool，再打交付文件夹 |
 
 打包还要本仓旁边有：
 

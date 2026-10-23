@@ -483,7 +483,7 @@ func openSimPair(t *testing.T) (*ptboard.Board, *ptboard.Board) {
 	t.Helper()
 	a, b, err := simboard.OpenPair("sim", "sim", 0)
 	if errors.Is(err, simboard.ErrNotBuilt) {
-		t.Skip("simulated board not built: tools/build.sh sim")
+		t.Skip("simulated board not built: start.sh sim")
 	}
 	if err != nil {
 		t.Fatal(err)
@@ -572,7 +572,7 @@ func TestLinkWiresBoardsOpenedOneAfterTheOther(t *testing.T) {
 	plan.Steps = plan.Steps[:4] // two beats of the DI walk
 	a, err := simboard.OpenPort("sim", 0)
 	if errors.Is(err, simboard.ErrNotBuilt) {
-		t.Skip("simulated board not built: tools/build.sh sim")
+		t.Skip("simulated board not built: start.sh sim")
 	}
 	if err != nil {
 		t.Fatal(err)

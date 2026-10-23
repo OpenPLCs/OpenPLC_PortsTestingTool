@@ -31,7 +31,7 @@ func openSimRaw(t *testing.T) (*ptboard.Board, io.ReadWriteCloser) {
 	t.Helper()
 	a, err := simboard.OpenPort("sim", 0)
 	if errors.Is(err, simboard.ErrNotBuilt) {
-		t.Skip("simulated board not built: tools/build.sh sim")
+		t.Skip("simulated board not built: start.sh sim")
 	}
 	if err != nil {
 		t.Fatal(err)

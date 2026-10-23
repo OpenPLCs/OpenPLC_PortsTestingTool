@@ -1,5 +1,5 @@
 // Package localcfg reads tools/local.json, this machine's tool paths, which
-// `tools/build.sh find-tools` writes (decision 144). It is the only reader:
+// `start.sh find-tools` writes (decision 144). It is the only reader:
 // tools/ptbuild and the host tests under TestCase/ all go through it.
 package localcfg
 

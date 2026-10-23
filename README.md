@@ -32,24 +32,24 @@ by being in the `dialout` group.
 
 ## Building everything and packing the delivery folder
 
-`tools/build.sh` is the maintainers' entry point; it is not needed to build
+`start.sh` is the maintainers' entry point; it is not needed to build
 PortTool. It runs `go run ./tools/ptbuild` from the repository root, so it
 needs Go and, on Windows, Git Bash. Without arguments it shows a menu; with
-arguments it runs that item directly. `start.sh` in the repository root
-opens the same menu, so double-clicking it is enough. "All" empties `Output/`
-first; a single build item deletes only what it is about to rebuild. The menu defaults to "All" and the delete question defaults to "Yes", so pressing Enter twice builds everything; the window then waits for one more Enter before it closes. Run `tools/build.sh find-tools` once
+arguments it runs that item directly. It sits in the repository root, so
+double-clicking it is enough. "All" empties `Output/`
+first; a single build item deletes only what it is about to rebuild. The menu defaults to "All" and the delete question defaults to "Yes", so pressing Enter twice builds everything; the window then waits for one more Enter before it closes. Run `start.sh find-tools` once
 first: it finds the tools below and writes `tools/local.json`. Every item
 checks the tools it needs before it starts and names any that are missing.
 
 | Command | Does |
 |---|---|
-| `tools/build.sh find-tools` | finds this machine's tools, writes `tools/local.json` |
-| `tools/build.sh tool [--os windows\|linux\|darwin\|darwin-arm64\|all]` | PortTool into `Output/bin/<platform>/`, with `plans/` beside it |
-| `tools/build.sh fixture` | the test firmware into `Output/fixture/` |
-| `tools/build.sh flash` | writes that firmware to the board over SWD |
-| `tools/build.sh sim [--os ...]` | the simulated board beside PortTool, to use the panel without a board (port `sim`) |
-| `tools/build.sh deliver` | the delivery folder `Output/delivery/` (Windows and Linux in one folder) |
-| `tools/build.sh all` | firmware, PortTool for every platform, then the delivery folder |
+| `start.sh find-tools` | finds this machine's tools, writes `tools/local.json` |
+| `start.sh tool [--os windows\|linux\|darwin\|darwin-arm64\|all]` | PortTool into `Output/bin/<platform>/`, with `plans/` beside it |
+| `start.sh fixture` | the test firmware into `Output/fixture/` |
+| `start.sh flash` | writes that firmware to the board over SWD |
+| `start.sh sim [--os ...]` | the simulated board beside PortTool, to use the panel without a board (port `sim`) |
+| `start.sh deliver` | the delivery folder `Output/delivery/` (Windows and Linux in one folder) |
+| `start.sh all` | firmware, PortTool for every platform, then the delivery folder |
 
 Packing also needs, beside this repository:
 

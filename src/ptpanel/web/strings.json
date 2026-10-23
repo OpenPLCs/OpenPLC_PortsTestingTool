@@ -990,10 +990,10 @@
    "de_of": "32d071c6"
   },
   "go.caps.sim_old": {
-   "zh": "模拟板在运行，但没有回答 pt.caps：{detail}。多半是模拟板太旧，重编一个：tools/build.sh sim",
-   "en": "The simulated board is running but did not answer pt.caps: {detail}. It is probably too old; rebuild it: tools/build.sh sim",
+   "zh": "模拟板在运行，但没有回答 pt.caps：{detail}。多半是模拟板太旧，重编一个：start.sh sim",
+   "en": "The simulated board is running but did not answer pt.caps: {detail}. It is probably too old; rebuild it: start.sh sim",
    "en_of": "bb122be5",
-   "de": "Die simulierte Platine läuft, hat aber nicht auf pt.caps geantwortet: {detail}. Vermutlich zu alt; neu bauen: tools/build.sh sim",
+   "de": "Die simulierte Platine läuft, hat aber nicht auf pt.caps geantwortet: {detail}. Vermutlich zu alt; neu bauen: start.sh sim",
    "de_of": "bb122be5"
   },
   "go.cmd.empty": {
@@ -1347,10 +1347,10 @@
    "de_of": "928aeb61"
   },
   "go.sim.not_built": {
-   "zh": "没找到模拟板程序。先编一个：\n    tools/build.sh sim\n或者把 PORTTOOL_SIM 指向已经编好的那个。",
-   "en": "The simulated board program was not found. Build one first:\n    tools/build.sh sim\nor point PORTTOOL_SIM at one that is built.",
+   "zh": "没找到模拟板程序。先编一个：\n    start.sh sim\n或者把 PORTTOOL_SIM 指向已经编好的那个。",
+   "en": "The simulated board program was not found. Build one first:\n    start.sh sim\nor point PORTTOOL_SIM at one that is built.",
    "en_of": "3178c252",
-   "de": "Das Programm der simulierten Platine wurde nicht gefunden. Zuerst bauen:\n    tools/build.sh sim\noder PORTTOOL_SIM auf ein gebautes zeigen lassen.",
+   "de": "Das Programm der simulierten Platine wurde nicht gefunden. Zuerst bauen:\n    start.sh sim\noder PORTTOOL_SIM auf ein gebautes zeigen lassen.",
    "de_of": "3178c252"
   },
   "go.sim.start_failed": {
@@ -2306,10 +2306,10 @@
    "de_of": "34934d75"
   },
   "ui.loadPorts.4": {
-   "zh": "先编一个：`tools/build.sh sim`",
-   "en": "Build one first: `tools/build.sh sim`",
+   "zh": "先编一个：`start.sh sim`",
+   "en": "Build one first: `start.sh sim`",
    "en_of": "8a0a76fd",
-   "de": "Zuerst bauen: `tools/build.sh sim`",
+   "de": "Zuerst bauen: `start.sh sim`",
    "de_of": "8a0a76fd"
   },
   "ui.loadPorts.5": {

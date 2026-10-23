@@ -96,11 +96,11 @@ func buildFirmware() (*firmware, error) {
 	cfg := localcfg.Load(repo)
 	boot := cfg["BOOT_REPO"]
 	if boot == "" {
-		return nil, fmt.Errorf("BOOT_REPO is not set in %s (tools/build.sh find-tools)", localcfg.Path(repo))
+		return nil, fmt.Errorf("BOOT_REPO is not set in %s (start.sh find-tools)", localcfg.Path(repo))
 	}
 	cc := resolveCC(cfg)
 	if cc == "" {
-		return nil, fmt.Errorf("no C compiler: point HOST_CC in %s at a gcc (tools/build.sh find-tools)", localcfg.Path(repo))
+		return nil, fmt.Errorf("no C compiler: point HOST_CC in %s at a gcc (start.sh find-tools)", localcfg.Path(repo))
 	}
 	pt := filepath.Join(boot, "TestCase", "porttool")
 	lm, err := constFrom(filepath.Join(pt, "porttool.h"), `#define\s+PORTTOOL_REPLY_MAX\s+(\d+)`)

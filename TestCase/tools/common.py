@@ -2,7 +2,7 @@
 
     from common import cfg, Section, Ok, Warn, Fail, EXE, ...
 
-Machine-local paths come from tools/local.json, which `tools/build.sh find-tools`
+Machine-local paths come from tools/local.json, which `start.sh find-tools`
 writes; nothing else in this repo spells out a path on this machine.
 """
 
@@ -39,7 +39,7 @@ def _load_local():
     if not path.exists():
         print("tools/local.json is missing. Generate it -- this machine's paths "
               "are detected, not typed:", file=sys.stderr)
-        print("    tools/build.sh find-tools", file=sys.stderr)
+        print("    start.sh find-tools", file=sys.stderr)
         sys.exit(1)
     return _Local(json.loads(path.read_text(encoding="utf-8")))
 

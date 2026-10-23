@@ -15,7 +15,7 @@
  *     played eth peer, so PortTool's own peer runs end to end against the
  *     firmware - how mode=mirror gets measured here (PORTTOOL-FLOW.md B.9)
  *
- * Build: tools/build.sh sim   (sources.txt, the same list T4-01 compiles)
+ * Build: start.sh sim   (sources.txt, the same list T4-01 compiles)
  */
 
 /* Linux libcs hide clock_gettime / nanosleep under -std=c11. Not on macOS:

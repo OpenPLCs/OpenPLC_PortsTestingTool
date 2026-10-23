@@ -12,7 +12,7 @@
 // what they say. It never writes flash and never drives an output that needs
 // wiring; it starts and stops sessions.
 //
-// Chrome is CHROME in tools/local.json (tools/build.sh find-tools).
+// Chrome is CHROME in tools/local.json (start.sh find-tools).
 // Criteria: $PROD/docs/engineering/HOW-TO-RUN-PORTTOOL-TESTS.md 「T4-02 的判据」.
 //
 // Exit 0 = every check held, 1 = a check failed, 2 = could not run at all.
@@ -149,7 +149,7 @@ func panelExe() string {
 		p = filepath.Join(repo, "Output", "bin", plat, name)
 	}
 	if _, err := os.Stat(p); err != nil {
-		Fail(fmt.Sprintf("no PortTool at %s - run tools/build.sh tool", p))
+		Fail(fmt.Sprintf("no PortTool at %s - run start.sh tool", p))
 		os.Exit(2)
 	}
 	return p
@@ -274,11 +274,11 @@ func consoleLine(text, where string) (string, string) {
 func chromePath() string {
 	p := localcfg.Load(repo)["CHROME"]
 	if p == "" {
-		Fail("CHROME is not set in tools/local.json - run tools/build.sh find-tools, or --set CHROME=<path to chrome>")
+		Fail("CHROME is not set in tools/local.json - run start.sh find-tools, or --set CHROME=<path to chrome>")
 		os.Exit(2)
 	}
 	if _, err := os.Stat(p); err != nil {
-		Fail("CHROME in tools/local.json does not exist: " + p + " - run tools/build.sh find-tools")
+		Fail("CHROME in tools/local.json does not exist: " + p + " - run start.sh find-tools")
 		os.Exit(2)
 	}
 	return p

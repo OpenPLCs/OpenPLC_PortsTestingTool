@@ -38,7 +38,7 @@ t4_05()   { step T4-05   "the step-6 demo speaks the fixture protocol (one Go te
 t4_02_run() {
   local os=windows
   case "$(uname -s)" in Linux) os=linux ;; Darwin) os=darwin; [ "$(uname -m)" = arm64 ] && os=darwin-arm64 ;; esac
-  tools/build.sh tool --os "$os" >/dev/null && tools/build.sh sim >/dev/null || { echo "could not build PortTool or the simulated board"; return 1; }
+  bash start.sh tool --os "$os" >/dev/null && bash start.sh sim >/dev/null || { echo "could not build PortTool or the simulated board"; return 1; }
   go run ./TestCase/host/porttool_panel --port sim
 }
 t4_02()   { step T4-02   "the panel clicked through in a real browser, against the simulated board" t4_02_run; }
