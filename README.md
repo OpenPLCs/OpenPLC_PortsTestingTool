@@ -37,7 +37,7 @@ PortTool. It runs `go run ./tools/ptbuild` from the repository root, so it
 needs Go and, on Windows, Git Bash. Without arguments it shows a menu; with
 arguments it runs that item directly. `start.sh` in the repository root
 opens the same menu, so double-clicking it is enough. "All" empties `Output/`
-first; a single build item deletes only what it is about to rebuild. Run `tools/build.sh find-tools` once
+first; a single build item deletes only what it is about to rebuild. The menu defaults to "All" and the delete question defaults to "Yes", so pressing Enter twice builds everything; the window then waits for one more Enter before it closes. Run `tools/build.sh find-tools` once
 first: it finds the tools below and writes `tools/local.json`. Every item
 checks the tools it needs before it starts and names any that are missing.
 

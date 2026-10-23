@@ -166,7 +166,7 @@ func cleanOutput() error {
 	}
 	if interactive {
 		n, err := ask("Delete everything above, including the panel's saved settings and records beside the exe?",
-			[]string{"Yes, delete it and build everything", "No, stop"}, 2)
+			[]string{"Yes, delete it and build everything", "No, stop"}, 1)
 		if err != nil {
 			return err
 		}
@@ -275,7 +275,7 @@ func menu() error {
 		"Build the simulated board",
 		"Pack the delivery folder",
 		"All                            (firmware + PortTool + delivery)",
-	}, 2)
+	}, 7) // two bare Enters (this and the delete question) build everything
 	if err != nil {
 		return err
 	}
