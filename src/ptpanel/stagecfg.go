@@ -327,7 +327,7 @@ func (c stageCfg) check(st ptitems.Stage, caps ptproto.Caps, hasCaps bool) *msg 
 			for _, p := range it.Params {
 				editable = editable || p == k
 			}
-			if !editable || v == "" || strings.ContainsAny(v, " \t=") || !ptlib.HostParamOK(k, v) {
+			if !editable || v == "" || strings.ContainsAny(v, " \t=") || !ptlib.HostParamOK(it.ID, k, v) {
 				return ref(m("go.stagecfg.bad_param", "item", m(it.Name), "param", k, "value", v))
 			}
 			if bad := loadTargetBad(k, v); bad != nil {

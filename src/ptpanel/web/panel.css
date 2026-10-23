@@ -19,6 +19,8 @@ button:disabled{opacity:.45;cursor:not-allowed}
 button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 button.primary:hover:not(:disabled){opacity:.88;color:#fff}
 /* Buttons by role (decision 151): start = primary, stop = red, a per-row action = blue; .on = in effect */
+button.warnbtn{background:var(--warn);border-color:var(--warn);color:#fff}
+button.warnbtn:hover:not(:disabled){opacity:.88;color:#fff}
 button.stop{background:var(--err);border-color:var(--err);color:#fff}
 button.stop:hover:not(:disabled){opacity:.88;color:#fff;border-color:var(--err)}
 button.act{border-color:#1f5fbf;color:#1f5fbf}
@@ -63,7 +65,7 @@ main.shell.rd #statcol{display:none}
 main.shell.full #logcol{display:none}
 #afterconn{display:contents}
 #afterconn:not(.live)>*{opacity:.35;pointer-events:none}
-#menus{margin-top:14px;padding-top:10px;border-top:2px solid var(--line)}
+#menus{margin-top:14px;padding-top:10px;border-top:2px solid var(--ink3)}
 @media(max-width:1100px){main.shell.rd,main.shell.full{grid-template-columns:1fr;grid-template-areas:"conn" "head" "mid" "right" "stat" "log";height:auto}
   #leftgrip{display:none}}
 
@@ -232,7 +234,7 @@ table.crit tr.bad td{color:var(--err)}
 .l.panel{border-left-color:#2f7a68;color:#2f7a68}
 
 /* Left column: pick the control port, then everything else. */
-#connbox{padding:0 0 10px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+#connbox{padding:0 0 10px;margin-bottom:10px;border-bottom:2px solid var(--ink3)}
 .step{font:600 12px var(--sans);color:var(--ink2);margin:0 0 7px;letter-spacing:.3px}
 .connrow{display:flex;gap:6px;margin-top:7px}
 /* Connection block rows (js/connzone.js). */
@@ -252,6 +254,14 @@ table.crit tr.bad td{color:var(--err)}
 .crow .cok{flex-basis:100%;color:var(--ok);font-size:11.5px}
 .crow .cwhy{flex-basis:100%;color:var(--warn);font-size:11.5px}
 .crow.reserved{opacity:.6}
+/* A line between every row of the other connections (decision 162). */
+.crow+.crow{border-top:1px solid var(--line2);padding-top:3px}
+#btbox{display:flex;align-items:center;gap:5px;margin-top:4px}
+/* Grouped by machine, a thick line between groups (decision 163). */
+.cgroup{display:flex;flex-direction:column;gap:3px}
+.cgroup+.cgroup{border-top:1px solid var(--line2);padding-top:5px;margin-top:3px}
+.cghead{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--ink2)}
+.cghead select{max-width:170px;font-size:11.5px}
 /* One rule instead of disabled on every control, so a new control cannot miss the gate. */
 .gated{opacity:.35;pointer-events:none}
 .tgtres{font-size:11.5px;color:var(--ink3);margin-left:8px}
@@ -275,9 +285,12 @@ details summary:hover{color:var(--ink2)}
   background:var(--off-bg);color:var(--off)}
 .chk{font-size:12.5px;line-height:1.6}
 .chk.bad{color:var(--err)}
+.chk.ok{color:var(--ok)}
 dl.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:12px;margin:6px 0}
 dl.kv dt{color:var(--ink3)} dl.kv dd{margin:0}
-.params{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;align-items:center;font-size:12.5px}
+.params{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;align-items:start;font-size:12.5px}
+/* The label sits level with its box, not with the middle of box plus hint beneath it. */
+.params>.pl{min-height:26px;display:flex;align-items:center}
 .ptwarn{color:#8a5300;font-size:12.5px;margin-top:2px}
 #libask{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;
   background:var(--card);border:2px solid var(--accent);border-radius:6px;
@@ -423,3 +436,6 @@ table.rltab .unit{color:var(--ink3);font-size:12px;margin-left:3px}
 .rngmarks[hidden],.rngtab[hidden]{display:none}
 #refpage tr.rpopen{cursor:pointer}
 #refpage tr.rpopen.on>td{background:var(--accent-bg)}
+
+.lseline{height:92px;overflow:hidden;color:var(--accent)}
+.lseline svg{display:block;max-width:100%;height:70px}

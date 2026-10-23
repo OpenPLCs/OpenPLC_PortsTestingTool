@@ -10,7 +10,7 @@ import (
 // pass; "either" is a verdict this bench cannot decide. On a real bench every
 // port is "either": its wiring decides.
 var sweepExpectSim = map[string][2]string{
-	"rtc": {"unjudged", "the crystal items are recorded only (decision 160)"},
+	"rtc": {"pass", "the default limits judge the simulated crystal (decision 164)"},
 }
 
 // autoPicks ticks the R&D items of port that run with nobody and nothing

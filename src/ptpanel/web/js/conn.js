@@ -28,6 +28,21 @@ let allPorts = [];
 
 let chosenPort = null;
 
+// Bluetooth serial ports are left out of every serial dropdown in the
+// connection area unless 「显示蓝牙串口」 is ticked; the one a dropdown has
+// chosen stays (decision 162). The server says which are Bluetooth (ptmatch).
+function btShown(list, keep) {
+  const on = typeof uiMemo !== "undefined" && uiMemo.bt === "1";   // memo.js loads after this file
+  return on ? list : list.filter(p => !p.bt || (keep && p.name === keep));
+}
+
+$("#showbt").onchange = () => {
+  uiMemo.bt = $("#showbt").checked ? "1" : "0";
+  memoSoon();
+  loadPorts();
+  refreshConnRows(true);
+};
+
 // A hint, never a choice: the label is all there is, and adapters can share a VID/PID.
 function looksLikeRs232(label) {
   return /pl2303|prolific|ft232|ftdi|cp210|ch343|usb-serial ch34/i.test(label);
@@ -53,7 +68,8 @@ async function loadPorts() {
   }
 
   // The simulated board goes last: every reading it gives is invented (decision 128).
-  const ports = j.ports.filter(p => p.name !== "sim").concat(j.ports.filter(p => p.name === "sim"));
+  const shown = btShown(j.ports, (state && state.connected && state.port) || chosenPort);
+  const ports = shown.filter(p => p.name !== "sim").concat(shown.filter(p => p.name === "sim"));
   sel.appendChild(new Option(T("html.ctl_pick"), ""));
   for (const p of ports) {
     let text = p.label;

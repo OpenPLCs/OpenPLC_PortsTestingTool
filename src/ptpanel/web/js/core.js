@@ -26,26 +26,27 @@ document.title = T("html.title");
 for (const n of document.querySelectorAll("[data-t]")) { n.innerHTML = T(n.dataset.t); }
 for (const n of document.querySelectorAll("[data-t-placeholder]")) { n.placeholder = T(n.dataset.tPlaceholder); }
 
-// The connection column is as wide as it was last dragged (decision 112). A
-// layout preference of this viewer only, so the browser keeps it; without
-// storage the default width still works.
+// The connection column is as wide as it was last dragged (decisions 112, 162):
+// kept in the page memo's "ui" section (memo.js), applied when it loads.
+const LEFTW_MIN = 200, LEFTW_MAX = 640;
+function applyLeftWidth(w) {
+  if (!w) { return; }
+  $("main.shell").style.setProperty("--leftw", Math.max(LEFTW_MIN, Math.min(LEFTW_MAX, w)) + "px");
+}
 {
-  const KEY = "porttool.leftw", MIN = 200, MAX = 640;
   const shell = $("main.shell"), grip = $("#leftgrip");
-  const apply = w => shell.style.setProperty("--leftw", Math.max(MIN, Math.min(MAX, w)) + "px");
-  try { const w = Number(localStorage.getItem(KEY)); if (w) { apply(w); } } catch (e) { /* no storage */ }
   grip.title = T("html.leftgrip");
   grip.onpointerdown = ev => {
     ev.preventDefault();
     grip.setPointerCapture(ev.pointerId);
     grip.classList.add("drag");
     const left = shell.getBoundingClientRect().left;
-    grip.onpointermove = e => apply(e.clientX - left);
+    grip.onpointermove = e => applyLeftWidth(e.clientX - left);
     grip.onpointerup = () => {
       grip.onpointermove = grip.onpointerup = null;
       grip.classList.remove("drag");
       const w = parseInt(getComputedStyle(shell).getPropertyValue("--leftw"), 10);
-      try { if (w) { localStorage.setItem(KEY, String(w)); } } catch (e) { /* no storage */ }
+      if (w) { uiMemo.leftw = String(w); memoSave(); }   // at once: a reload right after must keep it
     };
   };
 }

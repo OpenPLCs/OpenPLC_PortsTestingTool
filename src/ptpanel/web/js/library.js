@@ -30,6 +30,9 @@ for (const t of ["pointerup", "pointercancel"]) {
 async function libRefresh() {
   const j = await api("/api/lib");
   if (!j || j.error) { return; }
+  // A run on the crystal page may have left another drive: read it again (decision 166).
+  if (lseWasRunning && !j.running && view === "rd" && lport === "rtc") { lseRead(); }
+  lseWasRunning = !!j.running;
   libData = j;
   libLogRounds();
   rdOnRefresh();
@@ -117,8 +120,8 @@ async function libStartOnly(ids) {
 }
 
 // The Start beside an R&D 「只测一次」 card's name: Stop while this card runs.
-function libItemStart(ids) {
-  const b = el("button", "primary", T("shell.item.start"));
+function libItemStart(ids, label) {
+  const b = el("button", "primary", label || T("shell.item.start"));
   b.dataset.startitem = ids.join(",");
   const mine = ids.some(id => (libState(id) || {}).running) || (libPageBusy && ids.some(id => libPageIds.includes(id)));
   if (mine) { b.textContent = T("lib.stop"); b.className = "stop"; b.onclick = libStop; return b; }
@@ -253,12 +256,15 @@ function libParamEditor(it) {
   const def = (libData.defaults || {})[it.id] || {};
   for (const k of names) {
     box.appendChild(el("span", "pl", paramLabel(it, k)));
-    const inp = paramField(it.port, k, (libEdits[it.id] || {})[k] ?? def[k] ?? "");
+    const now = (libEdits[it.id] || {})[k] ?? def[k] ?? "";
+    const inp = (it.choices || {})[k] ? choiceField(k, it.choices[k], now) : paramField(it.port, k, now);
     inp.dataset.libparam = it.id + "." + k;
     inp.disabled = libRunning() && !rdOnlyCard();   // an R&D card's own session keeps its settings open
+    // A limit cleared on purpose is kept empty: not judged, only recorded (decision 164).
+    const isLimit = k in (it.limits || {});
     const keep = x => {
       const e = libEdits[it.id] = libEdits[it.id] || {};
-      if (x === "" || x === def[k]) { delete e[k]; } else { e[k] = x; }
+      if ((x === "" && !isLimit) || x === def[k]) { delete e[k]; } else { e[k] = x; }
     };
     const help = paramHelp(it.port, k);
     const cell = el("span");
@@ -270,9 +276,53 @@ function libParamEditor(it) {
       cell.appendChild(inp);
     }
     if (help) { inp.title = help; }
+    // The crystal cards' Start / Stop sits beside the parameter that sets what it does (decision 166).
+    if (INLINE_START[it.id] === k) {
+      if (it.id === "rtc.lsemargin") { inp.onchange = () => { keep(inp.value); renderRight(); }; }
+      cell.appendChild(libItemStart([it.id], it.id === "rtc.lsemargin" && lseChosenDrv() !== "all" ? T("lse.set") : undefined));
+    }
+    // Where a limit's default comes from, said beside it (decision 164).
+    const src = (LIMIT_SOURCE[it.id] || {})[k];
+    if (src) { cell.appendChild(el("div", "hint", T(src))); }
     box.appendChild(cell);
   }
+  // The margin card says which drive the board is on, above its parameters (decision 166).
+  if (it.id === "rtc.lsemargin") {
+    const wrap = el("div");
+    wrap.append(lseCurrentLine(), box);
+    return wrap;
+  }
   return box;
+}
+
+// Cards whose Start / Stop is drawn beside this parameter, not in the card header.
+const INLINE_START = { "rtc.lsefreq": "minutes", "rtc.lsemargin": "drv" };
+
+// The drive the dropdown has chosen: "all" or one level; the Set / Restore buttons follow it, not the board.
+function lseChosenDrv() {
+  return (libEdits["rtc.lsemargin"] || {}).drv || (((libData.defaults || {})["rtc.lsemargin"] || {}).drv) || "all";
+}
+
+// The sentence beside each limit parameter: where its default comes from (decision 164).
+const LIMIT_SOURCE = {
+  "rtc.lsefreq": { ppm_max: "lse.src.ppm_max", drift_max: "lse.src.drift_max" },
+  "rtc.lsemargin": { start_ms_max: "lse.src.start_ms_max" },
+};
+
+// A parameter kept on the PC with a fixed list of values (ptitems Choices).
+function choiceField(k, values, value) {
+  const s = el("select");
+  for (const v of values) { s.appendChild(new Option(choiceLabel(k, v), v)); }
+  s.value = String(value);
+  return s;
+}
+// The crystal frequency's minutes: 0 once, -1 until stopped (decision 162).
+function choiceLabel(k, v) {
+  if (k === "drv") { return v === "all" ? T("lse.drv.all") : lseDrvName(v); }
+  if (k !== "minutes") { return valueCN(v); }
+  if (v === "0") { return T("shell.dur.once"); }
+  if (v === "-1") { return T("shell.dur.forever"); }
+  return T("shell.dur.min", { n: v });
 }
 
 // A parameter the board states as a list (pt.caps limits=) is picked from it,
@@ -399,7 +449,9 @@ function lseTable(head, rows) {
   return t;
 }
 
-// Frequency, deviation and window; the HSE error is in the number, so it is only recorded.
+// Frequency, deviation and window; with minutes, the run's spread too. The
+// HSE error is in every ppm and cancels out of the drift, so both are only
+// recorded; a stopped crystal or a missed capture fails it (decision 162).
 function lseFreqCard(it, st) {
   const box = el("div"), v = (st && st.values) || [];
   box.dataset.lse = "freq";
@@ -411,27 +463,172 @@ function lseFreqCard(it, st) {
     box.appendChild(lseTable([T("shell.item.col.item"), T("shell.item.col.got")], [
       [T("lse.freq.hz"), lseGet(v, "hz")], [T("lse.freq.ppm"), lseGet(v, "ppm")], [T("lse.freq.ms"), lseGet(v, "ms")]]));
   }
+  const lf = st && st.lse_freq;
+  if (lf && lf.minutes !== 0 && lf.count) {
+    box.appendChild(lseRunTable(lf, st.running));
+    if ((lf.series || []).length > 1) { box.appendChild(lseLine(lf.series)); }
+  }
   box.appendChild(el("div", "hint", T("lse.freq.note")));
   return box;
 }
 
-// One row per restart, in the order sent; the last is the switch back to mlow.
+// A parameter's value as the card has it: typed, else the default ("" = cleared, not judged).
+function libVal(id, k) {
+  const e = (libEdits[id] || {})[k];
+  return e !== undefined ? e : ((((libData.defaults || {})[id] || {})[k]) ?? "");
+}
+
+// 项目 / 预期 / 结果 for a timed run, expectations from the card's settings; a
+// result is marked when it meets or breaks its limit (decision 164).
+// The drift is judged when a timed run has measured to its end, so it is not marked while running.
+function lseRunTable(lf, running) {
+  const f = x => x.toFixed(2);
+  const timed = lf.minutes > 0;
+  const ppmMax = libVal("rtc.lsefreq", "ppm_max"), driftMax = libVal("rtc.lsefreq", "drift_max");
+  const within = x => ppmMax === "" ? null : Math.abs(x) <= Number(ppmMax);
+  const wantPpm = ppmMax === "" ? T("lse.exp.unjudged") : T("lse.exp.within", { max: ppmMax });
+  const rows = [
+    [T("lse.run.count"), timed ? T("shell.dur.min", { n: lf.minutes }) : "", String(lf.count), null],
+    [T("lse.run.elapsed"), timed ? fmtSecs(lf.minutes * 60) : "", fmtSecs(Math.round(lf.elapsed_ms / 1000)), null],
+    [T("lse.run.min"), wantPpm, f(lf.min), within(lf.min)],
+    [T("lse.run.max"), wantPpm, f(lf.max), within(lf.max)],
+    [T("lse.run.avg"), "", f(lf.avg), null],
+  ];
+  if (timed) {
+    rows.push([T("lse.run.drift"), driftMax === "" ? T("lse.exp.unjudged") : T("lse.exp.drift", { max: driftMax }), f(lf.drift),
+      driftMax === "" || running ? null : lf.drift <= Number(driftMax)]);
+  }
+  const t = el("table", "crit");
+  const hr = el("tr");
+  for (const k of ["shell.item.col.item", "shell.item.col.want", "shell.item.col.got"]) { hr.appendChild(el("th", null, T(k))); }
+  t.appendChild(hr);
+  for (const [name, want, got, ok] of rows) {
+    const tr = el("tr", ok === null ? "" : (ok ? "ok" : "bad"));
+    tr.appendChild(el("td", null, name));
+    tr.appendChild(el("td", null, want));
+    tr.appendChild(el("td", "mono", (ok === null ? "" : ok ? "✅ " : "❌ ") + got));
+    t.appendChild(tr);
+  }
+  t.dataset.lse = "run";
+  return t;
+}
+
+// ppm against time: a fixed 70 px, at most one point per pixel column (the
+// series is averaged down), and a y-range of at least +-1 ppm around the data
+// so a flat series is a centred line, not a degenerate one.
+function lseLine(series) {
+  const W = 260, H = 70, NS = "http://www.w3.org/2000/svg";
+  let ys = series;
+  if (ys.length > W) {
+    const step = ys.length / W;
+    ys = Array.from({ length: W }, (_, i) => {
+      const part = series.slice(Math.floor(i * step), Math.max(Math.floor(i * step) + 1, Math.floor((i + 1) * step)));
+      return part.reduce((a, b) => a + b, 0) / part.length;
+    });
+  }
+  const dmin = Math.min(...series), dmax = Math.max(...series);
+  const mid = (dmin + dmax) / 2, half = Math.max((dmax - dmin) / 2, 1);
+  const lo = mid - half, hi = mid + half, span = hi - lo;
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.dataset.lse = "line";
+  const pts = ys.map((y, i) => (i * W / (ys.length - 1)).toFixed(1) + "," + (H - 4 - (y - lo) * (H - 8) / span).toFixed(1));
+  const pl = document.createElementNS(NS, "polyline");
+  pl.setAttribute("points", pts.join(" "));
+  pl.setAttribute("fill", "none"); pl.setAttribute("stroke", "currentColor"); pl.setAttribute("stroke-width", "1.5");
+  svg.appendChild(pl);
+  const box = el("div", "lseline");
+  box.appendChild(svg);
+  box.appendChild(el("div", "hint", T("lse.run.axis", { lo: lo.toFixed(1), hi: hi.toFixed(1) })));
+  return box;
+}
+
+// One row per drive that was restarted, and where the run is (decision 166).
+// The verdict is the server's: every mlow restart must start within start_ms_max.
 function lseMarginCard(it, st) {
-  const box = el("div"), runs = (st && st.runs) || [];
+  const box = el("div"), lm = st && st.lse_margin;
   box.dataset.lse = "margin";
-  if (!runs.length) { return box; }
-  const rows = runs.map((r, i) => {
-    const m = /drv=(\w+)/.exec(r.sent), name = m && LSE_DRV[m[1]] ? T(LSE_DRV[m[1]]) : r.sent;
-    const fb = lseGet(r.values, "fallback"), err = lseGet(r.values, "error");
-    const up = err ? T("lse.error", { e: err }) : T(lseGet(r.values, "ready") === "1" && !fb ? "lse.up.yes" : "lse.up.no");
-    return [i > 0 && i === (it.targets || []).length - 1 ? T("lse.back", { drv: name }) : name, up,
-      lseGet(r.values, "start_ms"), T(fb ? "lse.fb.yes" : "lse.fb.no")];
-  });
-  box.appendChild(lseTable([T("lse.col.drv"), T("lse.col.up"), T("lse.col.ms"), T("lse.col.fallback")], rows));
+  if (!lm) { return box; }
+  // What this run was set to (the dropdown and fields as they are now).
+  const lim = lm.limit === undefined || lm.limit === null ? T("lse.ms.nolimit") : T("lse.ms.limit", { max: lm.limit });
+  const drvSet = libVal("rtc.lsemargin", "drv") || "all";
+  const set = el("div", "hint", T("lse.margin.settings", { drv: drvSet === "all" ? T("lse.drv.all") : lseDrvName(drvSet),
+    count: libVal("rtc.lsemargin", "count") || "1", limit: lim }));
+  set.dataset.lsesettings = "1";
+  box.appendChild(set);
+  if (st.running && lm.rounds > 0) {
+    const p = el("div", "hint", T(lm.single ? "lse.margin.progress1" : "lse.margin.progress", { round: lm.round, rounds: lm.rounds }));
+    p.dataset.lseprogress = "1";
+    box.appendChild(p);
+  }
+  const f = x => (Math.round(x * 100) / 100).toFixed(2);
+  const rows = (lm.drives || []).map(r => [lseDrvName(r.drv), String(r.runs), String(r.started), String(r.failed),
+    r.started ? r.min_ms + " / " + r.max_ms + " / " + Math.round(r.avg_ms) : "—",
+    r.ppm_n ? f(r.min_ppm) + " / " + f(r.max_ppm) + " / " + f(r.avg_ppm) : "—"]);
+  box.appendChild(lseTable([T("lse.col.drv"), T("lse.col.times"), T("lse.col.started"), T("lse.col.failed"), T("lse.col.ms3"), T("lse.col.ppm3")], rows));
+  if (lm.skipped) { box.appendChild(el("div", "chk bad", T("lse.margin.skipped"))); }
+  // What the verdict rests on: the slowest mlow restart against the limit.
+  const ml = (lm.drives || []).find(r => r.drv === "mlow");
+  const basis = el("div", "hint", ml ? T("lse.margin.basis", { max: ml.started ? ml.max_ms : "—", limit: lim }) : T("lse.margin.basis_none"));
+  basis.dataset.lsebasis = "1";
+  box.appendChild(basis);
+  if (!lm.single && ml) { box.appendChild(el("div", "hint", T("lse.margin.extra"))); }
   return box;
 }
 
 const LSE_CARDS = { "rtc.lsefreq": lseFreqCard, "rtc.lsemargin": lseMarginCard };
+const lseDrvName = d => (d && LSE_DRV[d] ? T(LSE_DRV[d]) : (d || "?"));
+
+/* ---- the drive the board is on, and the way back to the factory one (decision 166) ---- */
+
+let lseDrv = { key: "", drv: "", busy: false };
+let lseWasRunning = false;
+
+// One target's reply fields ("OK lse drv=mlow ready=1" -> {drv, ready}); null without one.
+function lseReply(j, target) {
+  const line = ((j && j.lines) || []).find(l => l.startsWith("OK " + target + " "));
+  if (!line) { return null; }
+  const out = {};
+  for (const f of line.slice(4 + target.length).trim().split(/\s+/)) {
+    const i = f.indexOf("=");
+    if (i > 0) { out[f.slice(0, i)] = f.slice(i + 1); }
+  }
+  return out;
+}
+
+// Read the current drive: on entering the page, after connecting, after each run.
+async function lseRead() {
+  if (!state.connected) { lseDrv.drv = ""; return; }
+  const f = lseReply(await run("pt.run lse"), "lse");
+  lseDrv.drv = f ? (f.drv || "") : "";
+  renderRight();
+}
+
+// Factory is mlow: set it, say so when it did not start or fell back, read again.
+async function lseRestore() {
+  lseDrv.busy = true; renderRight();
+  try {
+    const f = lseReply(await run("pt.run lse drv=mlow"), "lse");
+    if (!f || f.ready !== "1" || f.fallback || f.error) { showMessage(T("lse.restore.failed"), true); }
+  } finally { lseDrv.busy = false; }
+  await lseRead();
+}
+
+function lseCurrentLine() {
+  const key = (rdVisit ? rdVisit.tag : "") + "|" + (state.connected ? state.port : "");
+  if (state.connected && lseDrv.key !== key && !lseDrv.busy) { lseDrv.key = key; lseRead(); }
+  const row = el("div", "row");
+  const cur = el("span", null, T("lse.cur", { drv: lseDrv.drv ? lseDrvName(lseDrv.drv) : T("lse.cur.unknown") }));
+  cur.dataset.lsecur = lseDrv.drv;
+  const b = el("button", null, T("lse.restore")); b.dataset.lserestore = "1";
+  // Follows the dropdown: with 全部 the run ends on mlow by itself; with one level this is the way back.
+  b.className = "warnbtn";
+  b.disabled = !lseDrv.drv || lseDrv.drv === "mlow";   // only the board's current drive decides
+  b.onclick = lseRestore;
+  row.append(cur, b);
+  return row;
+}
 
 // Port list: the port's verdict from the last run of its items.
 function libPortBadge(port) {

@@ -96,6 +96,31 @@ type Item struct {
 	// plugs it back; judged by its criteria step when the plan has one, else
 	// recorded (decision 150, PORTTOOL-FLOW.md C.3.6 「断开恢复」).
 	Recover bool `json:"recover,omitempty"`
+	// Choices are the values a parameter kept on the PC may take, the first
+	// the default; the card offers them as a list (decision 162).
+	Choices map[string][]string `json:"choices,omitempty"`
+	// Limits are pass/fail thresholds kept on the PC, with their defaults; a
+	// cleared one is not judged, only recorded (decision 164).
+	Limits map[string]string `json:"limits,omitempty"`
+	// Ranges are whole-number parameters kept on the PC, with their bounds and
+	// default (rtc.lsemargin's count, decision 166).
+	Ranges map[string]Range `json:"ranges,omitempty"`
+}
+
+// Range is the bounds and default of a whole-number parameter.
+type Range struct {
+	Lo  int `json:"lo"`
+	Hi  int `json:"hi"`
+	Def int `json:"def"`
+}
+
+// HostKept says the item keeps parameter k on the PC rather than sending it
+// to the board: the shared names (HostParam) and the item's own lists, limits
+// and ranges. By item because a name like "count" is the board's for others.
+func (it Item) HostKept(k string) bool {
+	_, lim := it.Limits[k]
+	_, rng := it.Ranges[k]
+	return HostParam(k) || it.Choices[k] != nil || lim || rng
 }
 
 // Parameters kept on the PC; never sent to the board as they are.
@@ -107,8 +132,55 @@ const (
 	// filled; the board takes ch / close / open / count (decision 123).
 	ParamOrder   = "order"   // par | ser
 	ParamBy      = "by"      // gap: holds typed | time: holds worked out from minutes and count
-	ParamMinutes = "minutes" // per relay, the time its count should take (by=time)
+	ParamMinutes = "minutes" // per relay, the time its count should take (by=time); rtc.lsefreq: how long to measure
+	// Crystal limits (decision 164): |ppm| and drift for rtc.lsefreq, start-up ms for rtc.lsemargin.
+	ParamPpmMax     = "ppm_max"
+	ParamDriftMax   = "drift_max"
+	ParamStartMSMax = "start_ms_max"
+	// rtc.lsemargin (decision 166): which drive to restart, and how many times each.
+	ParamDrv   = "drv"
+	ParamCount = "count"
 )
+
+// LseDrives are rtc.lsemargin's drive choices; "all" is the default and means
+// low, mlow, mhigh and high each round.
+var LseDrives = []string{"all", "low", "mlow", "mhigh", "high"}
+
+// RangeOf is an item's whole-number parameter bounds; ok false when k is not one.
+func RangeOf(id, k string) (Range, bool) {
+	for _, it := range Catalogue {
+		if it.ID == id {
+			r, ok := it.Ranges[k]
+			return r, ok
+		}
+	}
+	return Range{}, false
+}
+
+// Limit is an item's default for a limit parameter; ok false when k is not one.
+func Limit(id, k string) (string, bool) {
+	for _, it := range Catalogue {
+		if it.ID == id {
+			v, ok := it.Limits[k]
+			return v, ok
+		}
+	}
+	return "", false
+}
+
+// LseFreqMinutes are rtc.lsefreq's durations in minutes: once, 1, 10, 60,
+// until stopped (decision 162).
+var LseFreqMinutes = []string{"0", "1", "10", "60", "-1"}
+
+// Choices is the values an item's parameter may take; nil when it is not a list.
+func Choices(id, k string) []string {
+	for _, it := range Catalogue {
+		if it.ID == id {
+			return it.Choices[k]
+		}
+	}
+	return nil
+}
 
 // retiredParams are parameters an item no longer takes. Saved configurations
 // and page memories may still carry them, so they are dropped on read rather
@@ -163,7 +235,7 @@ func LoadChannel(k string) string {
 // HostParam says a parameter is kept on the PC rather than taken by the firmware.
 func HostParam(k string) bool {
 	switch k {
-	case ParamOut1, ParamOut2, ParamOrder, ParamBy, ParamMinutes:
+	case ParamOut1, ParamOut2, ParamOrder, ParamBy, ParamMinutes, ParamPpmMax, ParamDriftMax, ParamStartMSMax:
 		return true
 	}
 	return false
@@ -282,6 +354,32 @@ func load(it Item) Item {
 	it.Params = append(it.Params, ParamOut1, ParamOut2)
 	return it
 }
+func choices(it Item, k string, vs ...string) Item {
+	if it.Choices == nil {
+		it.Choices = map[string][]string{}
+	}
+	it.Choices[k] = vs
+	return it
+}
+
+// limit adds an editable limit parameter with its default (decision 164).
+func rng(it Item, k string, lo, hi, def int) Item {
+	if it.Ranges == nil {
+		it.Ranges = map[string]Range{}
+	}
+	it.Ranges[k] = Range{lo, hi, def}
+	it.Params = append(it.Params, k)
+	return it
+}
+
+func limit(it Item, k, def string) Item {
+	if it.Limits == nil {
+		it.Limits = map[string]string{}
+	}
+	it.Limits[k] = def
+	it.Params = append(it.Params, k)
+	return it
+}
 
 // Ports is the catalogue's port order and labels. Labels already used by the
 // panel are reused.
@@ -382,11 +480,15 @@ var Catalogue = func() []Item {
 		human(onRef(params(item("relay", "cycle", 0, []Target{session("relay", "mode", "cycle")}, all3, []Peer{PeerRef, PeerHuman}),
 			"ch", "close", "open", "count", ParamOrder, ParamBy, ParamMinutes), session("din", "mode", "level")), AnswerNumber),
 		params(item("temp", "read", 0, []Target{session("temp")}, all3, none, "temperature"), "period"),
-		// The 32.768 kHz crystal, recorded only (decision 160): its frequency against
-		// the HSE-derived TIM16, and a restart on every drive ending back on mlow.
-		once(item("rtc", "lsefreq", 0, []Target{run("lse.freq")}, rdOnly, none)),
-		once(item("rtc", "lsemargin", 0, []Target{run("lse drv=low"), run("lse drv=mlow"), run("lse drv=mhigh"),
-			run("lse drv=high"), run("lse drv=mlow")}, rdOnly, none)),
+		// The 32.768 kHz crystal (decision 160): its frequency against the HSE-derived
+		// TIM16, repeated for minutes (decision 162), and a restart on every drive
+		// ending back on mlow.
+		// Limits per decision 164: LSE ±20 + HSE ±20 ppm; drift with margin; start-up one step under the 5 s timeout.
+		limit(limit(choices(params(once(item("rtc", "lsefreq", 0, []Target{run("lse.freq")}, rdOnly, none)), ParamMinutes), ParamMinutes, LseFreqMinutes...),
+			ParamPpmMax, "40"), ParamDriftMax, "5"),
+		// The restarts are sent by ptlib/lse.go from the drive and count parameters (decision 166).
+		limit(rng(choices(params(once(item("rtc", "lsemargin", 0, []Target{run("lse")}, rdOnly, none)), ParamDrv), ParamDrv, LseDrives...),
+			ParamCount, 1, 100, 1), ParamStartMSMax, "2000"),
 	)
 	// Pull and plug back, one per communication port, R&D only (decision 150).
 	for _, r := range []struct {

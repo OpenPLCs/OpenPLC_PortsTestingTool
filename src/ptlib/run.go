@@ -89,15 +89,10 @@ type State struct {
 	Chans []ptreport.ChannelResult `json:"chans,omitempty"`
 	// Round: the last finished round of the timed phase (timed.go, decision 151).
 	Round *Round `json:"round,omitempty"`
-	// Runs: every pt.run of a criteria-less item, in order; Values keeps only the
-	// last. The LSE margin card shows one row per drive (decision 160).
-	Runs []RunReply `json:"runs,omitempty"`
-}
-
-// RunReply is one pt.run a criteria-less item sent and the fields it got back.
-type RunReply struct {
-	Sent   string      `json:"sent"`
-	Values [][2]string `json:"values"`
+	// LseMargin: the crystal restarts per drive (lse.go, decision 166).
+	LseMargin *LseMarginState `json:"lse_margin,omitempty"`
+	// LseFreq: the crystal frequency measured again and again (lse.go, decision 162).
+	LseFreq *LseFreqState `json:"lse_freq,omitempty"`
 }
 
 // maxEvents is how many event frames a card keeps (PORTTOOL-FLOW.md C.3.6).
@@ -426,6 +421,12 @@ func (e *Engine) once(ctx context.Context, j *job) (ptreport.Outcome, string, st
 	if j.recover {
 		return e.runRecover(ctx, j)
 	}
+	if j.lseFreq {
+		return e.runLseFreq(ctx, j)
+	}
+	if j.lseMargin {
+		return e.runLseMargin(ctx, j)
+	}
 	verdict := ptreport.OutcomePass
 	if j.record {
 		verdict = Recorded
@@ -751,10 +752,7 @@ func (e *Engine) record(ctx context.Context, j *job) (ptreport.Outcome, string) 
 			att.Outcome = Recorded
 			e.addAttempts(j, att)
 			vals := valuesOf(att)
-			e.change(j.item.ID, func(s *State) {
-				s.Values = vals
-				s.Runs = append(s.Runs, RunReply{Sent: cmd, Values: vals})
-			})
+			e.change(j.item.ID, func(s *State) { s.Values = vals })
 			continue
 		}
 		if o, d := e.recordSession(ctx, j, t, &att); o != Recorded {

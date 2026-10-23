@@ -314,7 +314,7 @@ function itemCard(it, solo) {
   };
   if (!solo) { hd.appendChild(c); }
   hd.appendChild(el("b", null, it.name));
-  if (solo) { hd.appendChild(libItemStart([it.id])); }
+  if (solo && !INLINE_START[it.id]) { hd.appendChild(libItemStart([it.id])); }   // library.js: the crystal cards start beside their parameter
   if (it.pending) { hd.appendChild(el("span", "todo", it.pending)); }
   hd.appendChild(el("span", "sp"));
   if (!isCfgView(view)) { hd.appendChild(libPill(it)); } // a sub-test's card shows no result (decision 125)
@@ -323,7 +323,8 @@ function itemCard(it, solo) {
   const body = el("div", "ib");
   const left = el("div");
   left.appendChild(el("h3", null, T("shell.item.what")));
-  left.appendChild(el("div", null, it.what));
+  // One line per sentence: a text with line breaks (the crystal margin card) shows each on its own line.
+  for (const ln of String(it.what).split(String.fromCharCode(10))) { left.appendChild(el("div", null, ln)); }
 
   left.appendChild(el("h3", null, T("shell.item.peer")));
   const peers = peersIn(view, it);

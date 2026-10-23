@@ -591,8 +591,11 @@ func (s *Server) libJSON() map[string]any {
 		if st.Round != nil {
 			row["round"] = st.Round // decision 151
 		}
-		if len(st.Runs) > 1 {
-			row["runs"] = st.Runs // one row per pt.run on the LSE margin card (decision 160)
+		if st.LseFreq != nil {
+			row["lse_freq"] = st.LseFreq // decision 162
+		}
+		if st.LseMargin != nil {
+			row["lse_margin"] = st.LseMargin // decision 166
 		}
 		states[id] = row
 		list = append(list, st)

@@ -9,6 +9,7 @@ package ptlib
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -116,6 +117,8 @@ type job struct {
 	relayRan  []RelayChan   // the relays as runRelay left them, for relayVerdict
 	load      bool          // AO under load, read per channel (aoload.go)
 	recover   bool          // pulled and plugged back by a person (recover.go)
+	lseFreq   bool          // the crystal frequency, repeated for its minutes (lse.go)
+	lseMargin bool          // the crystal restarted on every drive, judged by its limit (lse.go)
 	loadSteps []ptplan.Step // the load's criteria, AO1 then AO2
 	steps     []ptplan.Step // judged steps, ref companions included; nil when record-only
 	record    bool
@@ -138,6 +141,15 @@ func Defaults(it ptitems.Item, plan ptplan.Plan, caps ptproto.Caps) map[string]s
 	out := map[string]string{}
 	p, _ := caps.Port(it.Port)
 	for _, k := range it.Params {
+		if cs := it.Choices[k]; len(cs) > 0 {
+			out[k] = cs[0]
+		}
+		if v, ok := it.Limits[k]; ok {
+			out[k] = v
+		}
+		if r, ok := it.Ranges[k]; ok {
+			out[k] = strconv.Itoa(r.Def)
+		}
 		if v, ok := p.Values[k]; ok {
 			out[k] = v
 		}
@@ -171,8 +183,18 @@ var hostParamRule = map[string]string{
 	ptitems.ParamMinutes: "must be a number above 0, or relay:number pairs",
 }
 
-// HostParamOK checks a parameter kept on the PC; true for any other.
-func HostParamOK(k, v string) bool {
+// HostParamOK checks a parameter of item id kept on the PC; true for any other.
+func HostParamOK(id, k, v string) bool {
+	if cs := ptitems.Choices(id, k); cs != nil {
+		return slices.Contains(cs, v)
+	}
+	if _, ok := ptitems.Limit(id, k); ok {
+		return LimitOK(v)
+	}
+	if r, ok := ptitems.RangeOf(id, k); ok {
+		n, err := strconv.Atoi(strings.TrimSpace(v))
+		return err == nil && n >= r.Lo && n <= r.Hi
+	}
 	if ptitems.LoadChannel(k) != "" {
 		return LoadTargetOK(v)
 	}
@@ -290,6 +312,14 @@ func build(items []ptitems.Item, plan ptplan.Plan, caps ptproto.Caps, picks []Pi
 			fillLoad(j, plan)
 			continue
 		}
+		if it.ID == lseFreqItem {
+			j.lseFreq = true
+			continue
+		}
+		if it.ID == lseMarginItem {
+			j.lseMargin = true
+			continue
+		}
 		// Relays are judged relay by relay by relayVerdict, not by plan steps.
 		if it.ID == relayItem {
 			j.relay = true
@@ -322,9 +352,19 @@ func checkParams(it ptitems.Item, caps ptproto.Caps, params map[string]string) e
 		if !allowed {
 			return &PickError{Code: "param_fixed", Item: it.ID, Param: k}
 		}
-		if ptitems.HostParam(k) {
-			if !HostParamOK(k, v) {
-				return &PickError{Code: "param_refused", Item: it.ID, Param: k, Why: hostParamRule[k]}
+		if it.HostKept(k) {
+			if !HostParamOK(it.ID, k, v) {
+				why := hostParamRule[k]
+				if r, ok := it.Ranges[k]; ok {
+					why = fmt.Sprintf("must be a whole number from %d to %d", r.Lo, r.Hi)
+				}
+				if cs := it.Choices[k]; cs != nil {
+					why = "must be one of " + strings.Join(cs, ", ")
+				}
+				if _, ok := it.Limits[k]; ok {
+					why = "must be a number of 0 or more, or empty to only record"
+				}
+				return &PickError{Code: "param_refused", Item: it.ID, Param: k, Why: why}
 			}
 			continue
 		}

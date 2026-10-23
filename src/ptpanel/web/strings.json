@@ -1837,11 +1837,11 @@
    "de_of": "1214d633"
   },
   "html.step1": {
-   "zh": "第一步：连接 RS232 串口",
-   "en": "Step 1: connect the RS232 serial port",
-   "en_of": "915d76c8",
-   "de": "Schritt 1: RS232-Schnittstelle verbinden",
-   "de_of": "915d76c8"
+   "zh": "第一步：连接控制口（RS232 串口）",
+   "en": "Step 1: connect the control port (RS232 serial port)",
+   "en_of": "27fdc833",
+   "de": "Schritt 1: Steuerport verbinden (serielle RS232-Schnittstelle)",
+   "de_of": "27fdc833"
   },
   "html.title": {
    "zh": "端口测试工装",
@@ -3888,11 +3888,11 @@
    "de_of": "c387d9bc"
   },
   "shell.types": {
-   "zh": "测试类型",
-   "en": "Test types",
-   "en_of": "b5f61064",
-   "de": "Prüfarten",
-   "de_of": "b5f61064"
+   "zh": "第三步：选测试类型",
+   "en": "Step 3: pick a test type",
+   "en_of": "f63e6fa5",
+   "de": "Schritt 3: Prüfart wählen",
+   "de_of": "f63e6fa5"
   },
   "shell.ports": {
    "zh": "端口",
@@ -4168,11 +4168,11 @@
    "de_of": "5e2b4df8"
   },
   "conn.title": {
-   "zh": "其余连接",
-   "en": "Other connections",
-   "en_of": "000b14e9",
-   "de": "Weitere Verbindungen",
-   "de_of": "000b14e9"
+   "zh": "第二步：接其余连接",
+   "en": "Step 2: the other connections",
+   "en_of": "686b34a3",
+   "de": "Schritt 2: die weiteren Verbindungen",
+   "de_of": "686b34a3"
   },
   "conn.usb": {
    "zh": "板子 USB",
@@ -10706,18 +10706,18 @@
    "de_of": "66822e55"
   },
   "lib.item.rtc.lsemargin.name": {
-   "zh": "晶振起振余量",
-   "en": "Crystal start-up margin",
-   "en_of": "c944a7e2",
-   "de": "Quarz-Anschwingreserve",
-   "de_of": "c944a7e2"
+   "zh": "晶振驱动档与起振余量",
+   "en": "Crystal drive level and start-up margin",
+   "en_of": "37116bad",
+   "de": "Quarz-Treiberstufe und Anschwingreserve",
+   "de_of": "37116bad"
   },
   "lib.item.rtc.lsemargin.what": {
-   "zh": "把 32.768 kHz 晶振按低、中低、中高、高四个驱动档各重新起振一次，记下每档起没起来、用了多久，最后切回中低档。起振那几秒板子时钟停走，日期时间不清零。一档起不来要等 5 秒再退回中低档，所以这一项最长约 50 秒。",
-   "en": "Restarts the 32.768 kHz crystal once on each of the four drive levels (low, medium-low, medium-high, high), records whether it started and how long it took, and finally switches back to medium-low. The board clock stops for those seconds; date and time are kept. A level that does not start waits 5 s and then falls back to medium-low, so this item takes up to about 50 s.",
-   "en_of": "b1ac2b31",
-   "de": "Startet den 32,768-kHz-Quarz einmal in jeder der vier Treiberstufen (niedrig, mittel-niedrig, mittel-hoch, hoch) neu, hält fest, ob er anschwingt und wie lange es dauert, und schaltet zum Schluss auf mittel-niedrig zurück. Die Platinenuhr steht in diesen Sekunden still; Datum und Uhrzeit bleiben erhalten. Eine Stufe, die nicht anschwingt, wartet 5 s und fällt dann auf mittel-niedrig zurück, daher dauert dieser Punkt bis zu etwa 50 s.",
-   "de_of": "b1ac2b31"
+   "zh": "重启 32.768 kHz 晶振，记下起没起来、用了多久，起振后量频率偏差。\n• 全部：每轮低、中低、中高、高各重启一遍并各量一次频率（次数 = 轮数），跑完切回中低档。\n• 选一个档：设到这个档只重启一次，再量「次数」次频率，板子留在这个档，点「恢复出厂档位」回去。\n• 起振那几秒（起不来最长 5 秒），板子的日期时间会停。",
+   "en": "Restarts the 32.768 kHz crystal, records whether it starts and how long it takes, then measures its frequency deviation.\n• All: each round restarts low, medium-low, medium-high and high once and measures the frequency once each (Times = rounds), then goes back to medium-low.\n• One level: set it (one restart), then measure the frequency \"Times\" times; the board stays on it until you click \"Restore factory level\".\n• During start-up (up to 5 s for a failed start) the board’s date and time stop.",
+   "en_of": "3b3bd6f4",
+   "de": "Startet den 32,768-kHz-Quarz neu, hält fest, ob er anschwingt und wie lange es dauert, und misst danach die Frequenzabweichung.\n• Alle: jede Runde startet niedrig, mittel-niedrig, mittel-hoch und hoch je einmal neu und misst je einmal die Frequenz (Anzahl = Runden), am Ende zurück auf mittel-niedrig.\n• Eine Stufe: setzen (ein Neustart), dann „Anzahl“-mal die Frequenz messen; die Platine bleibt darauf, bis Sie „Werksstufe wiederherstellen“ klicken.\n• Beim Anschwingen (bei Misserfolg bis zu 5 s) stehen Datum und Uhrzeit der Platine still.",
+   "de_of": "3b3bd6f4"
   },
   "lse.freq.hz": {
    "zh": "频率（Hz）",
@@ -10748,11 +10748,11 @@
    "de_of": "be109050"
   },
   "lse.freq.note": {
-   "zh": "主晶振的误差也算在里面，所以只记录，不判过不过。",
-   "en": "The main crystal’s own error is included in this number, so it is only recorded, not judged pass or fail.",
-   "en_of": "3039a63f",
-   "de": "Der Fehler des Hauptquarzes steckt mit in dieser Zahl, daher wird sie nur festgehalten und nicht als bestanden oder nicht bestanden bewertet.",
-   "de_of": "3039a63f"
+   "zh": "主晶振的固定误差在偏差里，在漂移里互相抵掉。停振、丢了捕获、偏差或漂移超过上限就不过；上限清空就只记录。",
+   "en": "The main crystal's fixed error is in the deviation and cancels out in the drift. A stopped crystal, a missed capture, or a deviation or drift over its limit fails; with a limit left empty it is only recorded.",
+   "en_of": "300caf80",
+   "de": "Der feste Fehler des Hauptquarzes steckt in der Abweichung und hebt sich in der Drift auf. Ein stehender Quarz, eine verpasste Erfassung oder eine Abweichung bzw. Drift über ihrer Grenze gilt als nicht bestanden; mit leerer Grenze wird nur festgehalten.",
+   "de_of": "300caf80"
   },
   "lse.error": {
    "zh": "板子报错：{e}",
@@ -10767,27 +10767,6 @@
    "en_of": "7c40d866",
    "de": "Treiberstufe",
    "de_of": "7c40d866"
-  },
-  "lse.col.up": {
-   "zh": "起没起来",
-   "en": "Started",
-   "en_of": "af081880",
-   "de": "Angeschwungen",
-   "de_of": "af081880"
-  },
-  "lse.col.ms": {
-   "zh": "起振用时（ms）",
-   "en": "Start-up time (ms)",
-   "en_of": "80237c9e",
-   "de": "Anschwingzeit (ms)",
-   "de_of": "80237c9e"
-  },
-  "lse.col.fallback": {
-   "zh": "退回中低档",
-   "en": "Fell back to medium-low",
-   "en_of": "8fa59a21",
-   "de": "Auf mittel-niedrig zurückgefallen",
-   "de_of": "8fa59a21"
   },
   "lse.drv.low": {
    "zh": "低",
@@ -10816,41 +10795,6 @@
    "en_of": "b096b3f5",
    "de": "Hoch",
    "de_of": "b096b3f5"
-  },
-  "lse.back": {
-   "zh": "{drv}（切回）",
-   "en": "{drv} (switched back)",
-   "en_of": "dbb46278",
-   "de": "{drv} (zurückgeschaltet)",
-   "de_of": "dbb46278"
-  },
-  "lse.up.yes": {
-   "zh": "起来了",
-   "en": "Yes",
-   "en_of": "d96116b1",
-   "de": "Ja",
-   "de_of": "d96116b1"
-  },
-  "lse.up.no": {
-   "zh": "没起来",
-   "en": "No",
-   "en_of": "63d93439",
-   "de": "Nein",
-   "de_of": "63d93439"
-  },
-  "lse.fb.yes": {
-   "zh": "退回了",
-   "en": "Yes",
-   "en_of": "bdfb40dc",
-   "de": "Ja",
-   "de_of": "bdfb40dc"
-  },
-  "lse.fb.no": {
-   "zh": "没有",
-   "en": "No",
-   "en_of": "8dcff1eb",
-   "de": "Nein",
-   "de_of": "8dcff1eb"
   },
   "conn.match": {
    "zh": "自动识别",
@@ -11145,6 +11089,328 @@
    "en_of": "fcc5ff7e",
    "de": "Der Verbindungsbereich erkennt damit Wandler; kein Prüfpunkt",
    "de_of": "fcc5ff7e"
+  },
+  "conn.title_hint": {
+   "zh": "只接要测的端口用到的，用不到的不用管。",
+   "en": "Connect only what the ports you test need; leave the rest.",
+   "en_of": "015c7d4c",
+   "de": "Nur anschließen, was die zu prüfenden Ports brauchen; den Rest weglassen.",
+   "de_of": "015c7d4c"
+  },
+  "html.show_bt": {
+   "zh": "显示蓝牙串口",
+   "en": "Show Bluetooth ports",
+   "en_of": "660ec0df",
+   "de": "Bluetooth-Ports anzeigen",
+   "de_of": "660ec0df"
+  },
+  "conn.grp.dut": {
+   "zh": "被测板",
+   "en": "The board under test",
+   "en_of": "c3c85c6f",
+   "de": "Die geprüfte Platine",
+   "de_of": "c3c85c6f"
+  },
+  "go.link.usb_other_board": {
+   "zh": "{com} 是另一块板（UID 末 6 位 {uid}）的 USB 口，不是这块被测板的。请选被测板自己的 USB 口。",
+   "en": "{com} is the USB port of another board (UID ending {uid}), not of the board under test. Pick the board under test's own USB port.",
+   "en_of": "0b487fc3",
+   "de": "{com} ist der USB-Port einer anderen Platine (UID endet auf {uid}), nicht der geprüften Platine. Bitte den eigenen USB-Port der geprüften Platine wählen.",
+   "de_of": "0b487fc3"
+  },
+  "lse.run.count": {
+   "zh": "量了几次",
+   "en": "Measurements",
+   "en_of": "6215ebdd",
+   "de": "Messungen",
+   "de_of": "6215ebdd"
+  },
+  "lse.run.elapsed": {
+   "zh": "已用时间",
+   "en": "Time so far",
+   "en_of": "1bf38eff",
+   "de": "Bisherige Zeit",
+   "de_of": "1bf38eff"
+  },
+  "lse.run.min": {
+   "zh": "偏差最小（ppm）",
+   "en": "Lowest deviation (ppm)",
+   "en_of": "cb79ff95",
+   "de": "Kleinste Abweichung (ppm)",
+   "de_of": "cb79ff95"
+  },
+  "lse.run.max": {
+   "zh": "偏差最大（ppm）",
+   "en": "Highest deviation (ppm)",
+   "en_of": "407b34b8",
+   "de": "Größte Abweichung (ppm)",
+   "de_of": "407b34b8"
+  },
+  "lse.run.avg": {
+   "zh": "偏差平均（ppm）",
+   "en": "Average deviation (ppm)",
+   "en_of": "4d2f8835",
+   "de": "Mittlere Abweichung (ppm)",
+   "de_of": "4d2f8835"
+  },
+  "lse.run.drift": {
+   "zh": "漂移 = 最大 − 最小（ppm）",
+   "en": "Drift = highest − lowest (ppm)",
+   "en_of": "0054d09b",
+   "de": "Drift = größte − kleinste (ppm)",
+   "de_of": "0054d09b"
+  },
+  "lse.run.axis": {
+   "zh": "偏差随时间（{lo} ~ {hi} ppm）",
+   "en": "Deviation over time ({lo} ~ {hi} ppm)",
+   "en_of": "be87c5bf",
+   "de": "Abweichung über die Zeit ({lo} ~ {hi} ppm)",
+   "de_of": "be87c5bf"
+  },
+  "param.ppm_max": {
+   "zh": "偏差上限（ppm）",
+   "en": "Deviation limit (ppm)",
+   "en_of": "e4602f87",
+   "de": "Grenze Abweichung (ppm)",
+   "de_of": "e4602f87"
+  },
+  "param.drift_max": {
+   "zh": "漂移上限（ppm）",
+   "en": "Drift limit (ppm)",
+   "en_of": "c75f6660",
+   "de": "Grenze Drift (ppm)",
+   "de_of": "c75f6660"
+  },
+  "param.start_ms_max": {
+   "zh": "起振用时上限（ms）",
+   "en": "Start-up time limit (ms)",
+   "en_of": "e2c29f08",
+   "de": "Grenze Anschwingzeit (ms)",
+   "de_of": "e2c29f08"
+  },
+  "lse.src.ppm_max": {
+   "zh": "默认 40：32.768 kHz 晶振 ±20 ppm 加主晶振 ±20 ppm（25 °C 的频率容差，出自分销商页面，没对过厂家手册）。清空就只记录不判。",
+   "en": "Default 40: ±20 ppm of the 32.768 kHz crystal plus ±20 ppm of the main crystal (frequency tolerance at 25 °C, from distributor listings, not checked against the maker’s datasheet). Leave empty to only record.",
+   "en_of": "e8ce64eb",
+   "de": "Standard 40: ±20 ppm des 32,768-kHz-Quarzes plus ±20 ppm des Hauptquarzes (Frequenztoleranz bei 25 °C, aus Händlerangaben, nicht mit dem Herstellerdatenblatt abgeglichen). Leer lassen, um nur festzuhalten.",
+   "de_of": "e8ce64eb"
+  },
+  "lse.src.drift_max": {
+   "zh": "默认 5：室温下 32.768 kHz 晶振自己的温漂不到 1 ppm，主晶振的温漂没查到，留了余量。只在按时长量完时判。清空就只记录不判。",
+   "en": "Default 5: at room temperature the 32.768 kHz crystal’s own drift is under 1 ppm; the main crystal’s drift is not known, so there is margin. Judged only at the end of a timed run. Leave empty to only record.",
+   "en_of": "8fdb198f",
+   "de": "Standard 5: Bei Raumtemperatur driftet der 32,768-kHz-Quarz selbst um weniger als 1 ppm; die Drift des Hauptquarzes ist unbekannt, daher mit Reserve. Nur am Ende einer Messung mit Dauer bewertet. Leer lassen, um nur festzuhalten.",
+   "de_of": "8fdb198f"
+  },
+  "lse.src.start_ms_max": {
+   "zh": "默认 2000：没核实过，只是比固件 5 秒的起振超时严一档。清空就只记录不判。",
+   "en": "Default 2000: not verified, just one step stricter than the firmware’s 5 s start-up timeout. Leave empty to only record.",
+   "en_of": "7c8cf31c",
+   "de": "Standard 2000: nicht überprüft, nur eine Stufe strenger als das Anschwing-Timeout der Firmware von 5 s. Leer lassen, um nur festzuhalten.",
+   "de_of": "7c8cf31c"
+  },
+  "conn.board.uid": {
+   "zh": "UID 末 6 位 {uid}",
+   "en": "UID ending {uid}",
+   "en_of": "de1d4974",
+   "de": "UID endet auf {uid}",
+   "de_of": "de1d4974"
+  },
+  "conn.board.serial": {
+   "zh": "USB 序列号 {serial}",
+   "en": "USB serial {serial}",
+   "en_of": "66e97a25",
+   "de": "USB-Seriennummer {serial}",
+   "de_of": "66e97a25"
+  },
+  "conn.board.sim": {
+   "zh": "模拟板",
+   "en": "Simulated board",
+   "en_of": "674ea2c8",
+   "de": "Simulierte Platine",
+   "de_of": "674ea2c8"
+  },
+  "conn.board.none": {
+   "zh": "没看到板子",
+   "en": "No board seen",
+   "en_of": "8f7e2785",
+   "de": "Keine Platine gefunden",
+   "de_of": "8f7e2785"
+  },
+  "param.drv": {
+   "zh": "档位",
+   "en": "Drive level",
+   "en_of": "2cfe7e40",
+   "de": "Treiberstufe",
+   "de_of": "2cfe7e40"
+  },
+  "param.count": {
+   "zh": "次数",
+   "en": "Times",
+   "en_of": "d4a97e75",
+   "de": "Anzahl",
+   "de_of": "d4a97e75"
+  },
+  "lse.drv.all": {
+   "zh": "全部",
+   "en": "All",
+   "en_of": "778fc8f9",
+   "de": "Alle",
+   "de_of": "778fc8f9"
+  },
+  "lse.col.times": {
+   "zh": "重启几次",
+   "en": "Restarts",
+   "en_of": "87224801",
+   "de": "Neustarts",
+   "de_of": "87224801"
+  },
+  "lse.col.started": {
+   "zh": "起振几次",
+   "en": "Started",
+   "en_of": "ca7178ec",
+   "de": "Angeschwungen",
+   "de_of": "ca7178ec"
+  },
+  "lse.col.failed": {
+   "zh": "没起来或退回中低档",
+   "en": "Did not start or fell back",
+   "en_of": "e75a25e7",
+   "de": "Nicht angeschwungen oder zurückgefallen",
+   "de_of": "e75a25e7"
+  },
+  "lse.col.ms3": {
+   "zh": "起振用时 最小 / 最大 / 平均（ms）",
+   "en": "Start-up time min / max / average (ms)",
+   "en_of": "ed55d2fe",
+   "de": "Anschwingzeit min / max / Mittel (ms)",
+   "de_of": "ed55d2fe"
+  },
+  "lse.margin.progress": {
+   "zh": "正在跑第 {round} 轮，共 {rounds} 轮",
+   "en": "Round {round} of {rounds} running",
+   "en_of": "2af96071",
+   "de": "Runde {round} von {rounds} läuft",
+   "de_of": "2af96071"
+  },
+  "lse.cur": {
+   "zh": "当前档位：{drv}",
+   "en": "Current drive level: {drv}",
+   "en_of": "2f32d416",
+   "de": "Aktuelle Treiberstufe: {drv}",
+   "de_of": "2f32d416"
+  },
+  "lse.cur.unknown": {
+   "zh": "未知",
+   "en": "unknown",
+   "en_of": "d9c32a4c",
+   "de": "unbekannt",
+   "de_of": "d9c32a4c"
+  },
+  "lse.restore": {
+   "zh": "恢复出厂档位",
+   "en": "Restore factory level",
+   "en_of": "671505f4",
+   "de": "Werksstufe wiederherstellen",
+   "de_of": "671505f4"
+  },
+  "lse.restore.failed": {
+   "zh": "中低档没起振或退回了，板子现在的档位见「当前档位」。",
+   "en": "The medium-low level did not start or fell back; see \"Current drive level\" for where the board is now.",
+   "en_of": "510a8258",
+   "de": "Mittel-niedrig ist nicht angeschwungen oder zurückgefallen; die aktuelle Stufe steht unter „Aktuelle Treiberstufe“.",
+   "de_of": "510a8258"
+  },
+  "lse.set": {
+   "zh": "设置",
+   "en": "Set",
+   "en_of": "7debf9cb",
+   "de": "Setzen",
+   "de_of": "7debf9cb"
+  },
+  "lse.col.ppm3": {
+   "zh": "频率偏差 最小 / 最大 / 平均（ppm）",
+   "en": "Frequency deviation min / max / average (ppm)",
+   "en_of": "57023fc7",
+   "de": "Frequenzabweichung min / max / Mittel (ppm)",
+   "de_of": "57023fc7"
+  },
+  "lse.margin.progress1": {
+   "zh": "正在量第 {round} 次频率，共 {rounds} 次",
+   "en": "Frequency measurement {round} of {rounds} running",
+   "en_of": "14016072",
+   "de": "Frequenzmessung {round} von {rounds} läuft",
+   "de_of": "14016072"
+  },
+  "lse.margin.skipped": {
+   "zh": "这个档没起振，所以没有量频率。",
+   "en": "This level did not start, so no frequency was measured.",
+   "en_of": "1bbb8a20",
+   "de": "Diese Stufe ist nicht angeschwungen, daher wurde keine Frequenz gemessen.",
+   "de_of": "1bbb8a20"
+  },
+  "lse.exp.within": {
+   "zh": "在 ±{max} ppm 以内",
+   "en": "within ±{max} ppm",
+   "en_of": "2c1840ae",
+   "de": "innerhalb ±{max} ppm",
+   "de_of": "2c1840ae"
+  },
+  "lse.exp.drift": {
+   "zh": "不超过 {max} ppm",
+   "en": "at most {max} ppm",
+   "en_of": "f028dcb3",
+   "de": "höchstens {max} ppm",
+   "de_of": "f028dcb3"
+  },
+  "lse.exp.unjudged": {
+   "zh": "不判",
+   "en": "not judged",
+   "en_of": "f0ee66c3",
+   "de": "nicht bewertet",
+   "de_of": "f0ee66c3"
+  },
+  "lse.ms.limit": {
+   "zh": "{max} ms",
+   "en": "{max} ms",
+   "en_of": "9f75a476",
+   "de": "{max} ms",
+   "de_of": "9f75a476"
+  },
+  "lse.ms.nolimit": {
+   "zh": "不判",
+   "en": "not judged",
+   "en_of": "f0ee66c3",
+   "de": "nicht bewertet",
+   "de_of": "f0ee66c3"
+  },
+  "lse.margin.settings": {
+   "zh": "本次设置：档位 {drv}，次数 {count}，起振用时上限 {limit}",
+   "en": "This run: level {drv}, times {count}, start-up time limit {limit}",
+   "en_of": "bdbc7f46",
+   "de": "Diese Messung: Stufe {drv}, Anzahl {count}, Grenze Anschwingzeit {limit}",
+   "de_of": "bdbc7f46"
+  },
+  "lse.margin.basis": {
+   "zh": "判定依据：中低档起振用时 最大 {max} ms，上限 {limit}",
+   "en": "Verdict basis: medium-low start-up time, longest {max} ms, limit {limit}",
+   "en_of": "7dd9a3e1",
+   "de": "Bewertungsgrundlage: Anschwingzeit mittel-niedrig, längste {max} ms, Grenze {limit}",
+   "de_of": "7dd9a3e1"
+  },
+  "lse.margin.basis_none": {
+   "zh": "判定依据：只记录，不判",
+   "en": "Verdict basis: recorded only, not judged",
+   "en_of": "459c3ef1",
+   "de": "Bewertungsgrundlage: nur festgehalten, nicht bewertet",
+   "de_of": "459c3ef1"
+  },
+  "lse.margin.extra": {
+   "zh": "中低档多的一次是最后切回的。",
+   "en": "The extra medium-low restart is the final switch back.",
+   "en_of": "72937b2d",
+   "de": "Der zusätzliche Neustart auf mittel-niedrig ist das abschließende Zurückschalten.",
+   "de_of": "72937b2d"
   }
  }
 }

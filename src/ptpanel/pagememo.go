@@ -29,10 +29,15 @@ var PageMemoFile string
 
 var pageMemoMu sync.Mutex
 
-// pageMemo is porttool_pagememo.json: section ("rd", "full") -> cell -> value.
+// pageMemo is porttool_pagememo.json: section ("rd", "full", "ui") -> cell -> value.
+// "ui" is the page's own state whatever the test type: the connection column's
+// width and whether Bluetooth ports are listed (decision 162).
 type pageMemo map[string]map[string]string
 
-var memoSections = map[string]bool{"rd": true, "full": true}
+var memoSections = map[string]bool{"rd": true, "full": true, "ui": true}
+
+// The connection column's width in px, as the page lets it be dragged.
+const leftWMin, leftWMax = 200, 640
 
 func pageMemoPath() string {
 	if PageMemoFile != "" {
@@ -158,6 +163,20 @@ func (s *Server) handlePageMemo(w http.ResponseWriter, r *http.Request) {
 func memoCellBad(section, key, v string, all map[string]string, caps ptproto.Caps, hasCaps bool) *msg {
 	parts := strings.Split(key, "|")
 	bad := func(lo, hi any) *msg { return ref(m("go.memo.out_of_range", "value", v, "lo", lo, "hi", hi)) }
+	if section == "ui" {
+		switch key {
+		case "leftw":
+			if x, err := strconv.Atoi(v); err != nil || x < leftWMin || x > leftWMax {
+				return bad(leftWMin, leftWMax)
+			}
+			return nil
+		case "bt":
+			if v == "0" || v == "1" {
+				return nil
+			}
+		}
+		return ref(m("go.memo.unknown", "cell", fmt.Sprintf("%s=%s", key, v)))
+	}
 	if section == "full" {
 		if len(parts) == 2 && parts[0] == "step" && (v == "0" || v == "1") {
 			return nil
@@ -194,7 +213,8 @@ func memoCellBad(section, key, v string, all map[string]string, caps ptproto.Cap
 		for _, p := range it.Params {
 			editable = editable || p == k
 		}
-		if !editable || v == "" || strings.ContainsAny(v, " \t=") || !ptlib.HostParamOK(k, v) {
+		_, isLimit := it.Limits[k] // a cleared limit is kept: it means record only (decision 164)
+		if !editable || (v == "" && !isLimit) || strings.ContainsAny(v, " \t=") || !ptlib.HostParamOK(it.ID, k, v) {
 			return ref(m("go.stagecfg.bad_param", "item", m(it.Name), "param", k, "value", v))
 		}
 		if bad := loadTargetBad(k, v); bad != nil {

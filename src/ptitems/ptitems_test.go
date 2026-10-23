@@ -72,7 +72,7 @@ func TestTargetsFitTheFirmware(t *testing.T) {
 		}
 		p, _ := c.Port(it.Port)
 		for _, k := range it.Params {
-			if HostParam(k) {
+			if it.HostKept(k) {
 				continue // kept on the PC (decisions 91, 106)
 			}
 			if !takes(p, k) {
@@ -308,7 +308,7 @@ func TestDecision138Items(t *testing.T) {
 }
 
 // Decision 160: the crystal page is R&D only, both items once, no peer, record only;
-// the margin item tries every drive and ends back on mlow.
+// the margin item's restarts are sent from its drive and count (decision 166).
 func TestDecision160Items(t *testing.T) {
 	byID := map[string]Item{}
 	for _, it := range Catalogue {
@@ -316,7 +316,7 @@ func TestDecision160Items(t *testing.T) {
 	}
 	want := map[string][]string{
 		"rtc.lsefreq":   {"lse.freq"},
-		"rtc.lsemargin": {"lse drv=low", "lse drv=mlow", "lse drv=mhigh", "lse drv=high", "lse drv=mlow"},
+		"rtc.lsemargin": {"lse"},
 	}
 	for id, runs := range want {
 		it, ok := byID[id]

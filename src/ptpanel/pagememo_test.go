@@ -69,7 +69,7 @@ func TestPageMemoRefusesAnOutOfRangeValueAndKeepsTheLastGoodOne(t *testing.T) {
 		t.Fatal("good points refused")
 	}
 	for cell, v := range map[string]string{
-		"pts|ain.cal1": "0,2500,200000", // the user's screenshot: far above any AI range
+		"pts|ain.cal1":  "0,2500,200000", // the user's screenshot: far above any AI range
 		"tgt|aout.out1": "-3",
 		"pwm|1|duty":    "300", // 8 bits: 0..255
 		"dur|rd":        "9",
@@ -219,5 +219,69 @@ func TestPageMemoKeepsEachBoardsSnapshotApart(t *testing.T) {
 	}
 	if code, _ := postMemo(t, "rd", map[string]string{"snap|not-a-uid|din": `{}`}); code != 400 {
 		t.Errorf("a snapshot under a malformed UID was kept: %d", code)
+	}
+}
+
+// The "ui" section keeps the connection column's width and the Bluetooth tick;
+// anything else, or a width the page cannot drag to, is refused (decision 162).
+func TestPageMemoUISection(t *testing.T) {
+	memoServer(t)
+	if code, out := postMemo(t, "ui", map[string]string{"leftw": "320", "bt": "1"}); code != 200 {
+		t.Fatalf("good ui cells refused: %d %v", code, out)
+	}
+	for cell, v := range map[string]string{"leftw": "199", "bt": "2", "leftw|x": "300", "lang": "en"} {
+		// The page always sends its whole state: the good cells ride along.
+		cells := map[string]string{"leftw": "320", "bt": "1"}
+		cells[cell] = v
+		if code, _ := postMemo(t, "ui", cells); code != 400 {
+			t.Errorf("ui %s=%s kept: %d", cell, v, code)
+		}
+	}
+	if code, _ := postMemo(t, "ui", map[string]string{"leftw": "641", "bt": "1"}); code != 400 {
+		t.Errorf("a width above 640 was kept: %d", code)
+	}
+	got := getMemo(t)["ui"]
+	if got["leftw"] != "320" || got["bt"] != "1" {
+		t.Errorf("ui = %v, want the last good leftw=320 bt=1", got)
+	}
+}
+
+// A crystal limit may be cleared (record only) or set to a number of 0 or
+// more; anything else is refused (decision 164).
+func TestPageMemoLimitParams(t *testing.T) {
+	memoServer(t)
+	good := map[string]string{"par|rtc.lsefreq|ppm_max": "", "par|rtc.lsefreq|drift_max": "3.5", "par|rtc.lsemargin|start_ms_max": "1500"}
+	if code, out := postMemo(t, "rd", good); code != 200 {
+		t.Fatalf("good limits refused: %d %v", code, out)
+	}
+	for _, v := range []string{"-1", "abc"} {
+		// The page always sends its whole state: the good cells ride along.
+		cells := map[string]string{}
+		for k, x := range good {
+			cells[k] = x
+		}
+		cells["par|rtc.lsefreq|ppm_max"] = v
+		if code, _ := postMemo(t, "rd", cells); code != 400 {
+			t.Errorf("ppm_max %q kept: %d", v, code)
+		}
+	}
+	if got := getMemo(t)["rd"]; got["par|rtc.lsemargin|start_ms_max"] != "1500" || got["par|rtc.lsefreq|ppm_max"] != "" {
+		t.Errorf("rd = %v", got)
+	}
+}
+
+// rtc.lsemargin's drive and count are checked on the server (decision 166).
+func TestPageMemoLseMarginParams(t *testing.T) {
+	memoServer(t)
+	good := map[string]string{"par|rtc.lsemargin|drv": "mlow", "par|rtc.lsemargin|count": "20"}
+	if code, out := postMemo(t, "rd", good); code != 200 {
+		t.Fatalf("good cells refused: %d %v", code, out)
+	}
+	for cell, v := range map[string]string{"par|rtc.lsemargin|count": "0", "par|rtc.lsemargin|drv": "fast"} {
+		cells := map[string]string{"par|rtc.lsemargin|drv": "mlow", "par|rtc.lsemargin|count": "20"}
+		cells[cell] = v
+		if code, _ := postMemo(t, "rd", cells); code != 400 {
+			t.Errorf("%s=%s kept: %d", cell, v, code)
+		}
 	}
 }

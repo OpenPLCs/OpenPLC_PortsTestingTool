@@ -31,12 +31,19 @@ Type a number and press Enter. After each job it returns to the menu.
 
 Choose 2 (or 3) and a browser page opens by itself.
 
-1. Top left, "Connect": pick the board's **RS232 control port** (usually the USB-serial adapter plugged into this PC, terminals C05/C06) and click Connect
-2. On the left, pick a test type: **R&D test** runs items one by one, by hand; in the **full fixture test** you tick functional, aging, safety and user-level, set them up and run them in one go
-3. In the R&D test, pick a port in the middle; its item cards appear on the right, each saying what is tested, what to connect and what counts as a pass
-4. Tick the cards to run and click Start, top right. Anything a person has to measure or look at comes up as a question marked 🍍; fill it in
+Work down the left column, step 1, 2, 3:
 
-**No commands to remember.** For items with a peer (USB, network, RS485, CAN, reference board), connect that peer under "Connect" first.
+1. **Step 1: connect the control port**: pick the board's **RS232 control port** (usually the USB-serial adapter plugged into this PC, terminals C05/C06) and click Connect. Bluetooth serial ports are not listed; tick "Show Bluetooth ports" to list them, and the panel remembers it
+2. **Step 2: the other connections**: connect only what the ports you test need. This part is grouped by machine: the board under test, the reference board and this PC's own devices, each group named with the last 6 digits of the board's UID. The board's USB port is picked automatically by its serial number, so several boards on one PC do not get mixed up
+3. **Step 3: pick a test type**: **R&D test** runs items one by one, by hand; in the **full fixture test** you tick functional, aging, safety and user-level, set them up and run them in one go
+4. In the R&D test, pick a port in the middle; its item cards appear on the right, each saying what is tested, what to connect and what counts as a pass
+5. Tick the cards to run and click Start. Anything a person has to measure or look at comes up as a question marked 🍍; fill it in
+
+**No commands to remember.**
+
+⚠️ On the R&D test's "Clock (crystal)" page, "Crystal drive level and start-up margin" changes the crystal's drive level. With "All" it switches back to medium-low by itself when it ends or is stopped; **a single level you set stays on the board, even after a reset**: click "Restore factory level" (or run "All" once) to go back.
+
+⚠️ Some pass limits (for example the crystal's deviation, drift and start-up time limits) are not verified yet: the panel gives a default and the card says where it comes from. **Change them on the card; leave one empty to record without judging.**
 
 ⚠️ Opening the panel also opens a black window. **Do not close it** while testing: closing it stops the panel.
 

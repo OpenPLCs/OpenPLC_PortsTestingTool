@@ -25,6 +25,9 @@ type connState struct {
 	ref     refConn
 	probe   probeState
 	knx     knxState // the KNX USB interface row, knxusb.go
+	// uidAsked: the connection whose UID usbserial.go asked for, so a board
+	// that does not answer pt.id is not asked every second.
+	uidAsked *ptboard.Board
 }
 
 type boardClock struct {
@@ -41,6 +44,7 @@ type refConn struct {
 	board    *ptboard.Board
 	port     string
 	firmware string
+	uid      string // pt.id, for the group heading and its USB serial (decision 163)
 	err      msg
 }
 
@@ -95,6 +99,7 @@ func (s *Server) handleConn(w http.ResponseWriter, r *http.Request) {
 	out["boardIP"] = s.ipJSON()
 	s.mu.Unlock()
 	out["match"] = s.matchJSON()
+	out["usb"] = s.usbJSON()
 	writeJSON(w, 200, out)
 }
 
@@ -265,6 +270,10 @@ func (s *Server) openRef(port string) (msg, bool) {
 	if !simboard.IsSim(port) && strings.EqualFold(port, control) {
 		return m("go.ref.is_control", "port", port), false
 	}
+	// The board under test's own USB port is never the reference board (decision 163).
+	if bad := usbOwnerBad(port, s.uidNow()); bad != nil {
+		return *bad, false
+	}
 	s.closeRef()
 
 	rw, err := s.Open(port, serialx.DefaultBaud)
@@ -283,8 +292,9 @@ func (s *Server) openRef(port string) (msg, bool) {
 		return m("go.ref.no_caps", "port", port, "detail", err.Error()), false
 	}
 
+	uid, _ := uidOf(b)
 	s.conn.mu.Lock()
-	s.conn.ref = refConn{board: b, port: port, firmware: caps.Version}
+	s.conn.ref = refConn{board: b, port: port, firmware: caps.Version, uid: uid}
 	s.conn.mu.Unlock()
 	go s.watchRef(b)
 	s.say(m("go.ref.up", "port", port, "firmware", caps.Version))

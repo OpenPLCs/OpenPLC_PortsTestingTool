@@ -4,7 +4,8 @@
 // reloading, changing language or restarting the panel loses nothing
 // (PORTTOOL-FLOW.md C.3.6 「页面记住什么」). The configurations keep theirs in
 // /api/stagecfg; R&D and the full test's ticked steps are kept here, as flat
-// cells in /api/memo, one section per test type.
+// cells in /api/memo, one section per test type. The "ui" section is the page's
+// own state whatever the test type; nothing goes to browser storage (decision 162).
 //
 // A value that fails its check stays in the cell, red, with the reason under
 // it, and is never stored or sent to the board (「填数超量程」): it lives only
@@ -13,12 +14,14 @@
 let memoDraft = {};     // "<test type>#<cell key>" -> what was typed, while it is not acceptable
 let memoTimer = null;
 let memoLoaded = false;
+let uiMemo = { leftw: "", bt: "0" };   // the "ui" section: connection column width, Bluetooth ports listed
 
 /* ---------------- checks (the server repeats them) ---------------- */
 
 const memoNum = v => (String(v).trim() === "" ? NaN : Number(v));
 
 function memoItemOf(id) { return (catalog.items || []).find(it => it.id === id); }
+const memoIsLimit = (id, k) => k in ((memoItemOf(id) || {}).limits || {});
 
 // Why a value cannot be kept, in plain words; "" when it is fine. An empty
 // cell is always fine: it clears.
@@ -64,6 +67,11 @@ function memoBad(key, v) {
     case "blk": return within(0, 1000, "", true);
     case "par": {
       if (/[\s=]/.test(v)) { return T("memo.bad_param"); }
+      // A whole-number parameter kept on the PC: within its bounds (decision 166).
+      const rg = ((memoItemOf(p[1]) || {}).ranges || {})[p[2]];
+      if (rg) { return within(rg.lo, rg.hi, "", true); }
+      // A limit kept on the PC: a number of 0 or more (decision 164).
+      if (memoIsLimit(p[1], p[2])) { return within(0, 1000000, ""); }
       // An AO load target is checked against its own AO's range.
       const li = memoItemOf(p[1]);
       const lc = li && li.load ? loadChannelOf(p[2]) : "";
@@ -129,7 +137,12 @@ function memoCollect() {
   const put = (k, v) => { if (v !== undefined && v !== null && String(v) !== "") { rd[k] = String(v); } };
   for (const [k, off] of Object.entries(itemOff)) { if (k.startsWith("rd|")) { rd["off|" + k.slice(3)] = off ? "1" : "0"; } }
   for (const [k, v] of Object.entries(itemPeer)) { if (k.startsWith("rd|")) { put("peer|" + k.slice(3), v); } }
-  for (const [id, ps] of Object.entries(libEdits)) { for (const [k, v] of Object.entries(ps || {})) { put("par|" + id + "|" + k, v); } }
+  for (const [id, ps] of Object.entries(libEdits)) {
+    for (const [k, v] of Object.entries(ps || {})) {
+      // A cleared limit is kept as "": not judged (decision 164).
+      if (v === "" && k in ((memoItemOf(id) || {}).limits || {})) { rd["par|" + id + "|" + k] = ""; } else { put("par|" + id + "|" + k, v); }
+    }
+  }
   put("dur|rd", duration.rd);
   for (const [id, t] of Object.entries(anaPtsText)) { put("pts|" + id, String(t).replace(/[，\s]+/g, ",").replace(/,+/g, ",").replace(/^,|,$/g, "")); }
   for (const [id, t] of Object.entries(anaTarget)) { put("tgt|" + id, t); }
@@ -149,7 +162,9 @@ function memoCollect() {
     put("pwm|" + ch + "|freq", r.freq); put("pwm|" + ch + "|duty", r.duty);
   }
   for (const [st, on] of Object.entries(fullPick)) { full["step|" + st] = on ? "1" : "0"; }
-  return { rd, full };
+  const ui = { bt: uiMemo.bt === "1" ? "1" : "0" };
+  if (uiMemo.leftw) { ui.leftw = uiMemo.leftw; }
+  return { rd, full, ui };
 }
 
 function memoApply(f) {
@@ -183,6 +198,10 @@ function memoApply(f) {
     }
   }
   for (const [k, v] of Object.entries(full)) { const p = k.split("|"); if (p[0] === "step") { fullPick[p[1]] = v === "1"; } }
+  const ui = f.ui || {};
+  uiMemo = { leftw: ui.leftw || "", bt: ui.bt === "1" ? "1" : "0" };
+  applyLeftWidth(Number(uiMemo.leftw));   // core.js
+  $("#showbt").checked = uiMemo.bt === "1";
 }
 
 async function memoLoad() {
@@ -194,7 +213,7 @@ async function memoSave() {
   memoTimer = null;
   if (!memoLoaded) { return; }
   const c = memoCollect();
-  for (const section of ["rd", "full"]) {
+  for (const section of ["rd", "full", "ui"]) {
     const j = await api("/api/memo", { section, cells: c[section] });
     if (j && j.error) { showMessage(j.error, true); }
   }

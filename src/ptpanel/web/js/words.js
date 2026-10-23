@@ -27,7 +27,8 @@ const PARAM_CN = tr({
   ga: "param.ga", src: "param.src", val: "param.val",
   // SDRAM hold time, >= 1000 ms: a shorter wait passes even with refresh off (PORTTOOL-FLOW.md C.3.6 sdram.hold).
   wait: "param.wait",
-  minutes: "param.minutes",
+  minutes: "param.minutes", drv: "param.drv", count: "param.count",
+  ppm_max: "param.ppm_max", drift_max: "param.drift_max", start_ms_max: "param.start_ms_max",
   out1: "param.out1", out2: "param.out2",
 });
 

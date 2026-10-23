@@ -44,15 +44,18 @@
         <button id="refresh" data-t="html.refresh"></button>
         <button id="ctlauto" data-t="html.ctl_auto"></button>
       </div>
+      <!-- Off by default, remembered in the page memo; applies to every serial dropdown here (decision 162). -->
+      <label id="btbox" class="hint"><input type="checkbox" id="showbt"> <span data-t="html.show_bt"></span></label>
       <div id="ctlnote" class="hint"></div>
       <div id="connhint" class="hint" data-t="ui.applyState.2"></div>
       <div id="boardclock" class="sub mono"></div>
     </div>
-    <!-- The other connections: link far ends, reference board,
+    <!-- Step two, the other connections: link far ends, reference board,
          ST-Link, reserved instrument. js/connzone.js -->
     <div class="step" data-t="conn.title"></div>
+    <div class="hint" data-t="conn.title_hint"></div>
     <div id="connrows"></div>
-    <!-- Test types, menu only; gated like the rest until connected. -->
+    <!-- Step three, test types, menu only; gated like the rest until connected. -->
     <div id="menus" class="gated">
       <div class="step" data-t="shell.types"></div>
       <div id="typemenu"></div>

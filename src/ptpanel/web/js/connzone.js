@@ -129,23 +129,50 @@ function linkConnRow(c) {
     return r;
   }
   if (mt) { r.appendChild(matchWhy(c.k, mt)); }
-  const choices = adapterChoices().map(o => freshPorts.includes(o.name)
+  const was = ((state.saved || {}).peers || {})[c.k];
+  // The board's own USB port: the one whose serial the server worked out from
+  // this board's UID (decision 163); else the first ST virtual COM port.
+  const own = c.k === "usb" ? connUsbOwn() : "";
+  const choices = btShown(adapterChoices(), connPick[c.k] || own || (was && was.com)).map(o => freshPorts.includes(o.name)
     ? Object.assign({}, o, { label: o.label + T("conn.fresh") }) : o);
   if (!choices.length) {
     v.appendChild(el("span", "sub", T("conn.no_adapter")));
     return r;
   }
-  const was = ((state.saved || {}).peers || {})[c.k];
-  // The board's own USB port enumerates as an ST virtual COM port.
-  const cdc = c.k === "usb" ? choices.find(o => /0483:5740/i.test(o.label || "")) : null;
+  const cdc = c.k === "usb" ? (choices.find(o => o.name === own) || choices.find(o => /0483:5740/i.test(o.label || ""))) : null;
   const fresh = mt ? freshPorts.filter(n => choices.some(o => o.name === n)).pop() : null;
-  const sel = connSelect(c.k, choices, fresh || (was && was.com) || (cdc && cdc.name));
+  const sel = connSelect(c.k, choices, fresh || (own && cdc && cdc.name) || (was && was.com) || (cdc && cdc.name));
   if (fresh) { sel.value = fresh; sel.dataset.fresh = fresh; }
   v.appendChild(sel);
   const on = el("button", null, T("conn.bind"));
   on.onclick = () => connAct(api("/api/link", { port: c.k, com: sel.value }));
   v.appendChild(on);
   return r;
+}
+
+// The boards visible on this PC for the 被测板 dropdown (decision 163): the
+// connected one by its UID tail, the others by USB serial (the board's own
+// USB id), the simulated board as one entry. The reference board is not one.
+function connBoards() {
+  const u = connInfo.usb || {}, out = [];
+  const mine = (u.board_serial || "").toUpperCase(), refS = (u.ref_serial || "").toUpperCase();
+  if (state.connected && u.board_uid) { out.push({ v: mine || "uid", label: T("conn.board.uid", { uid: u.board_uid.slice(-6) }) }); }
+  for (const p of allPorts || []) {
+    const s = (p.serial || "").toUpperCase();
+    if (!p.unavailable && p.name === "sim") { out.push({ v: "sim", label: T("conn.board.sim") }); continue; }
+    if (!s || !/0483:5740/i.test(p.label || "") || s === mine || s === refS) { continue; }
+    if (!out.some(o => o.v === s)) { out.push({ v: s, label: T("conn.board.serial", { serial: s }) }); }
+  }
+  return out;
+}
+let connBoardPick = "";   // the 被测板 dropdown's choice: a USB serial, or "sim"
+
+// The COM port whose USB serial is the board under test's, "" when none is listed.
+function connUsbOwn() {
+  if (connBoardPick === "sim") { return ""; }
+  const want = (connBoardPick || (connInfo.usb || {}).board_serial || "").toUpperCase();
+  const p = want ? (allPorts || []).find(x => (x.serial || "").toUpperCase() === want) : null;
+  return p ? p.name : "";
 }
 
 // A bound peer: bound per the page's state (changed by bind / unbind at once),
@@ -245,7 +272,7 @@ function refConnRow() {
     closeRefPage();
     // The simulated board is allowed here even when it is the control port too:
     // each "sim" is its own process.
-    const choices = (allPorts || []).filter(p => !p.unavailable && (p.name === "sim" || p.name !== state.port));
+    const choices = btShown((allPorts || []).filter(p => !p.unavailable && (p.name === "sim" || p.name !== state.port)), connPick.ref);
     // "Not used" is saved with the stage configs (ref_unused): CAN exchange turns
     // to the PC, the other reference-board items cannot run (decision 135).
     const unused = !!(stageCfgs && stageCfgs.ref_unused);
@@ -329,7 +356,7 @@ function refreshConnRows(force) {
     Object.keys(state.links || {}).map(k => (linkNow(k) || {}).error || ""),
     (allPorts || []).map(p => p.name), connInfo.ref, connInfo.stlink, eth, LANG,
     connInfo.match ? [connInfo.match.running, connInfo.match.at, connInfo.match.error] : null, freshPorts,
-    !!(typeof stageCfgs !== "undefined" && stageCfgs && stageCfgs.ref_unused)]);
+    !!(typeof stageCfgs !== "undefined" && stageCfgs && stageCfgs.ref_unused), connInfo.usb || null]);
   if (!force && sig === connSig) { return; }
   connSig = sig;
   // The AI / AO / DI / DO cards' default peer follows the reference board
@@ -338,12 +365,27 @@ function refreshConnRows(force) {
   if (refNow !== refWasConnected) { refWasConnected = refNow; if (state.connected) { renderShell(); } }
   const host = $("#connrows");
   host.textContent = "";
-  for (const c of CONN_LINKS) { host.appendChild(linkConnRow(c)); }
-  host.appendChild(matchConnRow());
-  host.appendChild(knxConnRow());   // knxwin.js
-  host.appendChild(refConnRow());
-  host.appendChild(stlinkConnRow());
-  host.appendChild(reservedConnRow());
+  // Grouped by machine (decision 163): the board under test, the reference
+  // board, this PC's devices.
+  const u = connInfo.usb || {};
+  // Only the board under test has a header: a dropdown of the boards visible here.
+  const group = (k, rows, head) => {
+    const g = el("div", "cgroup"); g.dataset.cgroup = k;
+    if (head) { g.appendChild(head); }
+    for (const r of rows) { g.appendChild(r); }
+    host.appendChild(g);
+  };
+  const head = el("div", "cghead");
+  head.appendChild(el("span", null, T("conn.grp.dut")));
+  const boards = connBoards(), sel = el("select"); sel.dataset.connboard = "1";
+  for (const b of boards) { const o = el("option", null, b.label); o.value = b.v; sel.appendChild(o); }
+  if (!boards.length) { sel.appendChild(el("option", null, T("conn.board.none"))); sel.disabled = true; }
+  sel.value = boards.some(b => b.v === connBoardPick) ? connBoardPick : (boards[0] || {}).v;
+  sel.onchange = () => { connBoardPick = sel.value; delete connPick.usb; refreshConnRows(true); };
+  head.appendChild(sel);
+  group("dut", CONN_LINKS.map(linkConnRow).concat([matchConnRow()]), head);
+  group("ref", [refConnRow()]);
+  group("pc", [knxConnRow(), stlinkConnRow(), reservedConnRow()]);   // knxConnRow: knxwin.js
 }
 
 function renderClock() {

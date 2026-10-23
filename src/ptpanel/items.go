@@ -60,6 +60,7 @@ func (s *Server) handleItems(w http.ResponseWriter, r *http.Request) {
 			"stages": it.Stages, "peers": it.Peers, "rd_peers": it.RDPeers(), "asks": it.Asks(), "default_off": defaultOff(it),
 			"exclusive": it.Exclusive, "criteria": crit,
 			"ref": it.Ref, "human": it.Human, "live": it.Live, "load": it.Load, "watch_s": it.WatchS, "recover": it.Recover,
+			"choices": it.Choices, "limits": it.Limits, "ranges": it.Ranges,
 		}
 		if it.Pending != "" {
 			row["pending"] = m(it.Pending)

@@ -16,6 +16,7 @@ import (
 	"PortTool/src/portmap"
 	"PortTool/src/ptboard"
 	"PortTool/src/ptitems"
+	"PortTool/src/ptmatch"
 	"PortTool/src/ptproto"
 	"PortTool/src/ptstages"
 	"PortTool/src/serialx"
@@ -197,6 +198,10 @@ func (s *Server) handlePorts(w http.ResponseWriter, r *http.Request) {
 			"name":  p.Name,
 			"label": p.Label(),
 			"usb":   p.IsUSB,
+			// The connection area leaves these out unless asked (decision 162).
+			"bt": ptmatch.Classify(p) == ptmatch.SkipBluetooth,
+			// Matched against a board's USB serial to find its own port (decision 163).
+			"serial": p.Serial,
 		})
 	}
 
@@ -336,6 +341,15 @@ func (s *Server) handleLink(w http.ResponseWriter, r *http.Request) {
 	if body.TCP == "" && body.COM == s.portNam {
 		writeErr(w, 400, m("go.link.is_control"))
 		return
+	}
+	// The board USB row takes the board under test's own port, never the
+	// reference board's (decision 163).
+	if body.Port == "usb" && body.COM != "" {
+		_, refUID := s.connUIDs()
+		if bad := usbOwnerBad(body.COM, refUID); bad != nil {
+			writeJSON(w, 200, map[string]any{"error": *bad})
+			return
+		}
 	}
 	// The board only listens while the session runs; said plainly, because the
 	// OS's "connection refused" reads like a network fault.

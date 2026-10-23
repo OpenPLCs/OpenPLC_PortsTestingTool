@@ -17,8 +17,9 @@ func runChecks(p *Page, com string) {
 	Section("before a control port is chosen")
 	// Step one is a dropdown, the simulated board its last option (decision 128).
 	p.WaitSelState("#ctlport option[data-port]", "attached", 0)
-	check(p.L("#connbox .step").First().Text() == "第一步：连接 RS232 串口",
-		"step one says to connect the RS232 serial port", p.L("#connbox .step").First().Text())
+	check(p.L("#connbox .step").First().Text() == "第一步：连接控制口（RS232 串口）",
+		"step one says to connect the control port (decision 162)", p.L("#connbox .step").First().Text())
+	check(p.L("#showbt").Count() == 1, "a 「显示蓝牙串口」 box sits under the control port dropdown (decision 162)")
 	opts := p.L("#ctlport option[data-port]")
 	var names, texts []string
 	for i := 0; i < opts.Count(); i++ {
@@ -369,7 +370,8 @@ func checkLeftResize(p *Page) {
 	p.WaitSel("#afterconn.live", 20000)
 	kept := p.L("#connzone").Box().W
 	check(math.Abs(kept-after) < 3, "the width is the same after a reload", fmt.Sprintf("%.0f vs %.0f", kept, after))
-	p.Eval("() => { try { localStorage.removeItem('porttool.leftw'); } catch (e) {} }")
+	// The width lives in the page memo's "ui" section (decision 162): cleared there.
+	p.Eval("() => { uiMemo.leftw = ''; return memoSave(); }")
 	p.Reload()
 	p.WaitSel("#afterconn.live", 20000)
 }
@@ -659,8 +661,13 @@ func checkConnZone(p *Page) {
 		"the control port chooser and the board time sit in the connection block")
 	p.WaitSel("#connrows .crow", 0)
 	keys := attrs(p.L("#connrows .crow"), "data-conn")
-	check(eqStrings(keys, "usb", "eth", "rs232", "rs485", "can", "match", "knxusb", "ref", "stlink", "instrument"),
-		"USB, network, RS232 / RS485 / CAN, adapter matching, KNX USB interface, reference board, ST-Link, instrument rows", show(keys))
+	check(eqStrings(keys, "usb", "eth", "rs232", "rs485", "can", "match", "ref", "knxusb", "stlink", "instrument"),
+		"USB, network, RS232 / RS485 / CAN, adapter matching, reference board, KNX USB interface, ST-Link, instrument rows", show(keys))
+	// Decision 163: grouped by machine - the board under test, the reference board, this PC.
+	check(eqStrings(attrs(p.L("#connrows .cgroup"), "data-cgroup"), "dut", "ref", "pc"),
+		"the rows are grouped: board under test, reference board, this PC's devices")
+	check(p.L("#connrows .cghead").Count() == 1 && p.L("#connrows .cgroup[data-cgroup=dut] .cghead select[data-connboard]").Count() == 1,
+		"only the board under test has a header, with a dropdown of the boards seen")
 	check(p.L(`.crow[data-conn="instrument"] select`).Disabled(), "the instrument row is reserved and cannot be picked")
 	check(p.L(`.crow[data-conn="ref"] button`).Count() >= 1, "the reference board row can be connected from here")
 
