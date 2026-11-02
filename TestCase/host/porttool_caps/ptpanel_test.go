@@ -321,11 +321,22 @@ func TestPanelRepeatsOnTheLinkUnderTest(t *testing.T) {
 
 	postJSON(t, srv, "/api/connect", map[string]any{"port": "COM_CTRL"})
 
+	// Choosing opens nothing; the session started from the command box opens
+	// the chosen adapter (decision 168).
 	st := postJSON(t, srv, "/api/link",
 		map[string]any{"port": "rs485", "com": "COM_LINK"})
-	links, _ := st["links"].(map[string]any)
-	if _, ok := links["rs485"]; !ok {
-		t.Fatalf("rs485 did not bind: %v", st)
+	if links, _ := st["links"].(map[string]any); len(links) != 0 {
+		t.Fatalf("choosing rs485 opened it: %v", links)
+	}
+	postJSON(t, srv, "/api/command", map[string]any{"cmd": "pt.start rs485"})
+	for deadline := time.Now().Add(3 * time.Second); ; time.Sleep(50 * time.Millisecond) {
+		links, _ := getJSON(t, srv, "/api/state")["links"].(map[string]any)
+		if _, ok := links["rs485"]; ok {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("pt.start rs485 did not open the chosen adapter")
+		}
 	}
 
 	// The far end sends back exactly what the board put on the pair; the board compares the two.
@@ -384,7 +395,7 @@ func TestPanelRepeatsOnTheLinkUnderTest(t *testing.T) {
 	}
 
 	st = postJSON(t, srv, "/api/unlink", map[string]any{"port": "rs485"})
-	links, _ = st["links"].(map[string]any)
+	links, _ := st["links"].(map[string]any)
 	if _, ok := links["rs485"]; ok {
 		t.Error("rs485 still bound after unlink")
 	}

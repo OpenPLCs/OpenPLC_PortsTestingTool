@@ -168,35 +168,50 @@ func (p Programmer) Erase(sectors ...int) error {
 	return p.call(args...)
 }
 
-// writeUsed writes only the flash words of data that are not blank, one call
-// per contiguous run: blank words must stay erased so the bootloader can still
-// append into them (PORTTOOL-FLOW.md C.3.5).
+// writeUsed writes only the flash words of data that are not blank: blank
+// words must stay erased so the bootloader can still append into them. All of
+// them go in one sparse HEX file and one -w, because CubeProgrammer erases a
+// sector before every -w into it (PORTTOOL-FLOW.md C.3.5).
 func (p Programmer) writeUsed(addr int, data []byte) error {
 	blank := bytes.Repeat([]byte{0xFF}, wordSize)
-	for start := 0; start < len(data); {
-		if bytes.Equal(data[start:start+wordSize], blank) {
-			start += wordSize
+	var hex strings.Builder
+	hi := -1
+	for off := 0; off < len(data); off += wordSize {
+		if bytes.Equal(data[off:off+wordSize], blank) {
 			continue
 		}
-		end := start
-		for end < len(data) && !bytes.Equal(data[end:end+wordSize], blank) {
-			end += wordSize
+		for k := 0; k < wordSize; k += 16 {
+			a := addr + off + k
+			if a>>16 != hi {
+				hi = a >> 16
+				hexRecord(&hex, 4, 0, []byte{byte(hi >> 8), byte(hi)})
+			}
+			hexRecord(&hex, 0, a&0xFFFF, data[off+k:off+k+16])
 		}
-		path, done, err := p.tempFile("write.bin")
-		if err != nil {
-			return err
-		}
-		err = os.WriteFile(path, data[start:end], 0o644)
-		if err == nil {
-			err = p.call("-w", path, hex32(addr+start), "-v")
-		}
-		done()
-		if err != nil {
-			return err
-		}
-		start = end
 	}
-	return nil
+	if hi < 0 {
+		return nil // nothing to write
+	}
+	hex.WriteString(":00000001FF\n")
+	path, done, err := p.tempFile("write.hex")
+	if err != nil {
+		return err
+	}
+	defer done()
+	if err := os.WriteFile(path, []byte(hex.String()), 0o644); err != nil {
+		return err
+	}
+	return p.call("-w", path, "-v")
+}
+
+// hexRecord appends one Intel HEX record.
+func hexRecord(b *strings.Builder, typ, addr int, data []byte) {
+	rec := append([]byte{byte(len(data)), byte(addr >> 8), byte(addr), byte(typ)}, data...)
+	sum := byte(0)
+	for _, x := range rec {
+		sum += x
+	}
+	fmt.Fprintf(b, ":%X%02X\n", rec, -sum)
 }
 
 func (p Programmer) verify(addr int, want []byte) error {

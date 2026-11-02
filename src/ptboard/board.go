@@ -364,7 +364,8 @@ func (b *Board) Send(cmd string, expect Expect, timeout time.Duration) ([]string
 		}
 		b.pending = nil
 		b.mu.Unlock()
-		req.ch <- req.lines
+		// Never nil: nil means the reader died, not that the time ran out.
+		req.ch <- append([]string{}, req.lines...)
 	})
 	// Before the write, so a watcher always has the command before its reply.
 	watchers := make([]func(string, time.Time), 0, len(b.sentSubs))

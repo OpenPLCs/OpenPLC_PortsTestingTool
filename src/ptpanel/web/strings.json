@@ -992,9 +992,9 @@
   "go.caps.sim_old": {
    "zh": "模拟板在运行，但没有回答 pt.caps：{detail}。多半是模拟板太旧，重编一个：start.sh sim",
    "en": "The simulated board is running but did not answer pt.caps: {detail}. It is probably too old; rebuild it: start.sh sim",
-   "en_of": "bb122be5",
+   "en_of": "7cd7a0d9",
    "de": "Die simulierte Platine läuft, hat aber nicht auf pt.caps geantwortet: {detail}. Vermutlich zu alt; neu bauen: start.sh sim",
-   "de_of": "bb122be5"
+   "de_of": "7cd7a0d9"
   },
   "go.cmd.empty": {
    "zh": "命令是空的。",
@@ -1129,13 +1129,6 @@
    "de": "Prüfen, ob ein anderes Programm ihn belegt oder der Adapter nicht richtig steckt.",
    "de_of": "7f8a8ff2"
   },
-  "go.link.hint_ip": {
-   "zh": "板子的 IP 和端口对不对？先 ping 一下 —— ping 不通就不是这一步的事。",
-   "en": "Are the board's IP and port right? Ping it first — if ping fails, the problem is not this step.",
-   "en_of": "ec1666ac",
-   "de": "Stimmen IP und Port der Platine? Zuerst anpingen — klappt der Ping nicht, liegt es nicht an diesem Schritt.",
-   "de_of": "ec1666ac"
-  },
   "go.link.is_control": {
    "zh": "这个串口已经是控制口了，不能同时当被测链路的对端。",
    "en": "This serial port is already the control port; it cannot also be the peer of the link under test.",
@@ -1171,26 +1164,12 @@
    "de": "Angeben, welcher Port gelöst werden soll.",
    "de_of": "8f788394"
   },
-  "go.link.not_running": {
-   "zh": "{port} 还没在跑 —— 板子是会话起来才开始监听的。先点「开始」，而且要选「持续」：「单次」跑完就停了，那时候再连就没人听了。",
-   "en": "{port} is not running yet — the board only listens once its session is up. Click Start first, and choose \"Continuous\": a single run stops when done, and then nobody is listening.",
-   "en_of": "81bb2883",
-   "de": "{port} läuft noch nicht — die Platine hört erst zu, wenn ihre Sitzung läuft. Zuerst Start klicken und „Dauerlauf“ wählen: ein Einzellauf stoppt am Ende, dann hört niemand mehr zu.",
-   "de_of": "81bb2883"
-  },
   "go.link.serial_up": {
    "zh": "[link {port}@{com}] 绑好了，{baud} 8N1。板子发什么就原样送回去。",
    "en": "[link {port}@{com}] bound, {baud} 8N1. Whatever the board sends goes back unchanged.",
    "en_of": "6f0c6bbf",
    "de": "[link {port}@{com}] zugeordnet, {baud} 8N1. Alles, was die Platine sendet, geht unverändert zurück.",
    "de_of": "6f0c6bbf"
-  },
-  "go.link.tcp_up": {
-   "zh": "[link {port}@{addr}] 连上了。板子发什么就原样送回去。",
-   "en": "[link {port}@{addr}] connected. Whatever the board sends goes back unchanged.",
-   "en_of": "c317bd74",
-   "de": "[link {port}@{addr}] verbunden. Alles, was die Platine sendet, geht unverändert zurück.",
-   "de_of": "c317bd74"
   },
   "go.link.write_failed": {
    "zh": "灌不进去：{detail}",
@@ -1349,9 +1328,9 @@
   "go.sim.not_built": {
    "zh": "没找到模拟板程序。先编一个：\n    start.sh sim\n或者把 PORTTOOL_SIM 指向已经编好的那个。",
    "en": "The simulated board program was not found. Build one first:\n    start.sh sim\nor point PORTTOOL_SIM at one that is built.",
-   "en_of": "3178c252",
+   "en_of": "1b6d3b7e",
    "de": "Das Programm der simulierten Platine wurde nicht gefunden. Zuerst bauen:\n    start.sh sim\noder PORTTOOL_SIM auf ein gebautes zeigen lassen.",
-   "de_of": "3178c252"
+   "de_of": "1b6d3b7e"
   },
   "go.sim.start_failed": {
    "zh": "起不来模拟板 {path}：{detail}",
@@ -2308,9 +2287,9 @@
   "ui.loadPorts.4": {
    "zh": "先编一个：`start.sh sim`",
    "en": "Build one first: `start.sh sim`",
-   "en_of": "8a0a76fd",
+   "en_of": "213f8aa4",
    "de": "Zuerst bauen: `start.sh sim`",
-   "de_of": "8a0a76fd"
+   "de_of": "213f8aa4"
   },
   "ui.loadPorts.5": {
    "zh": "  ← 不用接板子",
@@ -4264,20 +4243,6 @@
    "en_of": "4a8b79e4",
    "de": "Diese Platine meldet diesen Anschluss nicht",
    "de_of": "4a8b79e4"
-  },
-  "conn.bind": {
-   "zh": "接上",
-   "en": "Connect",
-   "en_of": "9a4b7ed0",
-   "de": "Verbinden",
-   "de_of": "9a4b7ed0"
-  },
-  "conn.unbind": {
-   "zh": "断开",
-   "en": "Disconnect",
-   "en_of": "28fb7ced",
-   "de": "Trennen",
-   "de_of": "28fb7ced"
   },
   "conn.no_adapter": {
    "zh": "除了控制口没有别的串口，插上转换器后点「刷新」",
@@ -7456,13 +7421,6 @@
    "en_of": "56be60c4",
    "de": "Die simulierte Platine hat an diesem PC keinen USB-Port; Ethernet nehmen.",
    "de_of": "56be60c4"
-  },
-  "go.sdf.no_cdc": {
-   "zh": "这台电脑上找不到板子的 USB 串口：插好 USB 线再试（{detail}）。",
-   "en": "The board's USB serial port was not found on this PC: plug the USB cable in and try again ({detail}).",
-   "en_of": "905133fa",
-   "de": "Der USB-Port der Platine wurde an diesem PC nicht gefunden: USB-Kabel einstecken und erneut versuchen ({detail}).",
-   "de_of": "905133fa"
   },
   "go.sdf.bad_via": {
    "zh": "只能选网口或 USB。",
@@ -10978,13 +10936,6 @@
    "de": "Erkennen hat nicht geklappt: {detail}",
    "de_of": "f808913c"
   },
-  "go.match.bind_failed": {
-   "zh": "认出了 {com}，但接不上：{detail}",
-   "en": "Found {com}, but could not connect it: {detail}",
-   "en_of": "345e5312",
-   "de": "{com} erkannt, aber Verbinden ging nicht: {detail}",
-   "de_of": "345e5312"
-  },
   "go.match.unseen": {
    "zh": "{com} 的暗号哪个端子都没收到：它没接在板子上，或者接在别的端子上",
    "en": "The code word of {com} reached no terminal: it is not wired to the board, or to other terminals",
@@ -11411,6 +11362,97 @@
    "en_of": "72937b2d",
    "de": "Der zusätzliche Neustart auf mittel-niedrig ist das abschließende Zurückschalten.",
    "de_of": "72937b2d"
+  },
+  "go.link.no_ip": {
+   "zh": "命令框开了网口会话，但还不知道板子的地址，电脑这头连不上去。先等左边网口一行出现地址。",
+   "en": "The command box started the network session, but the board's address is not known yet, so this PC cannot connect. Wait until the network row on the left shows an address.",
+   "en_of": "11329f64",
+   "de": "Das Befehlsfeld hat die Netzwerk-Sitzung gestartet, aber die Adresse der Platine ist noch unbekannt, daher kann sich dieser PC nicht verbinden. Warten, bis die Netzwerk-Zeile links eine Adresse zeigt.",
+   "de_of": "11329f64"
+  },
+  "go.link.open_failed": {
+   "zh": "命令框开了 {port} 会话，但左边选的对端打不开：{detail}",
+   "en": "The command box started the {port} session, but the far end chosen on the left would not open: {detail}",
+   "en_of": "5acb3034",
+   "de": "Das Befehlsfeld hat die {port}-Sitzung gestartet, aber die links gewählte Gegenstelle ließ sich nicht öffnen: {detail}",
+   "de_of": "5acb3034"
+  },
+  "go.reason.released": {
+   "zh": "点了「强制释放端口」",
+   "en": "Force release ports was pressed",
+   "en_of": "5de4bb8b",
+   "de": "„Ports zwangsweise freigeben“ gedrückt",
+   "de_of": "5de4bb8b"
+  },
+  "go.release.still_busy": {
+   "zh": "{com} 还是打不开，多半被别的程序占着：{detail}",
+   "en": "{com} still will not open, most likely another program holds it: {detail}",
+   "en_of": "d96db1e5",
+   "de": "{com} lässt sich weiterhin nicht öffnen, vermutlich belegt ein anderes Programm ihn: {detail}",
+   "de_of": "d96db1e5"
+  },
+  "go.release.done": {
+   "zh": "已强制释放：测试都停了，面板开着的对端口都关了。",
+   "en": "Released: every test is stopped and every far-end port the panel had open is closed.",
+   "en_of": "beb11434",
+   "de": "Freigegeben: alle Tests sind gestoppt, alle vom Panel geöffneten Gegenstellen-Ports sind geschlossen.",
+   "de_of": "beb11434"
+  },
+  "conn.pick_none": {
+   "zh": "不用",
+   "en": "Not used",
+   "en_of": "78ac1ae0",
+   "de": "Nicht verwendet",
+   "de_of": "78ac1ae0"
+  },
+  "conn.pick_auto": {
+   "zh": "自动（按 USB 编号找）",
+   "en": "Automatic (found by USB id)",
+   "en_of": "5a5d06ce",
+   "de": "Automatisch (per USB-Kennung gefunden)",
+   "de_of": "5a5d06ce"
+  },
+  "lib.release": {
+   "zh": "强制释放端口",
+   "en": "Force release ports",
+   "en_of": "6b798c9f",
+   "de": "Ports zwangsweise freigeben",
+   "de_of": "6b798c9f"
+  },
+  "lib.release_d": {
+   "zh": "停掉正在跑的测试，关掉面板开着的所有对端口。测试结束时这些口本来就会关，这个按钮管关不掉的时候。",
+   "en": "Stops the running tests and closes every far-end port the panel has open. A test closes them when it ends anyway; this button is for when that did not happen.",
+   "en_of": "f298bb7d",
+   "de": "Stoppt laufende Tests und schließt alle vom Panel geöffneten Gegenstellen-Ports. Ein Test schließt sie ohnehin am Ende; diese Taste ist für den Fall, dass das nicht geklappt hat.",
+   "de_of": "f298bb7d"
+  },
+  "field.bytes_each": {
+   "zh": "每轮字节数",
+   "en": "Bytes per pass",
+   "en_of": "05467957",
+   "de": "Bytes je Durchlauf",
+   "de_of": "05467957"
+  },
+  "field.bytes_total": {
+   "zh": "总字节数",
+   "en": "Bytes in total",
+   "en_of": "691198b1",
+   "de": "Bytes insgesamt",
+   "de_of": "691198b1"
+  },
+  "field.write_crc": {
+   "zh": "写入内容的校验值",
+   "en": "Checksum of what was written",
+   "en_of": "6fb76de1",
+   "de": "Prüfsumme des Geschriebenen",
+   "de_of": "6fb76de1"
+  },
+  "field.read_crc": {
+   "zh": "读回内容的校验值",
+   "en": "Checksum of what was read back",
+   "en_of": "70ff8353",
+   "de": "Prüfsumme des Zurückgelesenen",
+   "de_of": "70ff8353"
   }
  }
 }

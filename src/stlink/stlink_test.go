@@ -174,3 +174,22 @@ func contains(calls []string, op string) bool {
 	}
 	return false
 }
+
+// A calibration area with blank words between its records comes back whole:
+// CubeProgrammer erases a sector before every -w into it, so the used runs go
+// in one write (PORTTOOL-FLOW.md C.3.5 「写回只写非空格子」).
+func TestFactoryResetWritesBackEveryRunOfTheCalibrationArea(t *testing.T) {
+	f := fake(t)
+	cal := bytes.Repeat([]byte{0xFF}, stlink.CalAreaSize)
+	copy(cal[0:], bytes.Repeat([]byte{0x11}, 64))
+	copy(cal[1024:], bytes.Repeat([]byte{0x22}, 32))
+	copy(cal[stlink.CalAreaSize-32:], bytes.Repeat([]byte{0x33}, 32))
+	f.Put(stlink.Sector15, cal)
+
+	if err := open(t).FactoryReset(func([]byte) error { return nil }); err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(f.At(stlink.Sector15, stlink.CalAreaSize), cal) {
+		t.Fatal("the calibration area did not come back whole")
+	}
+}

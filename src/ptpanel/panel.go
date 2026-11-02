@@ -71,6 +71,9 @@ type Server struct {
 	// The far ends of the loop=link sessions, keyed by the board's port name;
 	// a loop=link counter only closes when one is bound.
 	links map[string]*linkPort
+	// linkGen counts each port's pt.stop, so a far end still being opened for
+	// a session that has ended is closed instead of kept (openChosenLink).
+	linkGen map[string]int
 
 	// Lines the panel itself produced, kept apart from the board's events so
 	// they are not read as evidence from the hardware.
@@ -155,6 +158,7 @@ func (s *Server) routes() *http.ServeMux {
 	mux.HandleFunc("/api/events", s.handleEvents)
 	mux.HandleFunc("/api/autoecho", s.handleAutoEcho)
 	mux.HandleFunc("/api/link", s.handleLink)
+	mux.HandleFunc("/api/release", s.handleRelease)
 	mux.HandleFunc("/api/unlink", s.handleUnlink)
 	mux.HandleFunc("/api/criteria", s.handleCriteria)
 	mux.HandleFunc("/api/settings", s.handleSettings)
@@ -309,19 +313,15 @@ func (s *Server) stateJSON() map[string]any {
 	return st
 }
 
-// handleLink binds a second serial adapter as the far end of a loop=link
-// session, and starts repeating whatever the board sends on it.
+// handleLink records the adapter chosen for a loop=link port without opening
+// it: a test opens it when it starts and closes it when it ends (decision 168).
 func (s *Server) handleLink(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		Port string `json:"port"` // the board's port name, e.g. "rs485"
 		COM  string `json:"com"`
 		Baud int    `json:"baud"`
-		// TCP is the Ethernet session's far end (the board listens, this
-		// connects); each port has exactly one kind of far end.
-		TCP string `json:"tcp"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil ||
-		body.Port == "" || (body.COM == "" && body.TCP == "") {
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Port == "" || body.COM == "" {
 		writeErr(w, 400, m("go.link.bad_request"))
 		return
 	}
@@ -338,57 +338,24 @@ func (s *Server) handleLink(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, m("go.link.no_link_loop", "port", body.Port))
 		return
 	}
-	if body.TCP == "" && body.COM == s.portNam {
+	if body.COM == s.portNam {
 		writeErr(w, 400, m("go.link.is_control"))
 		return
 	}
 	// The board USB row takes the board under test's own port, never the
 	// reference board's (decision 163).
-	if body.Port == "usb" && body.COM != "" {
+	if body.Port == "usb" {
 		_, refUID := s.connUIDs()
 		if bad := usbOwnerBad(body.COM, refUID); bad != nil {
 			writeJSON(w, 200, map[string]any{"error": *bad})
 			return
 		}
 	}
-	// The board only listens while the session runs; said plainly, because the
-	// OS's "connection refused" reads like a network fault.
-	if body.TCP != "" && !p.Running {
-		writeJSON(w, 200, map[string]any{"error": m("go.link.not_running", "port", body.Port)})
-		return
+	baud := body.Baud
+	if baud == 0 {
+		baud = serialx.DefaultBaud
 	}
-
-	var err error
-	if body.TCP != "" {
-		s.unbindLink(body.Port)
-		var l *linkPort
-		if l, err = s.bindTCP(body.Port, body.TCP); err == nil {
-			s.mu.Lock()
-			if s.links == nil {
-				s.links = map[string]*linkPort{}
-			}
-			s.links[body.Port] = l
-			s.mu.Unlock()
-			// Bound after the session started: take up its mode (PORTTOOL-FLOW.md B.9).
-			if p.Running {
-				l.setMode(p.Values["mode"])
-			}
-			s.say(m("go.link.tcp_up", "port", body.Port, "addr", body.TCP))
-		}
-	} else {
-		_, err = s.bindSerialPeer(body.Port, body.COM, body.Baud)
-	}
-	if err != nil {
-		// 200, not 4xx: a busy or unplugged adapter is ordinary at a bench and
-		// the page words it. The 4xx above are requests the panel cannot produce.
-		what, why := body.COM, m("go.link.hint_busy")
-		if body.TCP != "" {
-			what, why = body.TCP, m("go.link.hint_ip")
-		}
-		writeJSON(w, 200, map[string]any{"error": m("go.link.connect_failed", "what", what, "detail", err, "why", why)})
-		return
-	}
-
+	portmap.SetPeer(body.Port, body.COM, baud)
 	writeJSON(w, 200, s.stateJSON())
 }
 
@@ -488,15 +455,18 @@ func (s *Server) handleConnect(w http.ResponseWriter, r *http.Request) {
 		s.startIPProbe(b, caps)
 		// Once per connect, after the address probe so the two do not take
 		// turns on the command line; then on the row's button (decision 146).
+		// Claimed now, so a test started meanwhile waits for it (waitMatch).
 		s.mu.Lock()
 		ipDone := s.ip.done
 		s.mu.Unlock()
-		go func() {
-			if ipDone != nil {
-				<-ipDone
-			}
-			s.runMatch(b)
-		}()
+		if done := s.claimMatch(b); done != nil {
+			go func() {
+				if ipDone != nil {
+					<-ipDone
+				}
+				s.completeMatch(b, done)
+			}()
+		}
 	}
 
 	writeJSON(w, 200, s.stateJSON())

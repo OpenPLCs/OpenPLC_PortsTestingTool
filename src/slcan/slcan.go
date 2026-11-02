@@ -24,8 +24,10 @@ const (
 // DefaultBitrate is the firmware's can session default.
 const DefaultBitrate = 500000
 
-// cmdTimeout is how long a configuration command waits for its acknowledgement.
-const cmdTimeout = 500 * time.Millisecond
+// cmdTimeout is how long a configuration command waits for a refusal. Silence
+// is acceptance: the canable2 firmware answers nothing on success, only BEL on
+// refusal (PORTTOOL-FLOW.md C.3.7 in $PROD).
+const cmdTimeout = 200 * time.Millisecond
 
 var bitrateCodes = map[int]string{
 	10000: "S0", 20000: "S1", 50000: "S2", 100000: "S3", 125000: "S4",
@@ -155,7 +157,7 @@ func (a *Adapter) fail(err error) error {
 	return err
 }
 
-// cmd sends one configuration command and waits for CR or BEL.
+// cmd sends one configuration command; BEL is a refusal, CR or silence acceptance.
 func (a *Adapter) cmd(text string) error {
 	for drained := false; !drained; {
 		select {
@@ -176,7 +178,7 @@ func (a *Adapter) cmd(text string) error {
 	case <-a.done:
 		return errors.New("the adapter went away")
 	case <-time.After(cmdTimeout):
-		return fmt.Errorf("no answer to %q within %s", text, cmdTimeout)
+		return nil
 	}
 }
 

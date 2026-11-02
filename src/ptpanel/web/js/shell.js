@@ -178,7 +178,24 @@ function renderLports() {
   }
 }
 
+// Not redrawn while a button is held on the right: a press and release on two
+// copies of a button is no click (PORTTOOL-FLOW.md C.3.6 「按住时不重画」).
+let rightHeld = false, rightPending = false;
+document.addEventListener("pointerdown", e => {
+  if (e.target.closest && e.target.closest("#rtop, #itemcards")) { rightHeld = true; }
+}, true);
+function rightRelease() {
+  if (!rightHeld) { return; }
+  rightHeld = false;
+  // After the click has fired.
+  if (rightPending) { rightPending = false; setTimeout(renderRight, 0); }
+}
+document.addEventListener("pointerup", rightRelease, true);
+document.addEventListener("pointercancel", rightRelease, true);
+window.addEventListener("blur", rightRelease);
+
 function renderRight() {
+  if (rightHeld) { rightPending = true; return; }
   const top = $("#rtop"), cards = $("#itemcards"), note = $("#viewnote");
   top.textContent = ""; cards.textContent = ""; note.textContent = ""; $("#subtiles").textContent = "";
   $("#fullview").hidden = !isFullSub(view);
@@ -229,6 +246,9 @@ function renderSubTest(top, cards, note) {
 
 // One port's cards, in R&D or in a sub-test's configuration.
 function renderPortCards(cards, port) {
+  // Always there in R&D, whatever runs: tests release their ports when they
+  // end, this is for when one did not (decision 168).
+  if (view === "rd") { cards.appendChild(releaseBar()); }
   // A configuration's AI / AO / DI / DO card: the same shape, settings only (decision 121, cfgcard.js).
   if (isCfgView(view) && ["ain", "aout", "din", "dout"].includes(port.port)) { cards.appendChild(cfgPortCard(port)); return; }
   // R&D's AI / AO is one card of its own (decision 117, anacard.js).
@@ -269,6 +289,24 @@ function renderPortCards(cards, port) {
     for (const c of cs) { sec.appendChild(c.group ? groupCard(c, solo) : itemCard(c.items[0], solo)); }
     cards.appendChild(sec);
   }
+}
+
+// 「强制释放端口」: stop every test and close every far end the panel holds.
+function releaseBar() {
+  const bar = el("div", "khead");
+  bar.appendChild(el("span", "sp"));
+  const b = el("button", null, T("lib.release"));
+  b.title = T("lib.release_d");
+  b.dataset.release = "1";
+  b.onclick = async () => {
+    b.disabled = true;
+    const j = await api("/api/release", {});
+    b.disabled = false;
+    if (j && j.error) { showMessage(j.error, true); }
+    refreshConnRows(true);
+  };
+  bar.appendChild(b);
+  return bar;
 }
 
 // R&D's repeatable group: how long it runs.

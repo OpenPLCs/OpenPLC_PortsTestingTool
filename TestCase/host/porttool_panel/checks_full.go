@@ -31,8 +31,15 @@ func checkFullTest(p *Page, com string) {
 	p.Wait(200)
 	check(p.L("#shellstart").Disabled() && p.L("#rtop [data-fullplan]").Text() == "下面一项都没勾",
 		"with nothing ticked, 「配置完成，开始测试」 cannot be pressed and says why")
+	// A real bench without a reference board cannot run steps 2, 4 and 6: their
+	// configurations read DI through it.
+	noRef := !sim && !p.Eval("fetch('/api/full').then(r => r.json()).then(j => (j.steps || []).some(s => s.step === 2 && s.available))").Truthy()
 	for _, st := range []string{"2", "4"} {
 		box := step(st)
+		if noRef {
+			check(box.Disabled(), "step "+st+" cannot be picked with no reference board connected")
+			continue
+		}
 		_ = try(func() {
 			p.WaitFunc("s => !document.querySelector('#subtiles input[data-fullstep=\"' + s + '\"]').disabled", st, 6000)
 		})
@@ -42,10 +49,13 @@ func checkFullTest(p *Page, com string) {
 	check(step("6").Disabled(), "step 6 cannot be picked here")
 	body := p.L("#subtiles").Text()
 	why := "stage6"
-	if sim {
+	switch {
+	case sim:
 		why = "模拟板"
+	case noRef:
+		why = "标准机"
 	}
-	check(strings.Contains(body, why), "and the page says why (simulated board / delivery files missing)", cut(body, 300))
+	check(strings.Contains(body, why), "and the page says why (simulated board / no reference board / delivery files missing)", cut(body, 300))
 
 	if sim {
 		// Decision 97: no calibration on the board for an AI / AO the step tests.
@@ -115,8 +125,12 @@ func checkFullTest(p *Page, com string) {
 		p.Eval("document.querySelector('#subtiles .subtile[data-sub=safety] .stbar i').style.width").S() == "100%",
 		"step 5's tile shows 通过 and a full bar", rt)
 	last := p.L(`#fullbody [data-full="last"]`).Text()
-	check(strings.Contains(last, "全部通过") && strings.Contains(last, "模拟板"),
-		"and the result says it passed and that the simulated board gets no record", last)
+	if sim {
+		check(strings.Contains(last, "全部通过") && strings.Contains(last, "模拟板"),
+			"and the result says it passed and that the simulated board gets no record", last)
+	} else {
+		check(strings.Contains(last, "全部通过") && !strings.Contains(last, "模拟板"), "and the result says it passed", last)
+	}
 	check(p.L("#shellstart").Text() == "配置完成，开始测试", "after the run the button is 「配置完成，开始测试」 again")
 	row := p.L(`#runres .rr[data-step="1"]`)
 	rowText := ""

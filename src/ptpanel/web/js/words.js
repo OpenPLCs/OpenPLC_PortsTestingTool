@@ -88,6 +88,8 @@ const FIELD_CN = tr({
   checked: "field.checked", failed: "field.failed", mismatches: "field.mismatches",
   wrote: "field.wrote", read_back: "field.read_back", identical: "field.identical",
   fresult: "field.fresult", passes: "field.passes", passed: "field.passed",
+  bytes_each: "field.bytes_each", bytes_total: "field.bytes_total",
+  write_crc: "field.write_crc", read_crc: "field.read_crc",
   first_bad_pass: "field.first_bad_pass", class: "field.class",
   first_bad: "field.first_bad", seed: "field.seed",
   phase: "field.phase", wait_ms: "field.wait_ms",

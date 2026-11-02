@@ -5,6 +5,7 @@ package ptecho
 // in one run (DECISIONS.md 98, PORTTOOL-FLOW.md B.9 in $PROD).
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 	"sync"
@@ -68,6 +69,9 @@ type flood struct {
 	rxBytes  uint64
 	written  uint64 // bytes written off by a stall
 	lastRx   time.Time
+	// begun: the first '#' has arrived. Bytes before it are what the previous
+	// mode left in flight (source's zeros), not mirrored packets.
+	begun    bool
 	line     []byte
 	expected uint64 // next sequence number due back
 	badSince uint64 // bad lines since the last good one
@@ -187,6 +191,14 @@ func (f *flood) take(b []byte) {
 	now := time.Now()
 	f.mu.Lock()
 	defer f.mu.Unlock()
+	if !f.begun {
+		i := bytes.IndexByte(b, '#')
+		if i < 0 {
+			return
+		}
+		f.begun = true
+		b = b[i:]
+	}
 	f.rxBytes += uint64(len(b))
 	f.lastRx = now
 	for _, c := range b {

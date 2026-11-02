@@ -274,7 +274,7 @@ func (r *Runner) openCANPeer(step ptplan.Step, att *ptreport.Attempt) (func(), e
 	}
 	open := r.OpenPeer
 	if open == nil {
-		open = realPeerOpener
+		open = RealPeerOpener
 	}
 	rw, err := open("serial", com, serialx.DefaultBaud)
 	if err != nil {

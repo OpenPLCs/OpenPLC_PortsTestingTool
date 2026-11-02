@@ -274,6 +274,18 @@ func deliver(open, internal bool) error {
 		fwVer = strings.TrimSpace(string(b))
 	}
 	tVer := toolVersion()
+	// deliver packs, it does not build: an exe left from before the last change
+	// would go out under the new version (PORTTOOL-FLOW.md C.4 「版本号」).
+	for _, p := range []string{panel, panelLinux} {
+		b, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		if !bytes.Contains(b, []byte(tVer)) {
+			return fmt.Errorf("%s is not PortTool %s (src/cmd/porttool/main.go): it was built before the last change.\n"+
+				"  Run start.sh tool, then pack again.", p, tVer)
+		}
+	}
 	product(hexfile)
 	product(panel)
 	product(panelLinux)

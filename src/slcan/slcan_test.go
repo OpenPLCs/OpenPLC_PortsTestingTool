@@ -21,6 +21,8 @@ type fakeCANable struct {
 	sent   []string
 	refuse map[string]bool
 	open   bool
+	// silent answers nothing on success, as the canable2 firmware does.
+	silent bool
 }
 
 func newFake() *fakeCANable {
@@ -50,12 +52,12 @@ func (f *fakeCANable) Write(p []byte) (int, error) {
 			replies = append(replies, "V1013\r")
 		case cmd == "O":
 			f.open = true
-			replies = append(replies, "\r")
+			replies = append(replies, f.ack())
 		case cmd == "C":
 			f.open = false
-			replies = append(replies, "\r")
+			replies = append(replies, f.ack())
 		case strings.HasPrefix(cmd, "S"):
-			replies = append(replies, "\r")
+			replies = append(replies, f.ack())
 		case strings.HasPrefix(cmd, "t") || strings.HasPrefix(cmd, "T"):
 			f.sent = append(f.sent, cmd)
 			replies = append(replies, "z\r")
@@ -70,6 +72,13 @@ func (f *fakeCANable) Write(p []byte) (int, error) {
 		}
 	}()
 	return len(p), nil
+}
+
+func (f *fakeCANable) ack() string {
+	if f.silent {
+		return ""
+	}
+	return "\r"
 }
 
 func (f *fakeCANable) bus(line string) { go func() { _, _ = io.WriteString(f.pw, line+"\r") }() }
@@ -128,6 +137,22 @@ func TestOpenSendsTheAnalysersSequence(t *testing.T) {
 	got := strings.Join(f.commands(), ",")
 	if got != "C,S6,V,O" {
 		t.Errorf("commands %s, want C,S6,V,O", got)
+	}
+}
+
+func TestOpenAcceptsAFirmwareThatAnswersNothingOnSuccess(t *testing.T) {
+	f := newFake()
+	f.silent = true
+	a, err := Open(f, 500000)
+	if err != nil {
+		t.Fatalf("a silent adapter (canable2 firmware) was not opened: %v", err)
+	}
+	defer a.Close()
+	f2 := newFake()
+	f2.silent = true
+	f2.refuse["S6"] = true
+	if _, err := Open(f2, 500000); err == nil {
+		t.Error("the silent adapter refused S6 with BEL but Open reported success")
 	}
 }
 

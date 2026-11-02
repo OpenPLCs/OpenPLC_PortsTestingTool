@@ -1,6 +1,7 @@
 // Package stlinktest stands in for STM32_Programmer_CLI in host tests: a 2 MiB
 // flash held in memory, answering the calls package stlink makes. No ST-Link,
-// no board; it proves what was asked, not what CubeProgrammer would do.
+// no board. Like CubeProgrammer on the board, each -w erases every sector it
+// writes into first (PORTTOOL-FLOW.md C.3.5 in $PROD).
 package stlinktest
 
 import (
@@ -141,19 +142,46 @@ func (f *Flash) run(cli string, args ...string) (string, error) {
 		if err != nil {
 			return "Error: " + err.Error(), err
 		}
-		addr := stlink.FlashBase // .hex / .elf: the fake puts them at the start
-		if len(op) > 2 && strings.HasPrefix(op[2], "0x") {
-			addr, _ = num(op[2])
+		// Runs of (offset, bytes): an Intel HEX file carries its own addresses;
+		// any other file goes at the address given, or the start of flash.
+		type run struct {
+			off  int
+			data []byte
 		}
-		off := addr - stlink.FlashBase
-		for i := 0; i < len(data); i++ {
-			if f.Mem[off+i] != 0xFF && f.Mem[off+i] != data[i] {
-				return "Error: writing over programmed flash", fmt.Errorf("exit status 1")
+		var runs []run
+		if bytes.HasPrefix(data, []byte(":")) {
+			recs, err := parseHex(data)
+			if err != nil {
+				return "Error: " + err.Error(), err
+			}
+			for _, r := range recs {
+				runs = append(runs, run{r.addr - stlink.FlashBase, r.data})
+			}
+		} else {
+			addr := stlink.FlashBase
+			if len(op) > 2 && strings.HasPrefix(op[2], "0x") {
+				addr, _ = num(op[2])
+			}
+			runs = []run{{addr - stlink.FlashBase, data}}
+		}
+		erased := map[int]bool{}
+		for _, r := range runs {
+			for s := r.off / stlink.SectorSize; s <= (r.off+len(r.data)-1)/stlink.SectorSize; s++ {
+				if !erased[s] {
+					erased[s] = true
+					base := s * stlink.SectorSize
+					copy(f.Mem[base:base+stlink.SectorSize], bytes.Repeat([]byte{0xFF}, stlink.SectorSize))
+					for w := base; w < base+stlink.SectorSize; w += 32 {
+						delete(f.programmed, w)
+					}
+				}
 			}
 		}
-		copy(f.Mem[off:], data)
-		for w := off &^ 31; w < off+len(data); w += 32 {
-			f.programmed[w]++
+		for _, r := range runs {
+			copy(f.Mem[r.off:], r.data)
+			for w := r.off &^ 31; w < r.off+len(r.data); w += 32 {
+				f.programmed[w]++
+			}
 		}
 		return "Download verified successfully", nil
 	case "-d":
@@ -174,4 +202,41 @@ func (f *Flash) run(cli string, args ...string) (string, error) {
 		return "MCU Reset", nil
 	}
 	return "Error: unknown " + line, fmt.Errorf("exit status 1")
+}
+
+type hexRec struct {
+	addr int
+	data []byte
+}
+
+// parseHex reads Intel HEX data records (types 00, 04 and 01).
+func parseHex(b []byte) ([]hexRec, error) {
+	var out []hexRec
+	hi := 0
+	for _, line := range strings.Split(strings.ReplaceAll(string(b), "\r", ""), "\n") {
+		if line == "" {
+			continue
+		}
+		raw := make([]byte, 0, len(line)/2)
+		for i := 1; i+1 < len(line); i += 2 {
+			v, err := strconv.ParseUint(line[i:i+2], 16, 8)
+			if err != nil {
+				return nil, fmt.Errorf("bad hex line %q", line)
+			}
+			raw = append(raw, byte(v))
+		}
+		if len(raw) < 5 || int(raw[0])+5 != len(raw) {
+			return nil, fmt.Errorf("bad hex line %q", line)
+		}
+		n, addr, typ := int(raw[0]), int(raw[1])<<8|int(raw[2]), raw[3]
+		switch typ {
+		case 0:
+			out = append(out, hexRec{hi<<16 | addr, raw[4 : 4+n]})
+		case 4:
+			hi = int(raw[4])<<8 | int(raw[5])
+		case 1:
+			return out, nil
+		}
+	}
+	return out, nil
 }

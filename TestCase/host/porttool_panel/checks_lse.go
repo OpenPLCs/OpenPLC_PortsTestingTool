@@ -1,6 +1,11 @@
 package main
 
-import "strings"
+import (
+	"math"
+	"regexp"
+	"strconv"
+	"strings"
+)
 
 // checkLsePage: the R&D crystal page (decision 160, PORTTOOL-FLOW.md C.3.6
 // 「晶振页」), driven by clicks. The sim's stub gives -12.33 ppm and a start
@@ -41,15 +46,22 @@ func checkLsePage(p *Page) {
 
 	if run("rtc.lsefreq") {
 		rows := cells(card("rtc.lsefreq") + ` [data-lse="freq"]`)
-		check(len(rows) == 4 && rows[1][len(rows[1])-1] == "32767.596" && rows[2][len(rows[2])-1] == "-12.33" &&
-			rows[3][len(rows[3])-1] == "1000" && strings.HasPrefix(rows[1][0], "频率") &&
-			strings.HasPrefix(rows[2][0], "偏差") && strings.HasPrefix(rows[3][0], "量了多久"),
-			"the frequency card shows 32767.596 Hz, -12.33 ppm, measured over 1000 ms", show(rows))
+		if realBoard {
+			checkLseFreqReal(rows)
+		} else {
+			check(len(rows) == 4 && rows[1][len(rows[1])-1] == "32767.596" && rows[2][len(rows[2])-1] == "-12.33" &&
+				rows[3][len(rows[3])-1] == "1000" && strings.HasPrefix(rows[1][0], "频率") &&
+				strings.HasPrefix(rows[2][0], "偏差") && strings.HasPrefix(rows[3][0], "量了多久"),
+				"the frequency card shows 32767.596 Hz, -12.33 ppm, measured over 1000 ms", show(rows))
+		}
 		check(strings.Contains(p.L(card("rtc.lsefreq")+` [data-lse="freq"] .hint`).Text(), "主晶振的固定误差在偏差里"),
 			"and says the main crystal's fixed error is in the deviation and cancels out in the drift")
 	}
 	if run("rtc.lsemargin") {
 		rows := cells(card("rtc.lsemargin") + ` [data-lse="margin"]`)
+		if realBoard {
+			checkLseMarginReal(rows)
+		}
 		// Default: all drives, once. The sim starts every drive; mlow is restarted twice
 		// (its turn, then the switch back from high).
 		want := [][]string{{"驱动档", "重启几次", "起振几次", "没起来或退回中低档", "起振用时 最小 / 最大 / 平均（ms）", "频率偏差 最小 / 最大 / 平均（ppm）"},
@@ -59,12 +71,18 @@ func checkLsePage(p *Page) {
 		for i := 0; same && i < len(rows); i++ {
 			same = strings.Join(rows[i], "|") == strings.Join(want[i], "|")
 		}
-		check(same, "the margin card has one row per restarted drive, mlow twice (its turn and the switch back)", show(rows))
+		if !realBoard {
+			check(same, "the margin card has one row per restarted drive, mlow twice (its turn and the switch back)", show(rows))
+		}
 	}
 	// Decision 166: the card says which drive the board is on (mlow after "all"). The buttons follow
 	// the dropdown: 全部 -> 开始 and Restore greyed; one level -> 设置 and Restore clickable.
 	mc := card("rtc.lsemargin")
 	startLabel := func() string { return p.L(mc + " button[data-startitem]").Text() }
+	// The card reads the drive back after a run; a real board answers later than the sim.
+	_ = try(func() {
+		p.WaitFunc(`() => document.querySelector('#itemcards .item[data-item="rtc.lsemargin"] [data-lsecur]').textContent === "当前档位：中低"`, nil, 5000)
+	})
 	check(p.L(mc+" [data-lsecur]").Count() == 1 && p.L(mc+" [data-lsecur]").Text() == "当前档位：中低",
 		"the card shows 当前档位：中低", p.L(mc+" [data-lsecur]").Text())
 	check(startLabel() == "开始" && p.L(mc+" [data-lserestore]").Disabled(),
@@ -83,7 +101,11 @@ func checkLsePage(p *Page) {
 	// Decision 166: what this run was set to, and what the verdict rests on.
 	check(p.L(mc+" [data-lsesettings]").Text() == "本次设置：档位 全部，次数 1，起振用时上限 2000 ms",
 		"the card says the settings of this run", p.L(mc+" [data-lsesettings]").Text())
-	check(p.L(mc+" [data-lsebasis]").Text() == "判定依据：中低档起振用时 最大 750 ms，上限 2000 ms" &&
+	basis := p.L(mc + " [data-lsebasis]").Text()
+	if realBoard {
+		basis = regexp.MustCompile(`最大 \d+ ms`).ReplaceAllString(basis, "最大 750 ms")
+	}
+	check(basis == "判定依据：中低档起振用时 最大 750 ms，上限 2000 ms" &&
 		strings.Contains(p.L(mc+" [data-lse=\"margin\"]").Text(), "中低档多的一次是最后切回的"),
 		"and the basis: the slowest mlow start against the limit, with the extra switch-back noted", p.L(mc+" [data-lsebasis]").Text())
 	// The card's own reads of the current drive (a bare pt.run lse) are not part of the run.
@@ -110,7 +132,11 @@ func checkLsePage(p *Page) {
 	check(strings.Join(cmds, ",") == "pt.run lse drv=high,pt.run lse.freq,pt.run lse.freq,pt.run lse.freq",
 		"one drive: a single restart, then 3 frequency measurements, no switch back", strings.Join(cmds, ","))
 	rows := cells(mc + ` [data-lse="margin"]`)
-	check(len(rows) == 2 && rows[1][0] == "高" && rows[1][1] == "1" && rows[1][2] == "1" && rows[1][5] == "-12.33 / -12.33 / -12.33",
+	three := len(rows) == 2 && len(rows[1]) == 6 && rows[1][5] == "-12.33 / -12.33 / -12.33"
+	if realBoard && len(rows) == 2 && len(rows[1]) == 6 {
+		three = len(lseNums(rows[1][5])) == 3
+	}
+	check(len(rows) == 2 && rows[1][0] == "高" && rows[1][1] == "1" && rows[1][2] == "1" && three,
 		"its row shows one restart and the three measurements", show(rows))
 	check(p.L(mc+" [data-lsecur]").Text() == "当前档位：高" && !p.L(mc+" [data-lserestore]").Disabled(),
 		"the board stays on 高 and 恢复出厂档位 can be clicked", p.L(mc+" [data-lsecur]").Text())
@@ -120,6 +146,48 @@ func checkLsePage(p *Page) {
 	})
 	check(p.L(mc+" [data-lsecur]").Text() == "当前档位：中低", "Restore puts the board back on 中低", p.L(mc+" [data-lsecur]").Text())
 	p.L(mc + ` select[data-libparam="rtc.lsemargin.drv"]`).Select("all")
+}
+
+// checkLseFreqReal: a real crystal's reading is not the stub's, so the card is
+// judged on being consistent: within the deviation limit, Hz and ppm agreeing.
+func checkLseFreqReal(rows [][]string) {
+	ok := len(rows) == 4 && strings.HasPrefix(rows[1][0], "频率") && strings.HasPrefix(rows[2][0], "偏差") &&
+		strings.HasPrefix(rows[3][0], "量了多久") && rows[3][len(rows[3])-1] == "1000"
+	if ok {
+		hz, e1 := strconv.ParseFloat(rows[1][len(rows[1])-1], 64)
+		ppm, e2 := strconv.ParseFloat(rows[2][len(rows[2])-1], 64)
+		ok = e1 == nil && e2 == nil && math.Abs(ppm) <= 40 && math.Abs((hz/32768-1)*1e6-ppm) <= 0.05
+	}
+	check(ok, "the frequency card shows Hz and ppm that agree, within ±40 ppm, measured over 1000 ms", show(rows))
+}
+
+// checkLseMarginReal: one row per drive in order, mlow restarted twice, every
+// restart started within the 2000 ms limit.
+func checkLseMarginReal(rows [][]string) {
+	names := []string{"低", "中低", "中高", "高"}
+	ok := len(rows) == 5
+	for i := 1; ok && i < 5; i++ {
+		r := rows[i]
+		runs := "1"
+		if i == 2 {
+			runs = "2"
+		}
+		t := lseNums(r[4])
+		ok = len(r) == 6 && r[0] == names[i-1] && r[1] == runs && r[2] == runs && r[3] == "0" &&
+			len(t) == 3 && t[1] <= 2000 && len(lseNums(r[5])) == 3
+	}
+	check(ok, "the margin card has one row per restarted drive, mlow twice, each started within 2000 ms", show(rows))
+}
+
+// lseNums is the numbers of a "min / max / avg" cell.
+func lseNums(cell string) []float64 {
+	var out []float64
+	for _, f := range strings.Split(cell, "/") {
+		if v, err := strconv.ParseFloat(strings.TrimSpace(f), 64); err == nil {
+			out = append(out, v)
+		}
+	}
+	return out
 }
 
 // lseSent is the lse commands the log shows as sent, without the bare drive reads.

@@ -92,6 +92,13 @@ func check(cond any, what string, detail ...string) bool {
 	return ok
 }
 
+// realBoard: --port names a real board, whose readings are not the sim's
+// stub values (HOW-TO-RUN-PORTTOOL-TESTS.md "真板子上换掉的判据" in $PROD).
+var realBoard bool
+
+// skip prints a check that cannot be judged on this bench and why; it is not a failure.
+func skip(what, why string) { Warn("SKIP  " + what + "  --  " + why) }
+
 func truthy(v any) bool {
 	switch x := v.(type) {
 	case bool:
@@ -371,6 +378,7 @@ func run() int {
 		fmt.Fprintln(os.Stderr, "usage: go run ./TestCase/host/porttool_panel --port COMx|sim [--show] [--wsl DISTRO]")
 		return 2
 	}
+	realBoard = !isSim(*port)
 	var err error
 	if repo, err = localcfg.FindRepo(); err != nil {
 		Fail(err.Error())

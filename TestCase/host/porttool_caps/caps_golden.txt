@@ -1,5 +1,5 @@
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1,2,3,4,5,6,7,8 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -56,7 +56,7 @@ OK port=reset board=bridge kind=run blk=- term=- channels=1 loop=none runs=reset
 OK port=led board=bridge kind=run blk=- term=- channels=1 loop=none runs=led.blink
 OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=none runs=match
 >>> pt.id
-OK uid=003400413135511439303538 porttool=0.18.3 rx_errors=0 rx_dropped=0
+OK uid=003400413135511439303538 porttool=0.18.9 rx_errors=0 rx_dropped=0
 >>> pt.cal
 OK cal=4F43414C010004004100340014513531383530390000883F000048C10000783F0000003E0000843F000080BE0000703F0000003F179E8809
 >>> pt.cal
@@ -92,7 +92,7 @@ ERR relay start refused: close="100" must be at least 1000 ms
 OK running=din
 OK running=relay
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=1
 OK vals=din ch=1,3,5 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -573,7 +573,7 @@ OK stopped knx
 >>> pt.stop all
 OK stopped all
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=2,4 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -718,7 +718,7 @@ OK stopped all
 >>> pt.start relay ch=1,2,3 mode=hold on=1:1,2:0,3:1
 OK started relay
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -777,7 +777,7 @@ OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=no
 >>> pt.set relay on=2:1
 OK set relay
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -842,7 +842,7 @@ ERR relay start refused: on="1:1,1:0" must be like 1:1,2:0 - relays 1..6, level 
 >>> pt.start relay on=1:
 ERR relay start refused: on="1:" must be like 1:1,2:0 - relays 1..6, level 0 or 1, each relay named at most once
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -903,7 +903,7 @@ OK stopped all
 >>> pt.start din ch=2,4 period=nonsense
 ERR din start refused: period="nonsense" is not a number
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -962,7 +962,7 @@ OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=no
 >>> pt.start dout ch=1,5 mode=hold duty=1:51,5:191 freq=1000
 OK started dout
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1027,7 +1027,7 @@ OK started dout
 >>> (host) 200 ms later
 !dout t=30940 seq=1 rx=0 miss=0 mode=blink res=8 tick=256000 ch1=0 ch2=0
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1086,7 +1086,7 @@ OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=no
 >>> (host) 200 ms later
 !dout t=31140 seq=1 rx=0 miss=1 mode=blink res=8 tick=256000 ch1=255 ch2=255
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1147,7 +1147,7 @@ OK stopped all
 >>> pt.start dout ch=1,2,3 mode=hold res=7 duty=64 freq=1:2000,2:1000,3:250
 OK started dout
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1208,7 +1208,7 @@ OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=no
 >>> pt.set dout freq=1:2000,2:1
 OK set dout
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1267,7 +1267,7 @@ OK port=match board=upper kind=run blk=C term=C07,C08,C10,C11 channels=1 loop=no
 >>> pt.set dout freq=500
 OK set dout
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1332,7 +1332,7 @@ OK set dout
 >>> pt.set dout res=10 duty=1023
 OK set dout
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1395,7 +1395,7 @@ ERR dout set refused: output 1 keeps duty 1023, over 15 at res=4 - give duty= wi
 >>> pt.set dout res=4 duty=15 freq=16000
 OK set dout
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1517,7 +1517,7 @@ OK started temp
 >>> pt.start aout ch=1,2 mv=1:500,2:1234
 OK started aout
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1644,7 +1644,7 @@ OK started relay
 >>> (host) 1000 ms later
 TEST relay_cycle_energised=0
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1713,7 +1713,7 @@ ERR relay start refused: mode="square" is not hold or cycle
 >>> pt.start relay ch=1,2,3,4,5,6 mode=cycle close=1:1000001,2:1000002,3:1000003,4:1000004,5:1000005,6:1000006 open=1:2000001,2:2000002,3:2000003,4:2000004,5:2000005,6:2000006 count=1:1000000,2:999999,3:999998,4:999997,5:999996,6:999995
 OK started relay
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1780,7 +1780,7 @@ OK echo rs232 1
 >>> (host) 200 ms later
 !rs232 t=43473 seq=2 rx=1 miss=0 rxlines=0 baud=115200
 >>> pt.caps
-OK porttool=0.18.3 ports=18 lines=55 hold=1 led=1
+OK porttool=0.18.9 ports=18 lines=55 hold=1 led=1
 OK port=din board=upper kind=session blk=D term=D02-D09 channels=8 loop=ctrl params=ch,mode,period running=0
 OK vals=din ch=1 mode=level period=200
 OK limits=din ch:1..8 mode:level|quad period:50..
@@ -1866,4 +1866,4 @@ TEST rx_before=0 isr_raised=0x8
 TEST rx_after=1 icr_written=0xE state=32 error_code=0
 >>> (host) a command delivered one byte at a time through the ISR
 TEST fed=6
-OK uid=003400413135511439303538 porttool=0.18.3 rx_errors=7 rx_dropped=0
+OK uid=003400413135511439303538 porttool=0.18.9 rx_errors=7 rx_dropped=0

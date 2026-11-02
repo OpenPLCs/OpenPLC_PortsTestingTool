@@ -57,6 +57,9 @@ func (s *Server) sdfBoard() (*ptboard.Board, msg, bool) {
 	return b, msg{}, true
 }
 
+// sdfUSBWait is how long the board's USB port gets to appear after pt.start usb.
+const sdfUSBWait = 5 * time.Second
+
 // sdfOpener is the data channel for via. A peer bound to that link in the
 // connection zone holds the board's one client slot, so it is let go first.
 func (s *Server) sdfOpener(via string) (ptsdfile.Opener, msg, bool) {
@@ -92,19 +95,28 @@ func (s *Server) sdfOpener(via string) (ptsdfile.Opener, msg, bool) {
 		if sim {
 			return nil, m("go.sdf.sim_usb"), false
 		}
-		com := ""
 		if l != nil {
-			com = l.COM
 			s.unbindLink(via)
 			s.say(m("go.sdf.unbound", "port", via))
-		} else {
-			c, err := ptecho.FindCDC()
-			if err != nil {
-				return nil, m("go.sdf.no_cdc", "detail", err), false
-			}
-			com = c
 		}
-		return func() (io.ReadWriteCloser, error) { return s.Open(com, serialx.DefaultBaud) }, msg{}, true
+		// Looked up once the session runs: the board's USB port only appears
+		// with pt.start usb (PORTTOOL-FLOW.md B.11 in $PROD).
+		find := pickedOr("usb", ptecho.FindCDC)
+		return func() (io.ReadWriteCloser, error) {
+			var err error
+			for end := time.Now().Add(sdfUSBWait); ; time.Sleep(200 * time.Millisecond) {
+				var com string
+				if com, err = find(); err == nil {
+					var rw io.ReadWriteCloser
+					if rw, err = s.Open(com, serialx.DefaultBaud); err == nil {
+						return rw, nil
+					}
+				}
+				if time.Now().After(end) {
+					return nil, err
+				}
+			}
+		}, msg{}, true
 	}
 	return nil, m("go.sdf.bad_via"), false
 }

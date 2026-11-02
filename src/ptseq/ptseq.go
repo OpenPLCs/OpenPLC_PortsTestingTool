@@ -403,7 +403,7 @@ func (r *Runner) doSession(step ptplan.Step, timeout time.Duration, att *ptrepor
 	}()
 	open := r.OpenPeer
 	if open == nil {
-		open = realPeerOpener
+		open = RealPeerOpener
 	}
 	findCDC := r.FindCDC
 	if findCDC == nil {

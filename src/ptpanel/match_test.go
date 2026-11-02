@@ -302,18 +302,19 @@ func TestMatchAfterConnectFillsTheRows(t *testing.T) {
 		t.Errorf("skipped %v, want %v", skipped, want)
 	}
 
-	// RS485 is bound as a person's Connect would, and remembered for plans.
+	// Both recognised adapters are chosen, not opened (decision 168): a test
+	// opens the chosen port when it starts.
 	mb.s.mu.Lock()
 	l := mb.s.links["rs485"]
 	mb.s.mu.Unlock()
-	if l == nil || l.COM != "COM5" {
-		t.Errorf("rs485 link: %+v", l)
+	if l != nil {
+		t.Errorf("matching opened rs485 on %s; it should only choose it", l.COM)
 	}
 	if com, _, ok := portmap.Peer("rs485"); !ok || com != "COM5" {
 		t.Errorf("porttool_ports.json rs485 = %q %v", com, ok)
 	}
-	if _, _, ok := portmap.Peer("can"); ok {
-		t.Error("the CAN adapter is found by USB id each time, not stored")
+	if com, _, ok := portmap.Peer("can"); !ok || com != "COM11" {
+		t.Errorf("porttool_ports.json can = %q %v", com, ok)
 	}
 
 	// The page reads it with the once-a-second poll.
@@ -449,5 +450,84 @@ func TestFindControlPortConnectsToTheOneFixture(t *testing.T) {
 	tried, _ := out["tried"].([]any)
 	if len(tried) != 4 {
 		t.Errorf("every port is listed with what it did: %v", tried)
+	}
+}
+
+// A test started right after connecting waits for the connect-time match: the
+// match holds the CANable and the serial adapters open (PORTTOOL-FLOW.md C.3.6,
+// 「前提」).
+func TestStartWaitsForTheConnectMatch(t *testing.T) {
+	mb := newMatchBench(t)
+	start := time.Now()
+	if j := mb.post(t, "/api/connect", map[string]any{"port": "COM3"}); j["connected"] != true {
+		t.Fatalf("connect: %v", j)
+	}
+	// Claimed before connect answers, so the page and a start see it at once.
+	if m, _ := mb.s.matchJSON().(map[string]any); m == nil || m["running"] != true {
+		t.Fatalf("connect answered before the match was claimed: %v", mb.s.matchJSON())
+	}
+	mb.s.waitIPProbe()
+	mb.s.waitMatch()
+	st := &mb.s.matchSt
+	st.mu.Lock()
+	running, at := st.running, st.at
+	st.mu.Unlock()
+	if running || !at.After(start) {
+		t.Fatalf("waitMatch returned before the connect-time match ended (running=%v, result at %v)", running, at)
+	}
+}
+
+// Choosing an adapter opens nothing; a session started from the command box
+// holds it until pt.stop, and 「强制释放端口」 closes whatever is still open
+// (decision 168, PORTTOOL-FLOW.md C.3.6 「连接区」).
+func TestChosenAdapterIsHeldOnlyWhileASessionRuns(t *testing.T) {
+	mb := newMatchBench(t)
+	if j := mb.post(t, "/api/connect", map[string]any{"port": "COM3"}); j["connected"] != true {
+		t.Fatalf("connect: %v", j)
+	}
+	mb.s.waitIPProbe()
+	mb.s.waitMatch()
+	held := func() *linkPort {
+		mb.s.mu.Lock()
+		defer mb.s.mu.Unlock()
+		return mb.s.links["rs485"]
+	}
+	waitHeld := func(want bool) {
+		t.Helper()
+		for end := time.Now().Add(3 * time.Second); time.Now().Before(end); time.Sleep(20 * time.Millisecond) {
+			if (held() != nil) == want {
+				return
+			}
+		}
+		t.Fatalf("rs485 held = %v, want %v", held() != nil, want)
+	}
+
+	if j := mb.post(t, "/api/link", map[string]any{"port": "rs485", "com": "COM12"}); j["error"] != nil {
+		t.Fatalf("choose: %v", j)
+	}
+	if com, _, _ := portmap.Peer("rs485"); com != "COM12" || held() != nil {
+		t.Fatalf("after choosing: saved %q, held %v; want COM12 saved and nothing open", com, held())
+	}
+	mb.s.applyLinkMode("pt.start rs485")
+	waitHeld(true)
+	if l := held(); l.COM != "COM12" {
+		t.Errorf("the session opened %s, want the chosen COM12", l.COM)
+	}
+	mb.s.applyLinkMode("pt.stop rs485")
+	waitHeld(false)
+
+	mb.s.applyLinkMode("pt.start rs485")
+	waitHeld(true)
+	mb.post(t, "/api/release", map[string]any{})
+	waitHeld(false)
+
+	// Stopped before the far end came up: it is not kept.
+	for i := 0; i < 20; i++ {
+		mb.s.applyLinkMode("pt.start rs485")
+		mb.s.applyLinkMode("pt.stop rs485")
+	}
+	time.Sleep(500 * time.Millisecond)
+	if l := held(); l != nil {
+		t.Errorf("a far end opened for a stopped session is still held on %s", l.COM)
 	}
 }

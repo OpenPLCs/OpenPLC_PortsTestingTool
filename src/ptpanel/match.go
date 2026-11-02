@@ -30,6 +30,7 @@ const matchControlWait = 1500 * time.Millisecond
 type matchState struct {
 	mu      sync.Mutex
 	running bool
+	done    chan struct{}  // closed when the claimed run ends
 	board   *ptboard.Board // the connection the result belongs to
 	matchResult
 }
@@ -71,8 +72,8 @@ func (s *Server) handleMatch(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// Claimed before answering, so the answer already says running.
-		if s.claimMatch(b) {
-			go s.completeMatch(b)
+		if done := s.claimMatch(b); done != nil {
+			go s.completeMatch(b, done)
 		}
 	}
 	writeJSON(w, 200, map[string]any{"match": s.matchJSON()})
@@ -115,26 +116,46 @@ func (s *Server) matchJSON() any {
 	}
 }
 
-// runMatch matches the adapters for board b, once at a time.
-func (s *Server) runMatch(b *ptboard.Board) {
-	if s.claimMatch(b) {
-		s.completeMatch(b)
-	}
-}
-
-// claimMatch marks a run for b as started; false when one already is.
-func (s *Server) claimMatch(b *ptboard.Board) bool {
+// claimMatch marks a run for b as started and returns the channel
+// completeMatch closes; nil when one already is running.
+func (s *Server) claimMatch(b *ptboard.Board) chan struct{} {
 	st := &s.matchSt
 	st.mu.Lock()
 	defer st.mu.Unlock()
 	if st.running && st.board == b {
-		return false
+		return nil
 	}
-	st.running, st.board = true, b
-	return true
+	st.running, st.board, st.done = true, b, make(chan struct{})
+	return st.done
 }
 
-func (s *Server) completeMatch(b *ptboard.Board) {
+// waitMatch lets a claimed match finish before a test starts: the match holds
+// the CANable and the serial adapters open (PORTTOOL-FLOW.md C.3.6 in $PROD).
+func (s *Server) waitMatch() {
+	s.mu.Lock()
+	b := s.board
+	s.mu.Unlock()
+	st := &s.matchSt
+	st.mu.Lock()
+	done := st.done
+	if !st.running || st.board != b {
+		done = nil
+	}
+	st.mu.Unlock()
+	if done == nil {
+		return
+	}
+	select {
+	case <-done:
+	case <-time.After(matchWaitMax):
+	}
+}
+
+// matchWaitMax bounds waitMatch: opening the adapters, the board's listen and its reply.
+const matchWaitMax = 30 * time.Second
+
+func (s *Server) completeMatch(b *ptboard.Board, done chan struct{}) {
+	defer close(done)
 	st := &s.matchSt
 	res, ran := s.doMatch(b)
 
@@ -258,12 +279,10 @@ func (s *Server) doMatch(b *ptboard.Board) (res matchResult, ran bool) {
 	for _, t := range []string{ptmatch.TermRS485, ptmatch.TermCAN} {
 		o := outcomes[t]
 		tr := termResult{OK: o.OK, COM: o.COM, Why: s.matchWhy(t, o, res.sim, caps)}
-		// A real RS485 adapter is bound as a person's Connect would; the simulated
-		// board plays its own peers, and the CAN peer is found by USB id each time.
-		if o.OK && t == ptmatch.TermRS485 && !res.sim {
-			if _, err := s.bindSerialPeer(t, o.COM, serialx.DefaultBaud); err != nil {
-				tr = termResult{Why: m("go.match.bind_failed", "com", o.COM, "detail", err)}
-			}
+		// A recognised adapter is chosen, not opened (decision 168); the simulated
+		// board plays its own peers.
+		if o.OK && !res.sim {
+			portmap.SetPeer(t, o.COM, serialx.DefaultBaud)
 		}
 		res.terms[t] = tr
 		s.say(tr.Why)
@@ -395,8 +414,8 @@ func (s *Server) openCandidates(control string, bound map[string]string) (serial
 	return serial, can, skipped, nil
 }
 
-// bindSerialPeer binds a serial adapter as a link port's far end and
-// remembers it, as the row's Connect does (handleLink).
+// bindSerialPeer opens a serial adapter as a link port's far end; the choice
+// itself is recorded by handleLink (decision 168).
 func (s *Server) bindSerialPeer(boardPort, com string, baud int) (*linkPort, error) {
 	s.unbindLink(boardPort)
 	l, err := s.bindLink(boardPort, com, baud)
@@ -414,7 +433,6 @@ func (s *Server) bindSerialPeer(boardPort, com string, baud int) (*linkPort, err
 	if p.Running {
 		l.setMode(p.Values["mode"])
 	}
-	portmap.SetPeer(boardPort, com, l.Baud)
 	s.say(m("go.link.serial_up", "port", boardPort, "com", com, "baud", l.Baud))
 	return l, nil
 }

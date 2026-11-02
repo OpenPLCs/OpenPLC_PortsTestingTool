@@ -199,6 +199,18 @@ func TestMultiLineReplyWithNoDeclaredCount(t *testing.T) {
 	}
 }
 
+// A board that says nothing is a timeout, not a dead link: the two point a
+// person at different causes (a wrong rate versus a pulled cable).
+func TestSilenceIsATimeoutNotALostBoard(t *testing.T) {
+	f := newFakeBoard(t)
+	b := ptboard.New(f, 64)
+	defer b.Close()
+	_, err := b.Send("pt.quiet", nil, 100*time.Millisecond)
+	if err == nil || !strings.Contains(err.Error(), "no reply") {
+		t.Fatalf("a silent board gave %v, want a no-reply timeout", err)
+	}
+}
+
 func TestBacklogKeepsEverythingIncludingLogText(t *testing.T) {
 	f := newFakeBoard(t)
 	b := ptboard.New(f, 0)

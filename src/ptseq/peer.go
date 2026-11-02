@@ -60,8 +60,8 @@ type peerPlan struct {
 // never opens whatever serial port the machine running it happens to have.
 type peerOpener func(kind, addr string, baud int) (io.ReadWriteCloser, error)
 
-// realPeerOpener is the production one.
-func realPeerOpener(kind, addr string, baud int) (io.ReadWriteCloser, error) {
+// RealPeerOpener is the production one; the panel wraps it to borrow bound links.
+func RealPeerOpener(kind, addr string, baud int) (io.ReadWriteCloser, error) {
 	if kind == "tcp" {
 		return net.DialTimeout("tcp", addr, peerDialTimeout)
 	}

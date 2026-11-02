@@ -336,46 +336,49 @@ func sortedKeys[V any](m map[string]V) []string {
 	return out
 }
 
-// checkPeerBinding: 接上 / 断开 on the RS485 row of the connection block. The
-// simulated board plays its own peers, so this proves the control and the
-// server round trip, not that the right adapter closes the loop.
+// checkPeerBinding: the RS485 row only chooses (decision 168): no 接上 / 断开,
+// a choice is saved without opening the port, 「不用」 forgets it; and
+// 「强制释放端口」 answers. The simulated board plays its own peers, so this
+// proves the controls and the server round trip, not that the adapter opens.
 func checkPeerBinding(p *Page) {
-	Section("binding a peer serial port")
+	Section("choosing a peer serial port")
 	row := p.L(`#connrows .crow[data-conn="rs485"]`)
+	check(row.L("button").Count() == 0, "the RS485 row has no connect / disconnect button", row.Text())
+	rel := p.L(`#itemcards [data-release]`)
+	if check(rel.Count() == 1, "R&D shows 强制释放端口") {
+		rel.First().Click()
+		ok := try(func() {
+			p.WaitFunc(`() => (document.querySelector('#logwrap') || {}).innerText.includes('已强制释放')`, nil, 10000)
+		}) == nil
+		check(ok, "强制释放端口 stops the tests and says so in the log")
+	}
 	// Found by matching (decision 146): on the simulated board always, so no
 	// serial port on this machine is opened here.
 	if found := p.L(`#connrows [data-matched="rs485"]`); found.Count() > 0 {
-		check(row.L("select").Count() == 0, "RS485 was found by matching, so there is nothing to bind by hand", found.First().Text())
+		check(row.L("select").Count() == 0, "RS485 was found by matching on the simulated board, so there is nothing to choose", found.First().Text())
 		return
 	}
-	sel := row.L("select")
-	if sel.Count() == 0 {
-		check(strings.TrimSpace(row.Text()) != "", "with no adapter to offer, the RS485 row says why", row.Text())
+	sel := row.L(`select[data-pick="rs485"]`)
+	if !check(sel.Count() == 1, "the RS485 row is a chooser", row.Text()) {
 		return
 	}
-	check(sel.First().L("option").Count() >= 1, "the RS485 row lists this machine's serial ports")
-	row.L("button").HasText("接上").First().Click()
-	// Opening an unpaired Bluetooth port takes about 5 s to be refused.
-	try(func() {
-		p.WaitFunc(`() => {
-			const m = document.querySelector('#msgbox .msg');
-			const r = document.querySelector('#connrows .crow[data-conn="rs485"]');
-			return (m && m.textContent.trim() !== '') ||
-				[...r.querySelectorAll('button')].some(b => b.textContent.includes('断开'));
-		}`, nil, 10000)
-	})
-	msg := p.L("#msgbox .msg")
-	if msg.Count() > 0 && strings.TrimSpace(msg.First().Text()) != "" {
-		// The port may be in use on this machine: a refusal stated in words is fine.
-		check(row.L("button").HasText("断开").Count() == 0, "a refused binding does not leave the row looking bound", msg.First().Text())
+	opts := sel.First().L("option")
+	if opts.Count() < 2 {
+		check(strings.Contains(row.Text(), "不用"), "with no adapter to offer, the RS485 row offers 不用", row.Text())
 		return
 	}
-	if !check(row.L("button").HasText("断开").Count() == 1, "a bound peer offers to be unbound", row.Text()) {
-		return
+	com := opts.Nth(1).Attr("value")
+	sel.First().Select(com)
+	saved := func() string {
+		return p.Eval(`() => (((state.saved || {}).peers || {}).rs485 || {}).com || ""`).S()
 	}
-	row.L("button").HasText("断开").First().Click()
-	p.Wait(1000)
-	check(row.L("select").Count() == 1, "and unbinding puts the chooser back")
+	ok := try(func() { p.WaitFunc(`(c) => (((state.saved || {}).peers || {}).rs485 || {}).com === c`, com, 5000) }) == nil
+	check(ok, "choosing "+com+" saves it", saved())
+	check(p.Eval(`() => !(state.links || {}).rs485`).Truthy(), "and does not open it")
+	sel = row.L(`select[data-pick="rs485"]`)
+	sel.First().Select("")
+	ok = try(func() { p.WaitFunc(`() => !(((state.saved || {}).peers || {}).rs485 || {}).com`, nil, 5000) }) == nil
+	check(ok, "不用 forgets the choice", saved())
 }
 
 // checkPeerErrorLine: a bound peer that failed shows its error in words on its

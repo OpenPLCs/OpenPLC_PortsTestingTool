@@ -311,6 +311,7 @@ func (s *Server) handleFullStart(w http.ResponseWriter, r *http.Request) {
 	s.peekMu.Lock() // a peek in flight ends first (peek.go)
 	defer s.peekMu.Unlock()
 	s.waitIPProbe() // its eth session must be stopped before ours start
+	s.waitMatch()   // it holds the CANable and the serial adapters open
 	picked := []ptstages.Step{}
 	for _, st := range ptstages.Order {
 		for _, n := range body.Steps {

@@ -1,9 +1,11 @@
 package main
 
-// The R&D AI / AO card on the simulated board (decisions 97, 98, 99, 102, 117,
-// 137, 138; PORTTOOL-FLOW.md C.3.2, C.3.6 「AI / AO 卡片」). The simulated board
-// has no real UID: store and burn are only seen refusing; writing them is
-// covered by TestCase/host/porttool_plan/calibration_test.go.
+// The R&D AI / AO card (decisions 97, 98, 99, 102, 117, 137, 138; PORTTOOL-FLOW.md
+// C.3.2, C.3.6 「AI / AO 卡片」). The simulated board has no real UID: store and
+// burn are only seen refusing; writing them is covered by
+// TestCase/host/porttool_plan/calibration_test.go. On a real board the checks
+// that need sim.ain / sim.cal or a calibration are skipped
+// (HOW-TO-RUN-PORTTOOL-TESTS.md "真板子上换掉的判据" in $PROD).
 
 import (
 	"bytes"
@@ -80,6 +82,16 @@ func checkAnalogCards(p *Page) {
 		p.Wait(300)
 	}
 
+	// A real board's AI readings need a person's source and its calibration area
+	// is never erased for a test; without calibration nothing judges a reading.
+	calOK := !realBoard || p.Eval("fetch('/api/analog').then(r => r.json()).then(j => (j.board || {}).state === 'ok')").Truthy()
+	kbShown := func(text string) bool {
+		if calOK {
+			return strings.Contains(text, "k=") && strings.Contains(text, "b=")
+		}
+		return strings.Contains(text, "没校准，按标称")
+	}
+
 	// ---- AO: one card, by hand (decision 133), 校准 and 实测 blocks
 	anaPick(p, "aout")
 	card := p.L(`#itemcards [data-anacard="aout"]`)
@@ -126,7 +138,12 @@ func checkAnalogCards(p *Page) {
 	store := card.L(`button[data-ana-store="aout.cal1"]`)
 	burn := card.L(`button[data-ana-burn="aout.cal1"]`)
 	check(store.Count() == 1 && burn.Count() == 1 && store.Disabled() && burn.Disabled(), "存到本地 and 烧进板子 are there and off before a fit")
-	check(strings.Contains(card.L(`[data-anachan="aout.cal1"] [data-ana-why="burn"]`).Text(), "模拟板"), "烧进板子 says why: the simulated board")
+	burnWhy := card.L(`[data-anachan="aout.cal1"] [data-ana-why="burn"]`).Text()
+	if realBoard {
+		check(burnWhy != "" && !strings.Contains(burnWhy, "模拟板"), "烧进板子 says why it is off", burnWhy)
+	} else {
+		check(strings.Contains(burnWhy, "模拟板"), "烧进板子 says why: the simulated board")
+	}
 
 	// 输出该点: the board outputs the point, the person types the meter; one point in effect at a time.
 	check(strings.TrimSpace(p.L(`button[data-anaset="aout.cal1|0"]`).Text()) == "输出该点" &&
@@ -169,9 +186,13 @@ func checkAnalogCards(p *Page) {
 	p.Wait(800)
 	box := p.L(`[data-anachan="aout.cal1"]`).Text()
 	check(strings.Contains(box, "k = ") && strings.Contains(box, "b = ") && strings.Contains(box, "最小二乘"), "拟合 gives k and b and names the method", tail(box, 300))
-	check(p.L(`button[data-ana-store="aout.cal1"]`).Disabled() &&
-		strings.Contains(p.L(`[data-anachan="aout.cal1"] [data-ana-why="store"]`).Text(), "模拟板"),
-		"after the fit, 存到本地 is still off on the simulated board, saying why")
+	if realBoard {
+		check(p.L(`button[data-ana-store="aout.cal1"]`).Enabled(), "after the fit, 存到本地 can be pressed (it is not pressed here)")
+	} else {
+		check(p.L(`button[data-ana-store="aout.cal1"]`).Disabled() &&
+			strings.Contains(p.L(`[data-anachan="aout.cal1"] [data-ana-why="store"]`).Text(), "模拟板"),
+			"after the fit, 存到本地 is still off on the simulated board, saying why")
+	}
 
 	// ---- AO 实测 (decisions 137, 138): both channels at their own targets, k, b shown,
 	// a target changed while running is output again, the meter typed is judged live
@@ -189,7 +210,7 @@ func checkAnalogCards(p *Page) {
 		strings.Contains(cls(p, `#itemcards button[data-rdout="aout"]`), "stop"),
 		"while it outputs the button is 停止, in the stop colour")
 	kb := p.L(`#itemcards [data-anakb="1"]`).Text()
-	check(strings.Contains(kb, "k=") && strings.Contains(kb, "b="), "实测 shows the k, b read from the board at the start", kb)
+	check(kbShown(kb), "实测 shows the k, b read from the board at the start (没校准，按标称 when it has none)", kb)
 	anaType(p, `input[data-anatarget="aout.out1"]`, "12")
 	anaWait(p, "() => { const a = (((rdLive('aout') || {}).analog) || []).find(x => x.ch === 1); return !!a && a.set === 12; }",
 		"changing AO1's target to 12 mA while running outputs it at once", "() => libState('aout.manual')", nil, 0)
@@ -229,6 +250,44 @@ func checkAnalogCards(p *Page) {
 
 	// ---- AI read item, point by point (the configurations' path): a person sets the
 	// source and types its value; each point lists raw, converted, standard and error
+	if realBoard {
+		skip("AI1 read at 2500, 5000 and 7500 mV", anaSimOnly)
+	} else {
+		checkAiReadPoints(p, sim)
+	}
+	checkAiBlocks(p, sim, calOK, kbShown)
+}
+
+// clickSettled clicks sel once it has stayed put for 300 ms, as a person aims
+// at a button that is not moving, and reports how far it moved meanwhile.
+func clickSettled(p *Page, sel string) {
+	last := p.L(sel).Box()
+	moved := 0.0
+	for i := 0; i < 30; i++ {
+		p.Wait(300)
+		b := p.L(sel).Box()
+		if b != nil && last != nil && *b == *last {
+			break
+		}
+		if b != nil && last != nil {
+			moved = math.Max(moved, math.Abs(b.Y-last.Y)+math.Abs(b.X-last.X))
+		}
+		last = b
+	}
+	if moved > 0 {
+		Warn(fmt.Sprintf("NOTE  %s moved up to %.0f px before it settled", sel, moved))
+	}
+	p.L(sel).Click()
+}
+
+// anaSimOnly and anaNeedsCal say why a check is skipped on a real board.
+const (
+	anaSimOnly  = "needs the simulated board's sim.ain / sim.cal"
+	anaNeedsCal = "the board has no calibration (calibrate, store and burn it in R&D first)"
+)
+
+// checkAiReadPoints: the AI read item point by point, the source set through sim.ain.
+func checkAiReadPoints(p *Page, sim func(string)) {
 	p.Eval("() => { anaPtsText['ain.read1'] = '2500, 5000, 7500'; libStartOnly(['ain.read1']); }")
 	var prev any
 	for _, v := range []int{2500, 5000, 7500} { // 3-6 points (PORTTOOL-FLOW.md C.3.6)
@@ -254,7 +313,10 @@ func checkAnalogCards(p *Page) {
 		good = good && r.K("pass").Truthy()
 	}
 	check(good, "AI1 read at 2500, 5000 and 7500 mV passes, each point with raw, converted, standard and error", out+" "+cut(show(rows), 300))
+}
 
+// checkAiBlocks: the AI card's blocks, the range registration and the AO runs after them.
+func checkAiBlocks(p *Page, sim func(string), calOK bool, kbShown func(string) bool) {
 	// ---- each block's 开始 / 停止, one at a time
 	p.L(`#itemcards button[data-anaread="meas"]`).Click()
 	anaWait(p, "() => !!rdLive('ain') && anaAiBlock === 'meas'", "实测's 开始 starts the AI reading", "() => [libData.running, rdReadWhy]", nil, 0)
@@ -276,7 +338,7 @@ func checkAnalogCards(p *Page) {
 	p.WaitSel(`select[data-range="AI1"]`, 10000)
 	opts := p.L(`select[data-range="AI1"]`).First().L("option").EvalAll("os => os.map(o => o.value)").Strings()
 	check(eqStrings(opts, "v", "i"), "AI1 offers voltage or current only: an unsoldered board is a bad board (decision 106)", show(opts))
-	sel = p.L(`select[data-range="AI1"]`).First()
+	sel := p.L(`select[data-range="AI1"]`).First()
 	check(sel.Value() == "v", "AI1 starts as the product default, voltage", sel.Value())
 	sel.Select("i")
 	p.Wait(800)
@@ -293,20 +355,22 @@ func checkAnalogCards(p *Page) {
 	check(!p.Eval("!!rdLive('ain')").B(), "a reload does not start the reading either")
 	p.L(`#itemcards button[data-anaread="cal"]`).Click()
 	anaWait(p, "() => !!rdLive('ain')", "校准's 开始 again", "() => [libData.running, rdReadWhy]", nil, 0)
-	n0 = anaStarts(p, "ain")
+	n0 := anaStarts(p, "ain")
 	sel.Select("v") // back to the default for the checks below and later runs
 	p.Wait(800)
 	anaWait(p, "n => !!rdLive('ain') && document.querySelector('#log').innerText.split('OK started ain').length - 1 > n",
 		"a range change while reading starts the reading again", "() => [libData.running, rdReadWhy]", n0, 0)
 
 	// ---- AI calibration point: the source is set, 记录该点 takes the running reading
-	sim(fmt.Sprintf("sim.ain 1 %d", ai1PinMV(2500)))
+	if !realBoard {
+		sim(fmt.Sprintf("sim.ain 1 %d", ai1PinMV(2500)))
+	}
 	check(p.L(`button[data-anaset="ain.cal1|1"]`).Enabled() && strings.Contains(cls(p, `button[data-anaset="ain.cal1|1"]`), "act"),
 		"记录该点 is on while 校准 reads, in the per-row action colour")
 	p.L(`button[data-anaset="ain.cal1|1"]`).Click()
 	anaWaitIdle(p)
 	tr := p.L(`[data-anachan="ain.cal1"] tr[data-row="1"]`)
-	row = tr.Text()
+	row := tr.Text()
 	check(strings.Contains(row, "%") && tr.Attr("data-done") == "1" && tr.L("b.gotval").Count() == 1,
 		"记录该点 on AI1's 2500 mV point shows the reading in bold, its error, the row marked recorded (decision 151)", row)
 	check(p.L(`[data-anachan="ain.cal1"] tr[data-row="0"]`).AttrNil("data-done"), "a point not recorded is not marked")
@@ -315,18 +379,23 @@ func checkAnalogCards(p *Page) {
 	p.L(`#itemcards button[data-anaread="meas"]`).Click()
 	anaWait(p, "() => !!rdLive('ain') && anaAiBlock === 'meas'", "实测's 开始 takes the reading over from 校准",
 		"() => [libData.running, anaAiBlock, rdReadWhy]", nil, 0)
-	anaWait(p, "() => /k=.*b=/.test((document.querySelector('[data-anakb=\"1\"]') || {}).innerText || '')",
-		"实测 shows AI1's k, b read from the board at the start",
-		"() => (document.querySelector('[data-anablk=\"meas\"]') || {}).innerText", nil, 0)
+	_ = try(func() { p.WaitSel(`[data-anakb="1"]`, 10000) })
+	p.Wait(500)
+	check(kbShown(p.L(`[data-anakb="1"]`).Text()), "实测 shows AI1's k, b read from the board at the start (没校准，按标称 when it has none)",
+		cut(p.L(`[data-anablk="meas"]`).Text(), 300))
 	aiRow := "() => (document.querySelector('[data-anablk=\"meas\"] tr[data-item=\"ain.read1\"]') || {}).innerText"
 	aiCmp := "() => (document.querySelector('[data-anablk=\"meas\"] tr[data-item=\"ain.read1\"] [data-cmp=\"1\"]') || {dataset: {}}).dataset.pass"
 	anaType(p, `input[data-anatarget="ain.read1"]`, "5000")
-	sim(fmt.Sprintf("sim.ain 1 %d", ai1PinMV(5000)))
-	anaWait(p, aiCmp+" === '1'", "AI1 at 5000 mV against a 5000 mV target is judged within ±1 % FS as it reads", aiRow, nil, 0)
-	anaType(p, `input[data-anatarget="ain.read1"]`, "6000")
-	anaWait(p, aiCmp+" === '0'", "changing the target to 6000 mV re-judges at once: -10 % FS is over", aiRow, nil, 0)
-	anaType(p, `input[data-anatarget="ain.read1"]`, "5000")
-	anaWait(p, aiCmp+" === '1'", "and back to 5000 mV it passes again", aiRow, nil, 0)
+	if realBoard {
+		skip("AI1 at a 5000 mV target is judged as it reads, and again when the target changes", anaSimOnly)
+	} else {
+		sim(fmt.Sprintf("sim.ain 1 %d", ai1PinMV(5000)))
+		anaWait(p, aiCmp+" === '1'", "AI1 at 5000 mV against a 5000 mV target is judged within ±1 % FS as it reads", aiRow, nil, 0)
+		anaType(p, `input[data-anatarget="ain.read1"]`, "6000")
+		anaWait(p, aiCmp+" === '0'", "changing the target to 6000 mV re-judges at once: -10 % FS is over", aiRow, nil, 0)
+		anaType(p, `input[data-anatarget="ain.read1"]`, "5000")
+		anaWait(p, aiCmp+" === '1'", "and back to 5000 mV it passes again", aiRow, nil, 0)
+	}
 
 	// ---- the reference switch and the noise statistics (decision 158)
 	vrefBox := "() => (document.querySelector('[data-vref=\"ain\"]') || {}).innerText"
@@ -335,7 +404,7 @@ func checkAnalogCards(p *Page) {
 	anaWait(p, "() => Number((document.querySelector('[data-noise=\"1|raw\"] td:nth-child(3)') || {}).innerText) >= 2",
 		"实测 collects AI1's frames for the noise statistics", "() => (document.querySelector('[data-ananoise]') || {}).innerText", nil, 0)
 	p.Eval("() => { window.confirm = () => true; }") // the hint before switching is a confirm box
-	p.L(`button[data-vrefsrc="ext"]`).Click()
+	clickSettled(p, `button[data-vrefsrc="ext"]`)
 	anaWait(p, "() => !!document.querySelector('[data-vrefsrc=\"ext\"][data-active=\"1\"]')",
 		"外部 switches the board to the external reference", vrefBox, nil, 0)
 	check(strings.Contains(p.L("#log").Text(), "pt.run vref src=ext"), "外部 sends pt.run vref src=ext")
@@ -348,9 +417,13 @@ func checkAnalogCards(p *Page) {
 	// ---- leaving and coming back (decision 137): leaving stops and records both
 	// channels, the round is kept, the values stay, nothing reads until a 开始
 	anaPick(p, "aout")
+	ai1 := "x.outcome === 'PASS'"
+	if realBoard {
+		ai1 = "!!x.outcome" // a real AI1 reads whatever is wired; only that it was judged counts
+	}
 	anaWait(p, "() => { const s = libState('ain.live') || {}; const c = s.chans || []; return !s.running && c.length === 2"+
-		" && c.some(x => x.ch === 1 && x.outcome === 'PASS') && c.some(x => x.ch === 2 && x.outcome === 'STOPPED'); }",
-		"leaving the AI page stops 实测 and records both channels: AI1 passed, AI2 without a target stopped",
+		" && c.some(x => x.ch === 1 && "+ai1+") && c.some(x => x.ch === 2 && x.outcome === 'STOPPED'); }",
+		"leaving the AI page stops 实测 and records both channels: AI1 judged, AI2 without a target stopped",
 		"() => libState('ain.live')", nil, 0)
 	n0 = anaStarts(p, "ain")
 	anaPick(p, "ain")
@@ -362,15 +435,32 @@ func checkAnalogCards(p *Page) {
 	check(p.L(`input[data-anatarget="ain.read1"]`).Value() == "5000", "the target typed is still there")
 
 	// ---- a blank calibration area: not calibrated, no verdict (the item still runs for the configurations)
+	if realBoard {
+		skip(`with the calibration area erased the AO output is "not calibrated"`, anaSimOnly)
+	} else {
+		checkAoUncalibrated(p, sim)
+	}
+	if !calOK {
+		skip("AO1 on 4-20 mA refuses a 4 mA point; the AO load asks for both readings", anaNeedsCal)
+		return
+	}
+	checkAoCalibrated(p)
+}
+
+// checkAoUncalibrated: sim.cal 0 erases the simulated board's calibration area.
+func checkAoUncalibrated(p *Page, sim func(string)) {
 	sim("sim.cal 0")
 	anaPick(p, "aout")
 	p.Eval("() => libStartOnly(['aout.out1'])")
-	out = anaDone(p, "aout.out1", 60)
+	out := anaDone(p, "aout.out1", 60)
 	stj := p.Eval("libData.states['aout.out1'] || {}")
 	check(out == "ERROR" && stj.K("code").S() == "not_calibrated",
 		`with the calibration area erased the AO output is "not calibrated"`, out+" "+cut(stj.String(), 300))
 	sim("sim.cal 1")
+}
 
+// checkAoCalibrated: the AO runs that need the board's calibration.
+func checkAoCalibrated(p *Page) {
 	// ---- decision 136: a 4-20 mA AO is refused under what code 0 puts out (about 4.86 mA)
 	anaPick(p, "aout")
 	p.L(`select[data-range="AO1"]`).First().Select("i420")
@@ -380,8 +470,8 @@ func checkAnalogCards(p *Page) {
 	_ = try(func() {
 		p.WaitFunc("() => ((libData.states['aout.out1'] || {}).code || '') !== 'not_calibrated'", nil, 15000)
 	})
-	out = anaDone(p, "aout.out1", 60)
-	stj = p.Eval("libData.states['aout.out1'] || {}")
+	out := anaDone(p, "aout.out1", 60)
+	stj := p.Eval("libData.states['aout.out1'] || {}")
 	check(out == "ERROR" && stj.K("code").S() == "below_min" && strings.Contains(stj.K("reason").String(), "4.86"),
 		"AO1 on 4-20 mA: a 4 mA point is refused, naming the 4.86 mA minimum (decision 136)", out+" "+cut(stj.String(), 300))
 	p.L(`select[data-range="AO1"]`).First().Select("v") // back to the default

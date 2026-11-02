@@ -20,6 +20,7 @@ import (
 	"PortTool/src/calstore"
 	"PortTool/src/portmap"
 	"PortTool/src/ptboard"
+	"PortTool/src/ptecho"
 	"PortTool/src/ptitems"
 	"PortTool/src/ptlib"
 	"PortTool/src/ptplan"
@@ -55,6 +56,17 @@ func (s *Server) libRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/ask", s.handleAsk)
 }
 
+// pickedOr is the adapter chosen for a board port in the connection block,
+// else what find turns up by USB id (decision 168).
+func pickedOr(boardPort string, find func() (string, error)) func() (string, error) {
+	return func() (string, error) {
+		if com, _, ok := portmap.Peer(boardPort); ok {
+			return com, nil
+		}
+		return find()
+	}
+}
+
 // errSimPeer keeps a run on the simulated board off every real serial port and
 // USB device on the bench: the simulated board plays its own peers.
 var errSimPeer = errors.New("the simulated board has no real peer on this bench")
@@ -69,6 +81,10 @@ func (s *Server) libRunner(b *ptboard.Board, port string) func() *ptseq.Runner {
 			r.OpenPeer = func(string, string, int) (io.ReadWriteCloser, error) { return nil, errSimPeer }
 			r.FindCDC = func() (string, error) { return "", errSimPeer }
 			r.FindCAN = func() (string, error) { return "", errSimPeer }
+		} else {
+			r.OpenPeer = s.openRunPeer
+			r.FindCDC = pickedOr("usb", ptecho.FindCDC)
+			r.FindCAN = pickedOr("can", slcan.Find)
 		}
 		return r
 	}
@@ -87,7 +103,7 @@ func (s *Server) canPeer(port string) func(int) (ptlib.CANPeer, error) {
 		}
 	}
 	return func(bitrate int) (ptlib.CANPeer, error) {
-		com, err := slcan.Find()
+		com, err := pickedOr("can", slcan.Find)()
 		if err != nil {
 			return nil, err
 		}
@@ -360,6 +376,7 @@ func (s *Server) handleLibStart(w http.ResponseWriter, r *http.Request) {
 	s.peekMu.Lock() // a peek in flight ends first (peek.go)
 	defer s.peekMu.Unlock()
 	s.waitIPProbe() // its eth session must be stopped before ours start
+	s.waitMatch()   // it holds the CANable and the serial adapters open
 	s.mu.Lock()
 	b, port, caps, timed := s.board, s.portNam, s.caps, s.run != nil
 	s.mu.Unlock()

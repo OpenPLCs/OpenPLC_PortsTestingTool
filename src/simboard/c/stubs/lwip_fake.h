@@ -17,6 +17,7 @@ typedef int8_t   err_t;
 #define ERR_OK    0
 #define ERR_MEM  (-1)
 #define ERR_VAL  (-6)
+#define ERR_ABRT (-13)
 
 #define TCP_WRITE_FLAG_COPY 0x01
 

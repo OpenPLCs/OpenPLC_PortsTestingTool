@@ -274,6 +274,12 @@ func checkFiveBlocks(p *Page) {
 	check(mb != nil && rb != nil && cb != nil && mb.Y >= rb.Y+rb.H-1 && cb.X <= mb.X && mb.X < cb.X+cb.W,
 		"the test types sit in the left column, under the other connections", show([]any{mb, rb, cb}))
 
+	// The connect-time address probe runs its own eth session (C.3.6 「网口」); a
+	// real board's reply can land after the clear, so it is let finish first.
+	_ = try(func() {
+		p.WaitFunc("() => ((connInfo.boardIP || state.boardIP || {}).state || 'probing') !== 'probing'", nil, 20000)
+	})
+	p.Wait(300)
 	p.L("#clear").Click()
 	for _, k := range []string{"rd", "full", "rd"} {
 		p.L(`.mi[data-menu="` + k + `"]`).Click()
@@ -689,9 +695,18 @@ func checkConnZone(p *Page) {
 	check(regexp.MustCompile(`上位机 \d+\.\d+\.\d+`).MatchString(ver), "the header names the panel's own version (decision 112)", ver)
 	// The 网口 row finds the board's address without a network test; the
 	// simulated board's is this PC's 127.0.0.1 and says so (C.3.6 「网口」).
-	ok := try(func() { p.WaitSel(`#connrows .crow[data-conn="eth"] [data-ethip="127.0.0.1"]`, 20000) }) == nil
-	eth := p.L(`#connrows .crow[data-conn="eth"]`).Text()
-	check(ok && strings.Contains(eth, "模拟板"), "the network row shows the board's address right after connecting", eth)
+	if realBoard {
+		ok := try(func() {
+			p.WaitFunc(`() => { const e = document.querySelector('#connrows .crow[data-conn="eth"] [data-ethip]');`+
+				` return !!e && /^\d+\.\d+\.\d+\.\d+$/.test(e.dataset.ethip) && e.dataset.ethip !== '127.0.0.1'; }`, nil, 20000)
+		}) == nil
+		eth := p.L(`#connrows .crow[data-conn="eth"]`).Text()
+		check(ok && !strings.Contains(eth, "模拟板"), "the network row shows the board's own address right after connecting", eth)
+	} else {
+		ok := try(func() { p.WaitSel(`#connrows .crow[data-conn="eth"] [data-ethip="127.0.0.1"]`, 20000) }) == nil
+		eth := p.L(`#connrows .crow[data-conn="eth"]`).Text()
+		check(ok && strings.Contains(eth, "模拟板"), "the network row shows the board's address right after connecting", eth)
+	}
 
 	log := p.L("#logcol").Box()
 	right := log != nil

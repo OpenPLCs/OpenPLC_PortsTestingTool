@@ -115,6 +115,20 @@ func TestFloodCountsAlteredPacket(t *testing.T) {
 	}
 }
 
+// The previous mode's bytes still in flight (source pushes zeros, no newline)
+// land in front of packet 0; they are not a mirrored packet.
+func TestFloodIgnoresLeftoversBeforeTheFirstPacket(t *testing.T) {
+	st := runFlood(t, func(n int, b []byte) []byte {
+		if n == 0 {
+			return append(make([]byte, 300), b...)
+		}
+		return b
+	})
+	if st.Bad != 0 || st.Lost != 0 || st.Echoed != st.Sent {
+		t.Fatalf("leftover zeros before packet 0: want bad 0 lost 0, got %+v", st)
+	}
+}
+
 func TestFloodDoesNotEcho(t *testing.T) {
 	m := newMirrorPort(nil)
 	p := New("mirror", m, nil)

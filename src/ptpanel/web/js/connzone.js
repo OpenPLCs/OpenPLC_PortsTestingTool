@@ -82,22 +82,19 @@ function linkConnRow(c) {
     v.appendChild(el("span", "sub", T("conn.no_port")));
     return r;
   }
-  const bound = linkNow(c.k);
+  // Choose only (decision 168): a test opens the chosen port when it starts
+  // and closes it when it ends; the counts show while one has it open.
+  const open = linkNow(c.k);
   const mt = matchTerm(c.k);
-  if (bound) {
-    dot.classList.add(bound.error ? "bad" : "ok");
-    v.appendChild(el("span", "mono", bound.com));
-    const off = el("button", null, T("conn.unbind"));
-    off.onclick = () => connAct(api("/api/unlink", { port: c.k }));
-    v.appendChild(off);
+  const busy = () => {
+    if (!open) { return; }
+    dot.classList.add(open.error ? "bad" : "ok");
     const n = el("div", "ccount");
     n.dataset.linkcounts = c.k;
-    n.textContent = linkCounts(bound);
+    n.textContent = linkCounts(open);
     r.appendChild(n);
-    if (bound.error) { r.appendChild(el("div", "cerr", T("conn.peer_err", { error: bound.error }))); }
-    if (mt && mt.ok && mt.com === bound.com) { r.appendChild(matchWhy(c.k, mt)); }
-    return r;
-  }
+    if (open.error) { r.appendChild(el("div", "cerr", T("conn.peer_err", { error: open.error }))); }
+  };
   if (c.k === "eth") {
     // Found by the server right after connecting (boardip.go), not from a test.
     const ip = connInfo.boardIP || state.boardIP || {};
@@ -113,40 +110,35 @@ function linkConnRow(c) {
     shown.dataset.ethip = ip.addr;
     v.appendChild(shown);
     if (ip.sim) { v.appendChild(el("span", "sub", T("conn.eth_sim"))); }
-    const on = el("button", null, T("conn.bind"));
-    on.onclick = () => connAct(api("/api/link", { port: "eth", tcp: addr }));
-    v.appendChild(on);
+    busy();
     return r;
   }
-  // Matched and not bound: the CAN adapter (found by USB id when a test needs
-  // it), or anything on the simulated board, which plays its own peers.
-  if (mt && mt.ok) {
+  // The simulated board plays its own peers: what matching found is all there is.
+  if (mt && mt.ok && (connInfo.match || {}).sim) {
     dot.classList.add("ok");
     const shown = el("span", "mono", mt.com);
     shown.dataset.matched = c.k;
     v.appendChild(shown);
     r.appendChild(matchWhy(c.k, mt));
+    busy();
     return r;
   }
-  if (mt) { r.appendChild(matchWhy(c.k, mt)); }
-  const was = ((state.saved || {}).peers || {})[c.k];
-  // The board's own USB port: the one whose serial the server worked out from
-  // this board's UID (decision 163); else the first ST virtual COM port.
-  const own = c.k === "usb" ? connUsbOwn() : "";
-  const choices = btShown(adapterChoices(), connPick[c.k] || own || (was && was.com)).map(o => freshPorts.includes(o.name)
+  const was = (((state.saved || {}).peers || {})[c.k] || {}).com || "";
+  const choices = btShown(adapterChoices(), was).map(o => freshPorts.includes(o.name)
     ? Object.assign({}, o, { label: o.label + T("conn.fresh") }) : o);
-  if (!choices.length) {
-    v.appendChild(el("span", "sub", T("conn.no_adapter")));
-    return r;
-  }
-  const cdc = c.k === "usb" ? (choices.find(o => o.name === own) || choices.find(o => /0483:5740/i.test(o.label || ""))) : null;
-  const fresh = mt ? freshPorts.filter(n => choices.some(o => o.name === n)).pop() : null;
-  const sel = connSelect(c.k, choices, fresh || (own && cdc && cdc.name) || (was && was.com) || (cdc && cdc.name));
-  if (fresh) { sel.value = fresh; sel.dataset.fresh = fresh; }
+  // usb and CAN fall back to finding the port by USB id; RS485 has no such id.
+  const none = { name: "", label: T(c.k === "rs485" ? "conn.pick_none" : "conn.pick_auto") };
+  const fresh = mt && !mt.ok ? freshPorts.filter(n => choices.some(o => o.name === n)).pop() : null;
+  const sel = connSelect(c.k, [none].concat(choices), was);
+  sel.value = choices.some(o => o.name === was) ? was : "";
+  sel.dataset.pick = c.k;
+  const choose = com => connAct(com ? api("/api/link", { port: c.k, com }) : api("/api/unlink", { port: c.k }));
+  sel.onchange = () => { connPick[c.k] = sel.value; choose(sel.value); };
   v.appendChild(sel);
-  const on = el("button", null, T("conn.bind"));
-  on.onclick = () => connAct(api("/api/link", { port: c.k, com: sel.value }));
-  v.appendChild(on);
+  if (fresh && fresh !== was) { sel.value = fresh; sel.dataset.fresh = fresh; choose(fresh); }
+  if (mt) { r.appendChild(matchWhy(c.k, mt)); }
+  if (!choices.length) { r.appendChild(el("div", "sub", T("conn.no_adapter"))); }
+  busy();
   return r;
 }
 
@@ -166,14 +158,6 @@ function connBoards() {
   return out;
 }
 let connBoardPick = "";   // the 被测板 dropdown's choice: a USB serial, or "sim"
-
-// The COM port whose USB serial is the board under test's, "" when none is listed.
-function connUsbOwn() {
-  if (connBoardPick === "sim") { return ""; }
-  const want = (connBoardPick || (connInfo.usb || {}).board_serial || "").toUpperCase();
-  const p = want ? (allPorts || []).find(x => (x.serial || "").toUpperCase() === want) : null;
-  return p ? p.name : "";
-}
 
 // A bound peer: bound per the page's state (changed by bind / unbind at once),
 // counts and error from the once-a-second /api/conn when it agrees.
