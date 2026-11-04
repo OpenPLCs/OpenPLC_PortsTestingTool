@@ -516,6 +516,27 @@ func (s *Server) stopLib() {
 
 func (s *Server) handleLib(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, s.libJSON()) }
 
+// sendFieldMsg words the analyser send form's refused box (decision 171).
+func sendFieldMsg(e ptlib.SendFieldError) msg {
+	switch e.Field {
+	case "id":
+		return m("anawin.err.id")
+	case "data":
+		return m("anawin.err.data")
+	case "every":
+		return m("anawin.err.every", "min", e.Min)
+	case "count":
+		return m("anawin.err.count", "max", ptlib.SendCountMax)
+	case "ga":
+		return m("anawin.err.ga")
+	case "value":
+		return m("anawin.err.value")
+	case "src":
+		return m("anawin.err.src")
+	}
+	return m("lib.live.refused", "detail", e.Error())
+}
+
 // handleLibLive passes a live card's action (end, DO switch, AO current, DI
 // reset) to the running item (decision 108, PORTTOOL-FLOW.md C.3.6 "实时卡片").
 func (s *Server) handleLibLive(w http.ResponseWriter, r *http.Request) {
@@ -546,6 +567,12 @@ func (s *Server) handleLibLive(w http.ResponseWriter, r *http.Request) {
 		}
 		if errors.Is(err, ptlib.ErrAONoRange) {
 			writeJSON(w, 200, map[string]any{"error": m("lib.live.ao_no_range")})
+			return
+		}
+		var bad ptlib.SendFieldError
+		if errors.As(err, &bad) {
+			// field: the box the window writes it under (decision 172).
+			writeJSON(w, 200, map[string]any{"error": sendFieldMsg(bad), "field": bad.Field})
 			return
 		}
 		writeJSON(w, 200, map[string]any{"error": m("lib.live.refused", "detail", err.Error())})

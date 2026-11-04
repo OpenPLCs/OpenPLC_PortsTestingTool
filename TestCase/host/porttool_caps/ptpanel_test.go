@@ -263,20 +263,6 @@ answered:
 			t.Errorf("the panel answered a loop=link port: %q", c)
 		}
 	}
-
-	// Switching it off is what proves the counter is real: with it on, a
-	// healthy loop is all anyone ever sees.
-	st := postJSON(t, srv, "/api/autoecho", map[string]any{"on": false})
-	if st["autoEcho"] != false {
-		t.Fatalf("autoEcho did not switch off: %v", st["autoEcho"])
-	}
-	fake.emit("!din t=48400 seq=8 rx=7 miss=0 v=0x16 ch1=0")
-	time.Sleep(300 * time.Millisecond)
-	for _, c := range fake.commands() {
-		if c == "pt.echo din 8" {
-			t.Errorf("still answering after being switched off: %q", c)
-		}
-	}
 }
 
 // fakeLink is the far end of a link port: a pipe the test writes into as if it

@@ -140,11 +140,11 @@ type knxRepeat struct {
 func ParseKNXSend(ga, value string) (uint16, byte, error) {
 	a, err := knxusb.ParseGA(ga)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, SendFieldError{Field: "ga"}
 	}
 	v, err := strconv.Atoi(strings.TrimSpace(value))
 	if err != nil || v < 0 || v > 63 {
-		return 0, 0, errors.New("the value is 0 to 63")
+		return 0, 0, SendFieldError{Field: "value"}
 	}
 	return a, byte(v), nil
 }
@@ -451,13 +451,15 @@ func (e *Engine) runKNXWin(ctx context.Context, j *job) (ptreport.Outcome, strin
 				ga, val, err := ParseKNXSend(r.GA, r.Value)
 				var src uint16
 				if err == nil && r.Side == CANBoard && strings.TrimSpace(r.Src) != "" {
-					src, err = knxusb.ParseIA(r.Src)
+					if src, err = knxusb.ParseIA(r.Src); err != nil {
+						err = SendFieldError{Field: "src"}
+					}
 				}
 				if err == nil && r.Side != CANBoard && r.Side != CANPC {
 					err = errors.New("no such side " + r.Side)
 				}
-				if err == nil && r.Every != 0 && (r.Every < knxEveryMin || r.Count < 1 || r.Count > canCountMax) {
-					err = fmt.Errorf("repeating needs an interval of at least %d ms and 1 to %d times", knxEveryMin, canCountMax)
+				if err == nil {
+					err = checkRepeat(r.Every, r.Count, knxEveryMin)
 				}
 				if err != nil {
 					m.reply <- err

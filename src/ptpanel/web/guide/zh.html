@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>端口测试工装 · 使用说明</title>
+<!-- Text of the user guide (decision 175). The numbers match the boxes the
+     screenshots carry; they come from TestCase/host/porttool_panel/guide.go. -->
+<link rel="stylesheet" href="guide.css">
+</head>
+<body>
+<nav><a href="en.html">English</a></nav>
+<h1>端口测试工装 · 使用说明</h1>
+<p class="lead">这份说明跟着面板走：截图上的橙色框和编号就是要看、要点的地方，下面按同一个编号讲。截图是在模拟板上截的，真板子上样子一样，只是读数不同。</p>
+
+<ol class="toc">
+  <li><a href="#overview">面板长什么样</a></li>
+  <li><a href="#step1">第一步：连接控制口</a></li>
+  <li><a href="#step2">第二步：连接其余端口</a></li>
+  <li><a href="#card">研发测试：跑一张卡片</a></li>
+  <li><a href="#timed">按时长跑</a></li>
+  <li><a href="#ask">面板要你回答的时候</a></li>
+  <li><a href="#can">CAN 分析（高级窗口）</a></li>
+  <li><a href="#log">日志和命令</a></li>
+  <li><a href="#full">工装完整测试</a></li>
+  <li><a href="#notes">注意事项</a></li>
+</ol>
+
+<h2 id="overview">1. 面板长什么样</h2>
+<img src="shots/zh/overview.png" alt="面板全貌">
+<ol>
+  <li><b>使用说明</b>：就是这一页。</li>
+  <li><b>第一步</b>：连接控制口，所有读数都走这根线。</li>
+  <li><b>第二步</b>：连接其余端口，只接要测的端口用到的。</li>
+  <li><b>第三步</b>：选测试类型，研发测试或工装完整测试。</li>
+  <li><b>端口列表</b>：点一个端口，右边出现它的测试项。</li>
+  <li><b>测试项卡片</b>：每张卡写着目标、测试方法、对端，右边是测得的数值。</li>
+  <li><b>日志</b>：板子和面板说的每一句话都在这里。</li>
+</ol>
+
+<h2 id="step1">2. 第一步：连接控制口</h2>
+<img src="shots/zh/connect.png" alt="连接控制口">
+<ol>
+  <li>选板子的 RS232 控制口：一般是插在电脑上的那个 USB 转串口，接端子 C05/C06。没板子时选「sim - 模拟板」可以先熟悉面板。</li>
+  <li>点「连接」。连上后第二步、第三步才能用。</li>
+  <li>蓝牙串口默认不列出来，要用就勾上「显示蓝牙串口」。</li>
+</ol>
+
+<h2 id="step2">3. 第二步：连接其余端口</h2>
+<img src="shots/zh/rows.png" alt="连接其余端口">
+<ol>
+  <li>每一行是一个对端：板子 USB、网口、RS485 / CAN 转换器、标准机、KNX USB 接口、ST-Link。RS485、CAN 两行连上控制口后自动识别，认不出来再手选。</li>
+  <li>行尾的圆点：<b>绿 = 连上</b>，<b>灰 = 没连上</b>。鼠标停在灰的那一行上能看到原因。</li>
+  <li>灰的行旁边有「重试」，接好线后点它再找一次。</li>
+</ol>
+<p class="note">用不到的端口不用管，灰着也能测别的。</p>
+
+<h2 id="card">4. 研发测试：跑一张卡片</h2>
+<p>第三步选「研发测试」，中间点一个端口。上面一组卡片各自有「开始」，只跑这一张。</p>
+<img src="shots/zh/card.png" alt="一张测试项卡片">
+<ol>
+  <li><b>开始</b>：只跑这一张卡。跑的时候按钮变「停止」。</li>
+  <li><b>目标、测试方法、对端</b>：这一项为了确认什么、按什么步骤做、要接什么。照测试方法做就行。</li>
+  <li><b>测得的数值</b>：每条判据一行，预期和结果并排，✅ 是过、❌ 是不过。</li>
+  <li><b>结论</b>：通过 / 不过 / 只记录。</li>
+  <li><b>强制释放端口</b>：测试报「串口被占」时点它，停掉正在跑的测试、关掉面板开着的口。</li>
+</ol>
+
+<h2 id="timed">5. 按时长跑</h2>
+<p>下面一组是可以跑一段时间的项（比如内存长时间读写）。</p>
+<img src="shots/zh/timed.png" alt="按时长跑">
+<ol>
+  <li>勾要跑的项。</li>
+  <li>选测试时长：单次，或者跑几分钟、几小时、一直跑。</li>
+  <li>点「开始（N 项）」，勾了的项一起跑，第一次不过就停。</li>
+</ol>
+
+<h2 id="ask">6. 面板要你回答的时候</h2>
+<p>要人看、要人量的项（指示灯、万用表读数、示波器），面板会在下面弹出带 🍍 的提问。</p>
+<img src="shots/zh/ask.png" alt="面板提问">
+<ol>
+  <li>照问题去看或量。</li>
+  <li>照实点「是」/「否」或填数，面板按你的回答判。点「停止」就不测这一项了。</li>
+</ol>
+
+<h2 id="can">7. CAN 分析（高级窗口）</h2>
+<p>板子和电脑上的 CAN 转换器（CANable）接在同一条 CAN 总线上。CAN 端口的「CAN 分析」卡片上点「打开高级窗口」，这一项就开始了，不用另外点「开始」。</p>
+<img src="shots/zh/can.png" alt="CAN 分析窗口">
+<ol>
+  <li><b>发送方向</b>：被测板 → 电脑，或电脑 → 被测板。再填 ID 和数据。</li>
+  <li><b>连续发</b>：勾上才出现间隔和次数。连续发的时候「发送」变成「停止」。</li>
+  <li><b>发送</b>：发一帧。</li>
+  <li><b>结论</b>：对方收没收到、内容一不一致；没收到时写出原因和该查什么。</li>
+  <li><b>收发记录</b>：两边发的和收到的每一帧。</li>
+  <li><b>结束 CAN 分析</b>：停掉这一项、放开 CANable。右上角的 × 只收起窗口，不会停。</li>
+</ol>
+<p class="note">CAN 分析只记录，不判 CAN 口过不过。</p>
+
+<h2 id="log">8. 日志和命令</h2>
+<img src="shots/zh/log.png" alt="日志">
+<ol>
+  <li>勾选要看哪几类：应答、错误、采样、板子日志……不勾的照样记着，导出时都有。</li>
+  <li><b>暂停</b>：日志停住不滚，方便看。</li>
+  <li><b>导出</b>：把整份日志存成文件，报问题时附上。</li>
+  <li><b>命令框</b>：面板做不到的事在这里直接敲命令发给板子。</li>
+  <li><b>发送</b>：发出去，板子的回答原样显示在日志里。</li>
+</ol>
+
+<h2 id="full">9. 工装完整测试</h2>
+<p>第三步选「工装完整测试」：功能、老化、安规、用户级四块，配好后一次跑完。</p>
+<img src="shots/zh/full.png" alt="工装完整测试">
+<ol>
+  <li><b>子测试</b>：勾要跑的子测试，选每块的时间。</li>
+  <li><b>端口</b>：勾这个子测试要测哪些端口，点一个端口看它的测试项。</li>
+  <li><b>测试项</b>：勾要跑的项、选对端、改参数，右边是判据。</li>
+  <li><b>配置完成，开始测试</b>：按顺序依次跑，某项没通过后面的就不跑。每块板的记录存在 exe 旁边的 records 文件夹里。</li>
+</ol>
+
+<h2 id="notes">10. 注意事项</h2>
+<ul>
+  <li>面板打开后会多一个黑窗口，<b>别关它</b>，关了面板就停。</li>
+  <li>exe 旁边的 <code>plans</code> 文件夹别删：每一项「什么算过」都写在里面。</li>
+  <li>有些判据的数没有出处，卡片上给的是默认值，可以直接在卡片上改，按自己的实测定。</li>
+  <li>截图里连接区的 ST-Link、标准机是模拟板的样子；真板子上要接上它们才是绿的。</li>
+</ul>
+</body>
+</html>

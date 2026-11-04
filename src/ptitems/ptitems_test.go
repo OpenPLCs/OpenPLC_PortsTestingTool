@@ -176,7 +176,7 @@ func catalogueKeys() []string {
 		k = append(k, p.Label)
 	}
 	for _, it := range Catalogue {
-		k = append(k, it.Name, it.What)
+		k = append(k, it.Name, it.Goal, it.How)
 		if it.Pending != "" {
 			k = append(k, it.Pending)
 		}

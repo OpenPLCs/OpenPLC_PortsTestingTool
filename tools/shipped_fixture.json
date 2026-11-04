@@ -2,7 +2,7 @@
  "version": "0.18.9",
  "sha256": "7a4d9406290eb1a1382da58cfe7019b5bda9178bf7c69da0e2f3eb68af5875dc",
  "porttool": {
-  "version": "0.18.11",
-  "sha256": "c320c5115978950fceac65b974af8c8f82365408cb35fbca7e47a369463e2339"
+  "version": "0.18.13",
+  "sha256": "b1ea8cacc46dd662cff730cbb6aab38e6e2b45f61bc87d762075a06809062033"
  }
 }

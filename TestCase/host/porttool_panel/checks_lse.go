@@ -29,12 +29,12 @@ func checkLsePage(p *Page) {
 		"no manual drive block: the margin card has a drive and a times parameter")
 
 	card := func(id string) string { return `#itemcards .item[data-item="` + id + `"]` }
-	run := func(id string) bool {
+	run := func(id, want, what string) bool {
 		pill := p.L(card(id) + " .ih .pill")
 		check(strings.Contains(pill.Text(), "未测"), id+" starts as not run", pill.Text())
 		p.L(card(id) + ` button[data-startitem="` + id + `"]`).Click()
 		pills := libWaitDone(p, []string{id}, 60)
-		return check(strings.Contains(pills[0], "pass"), id+" passes under its default limits", pills[0])
+		return check(strings.Contains(pills[0], want), id+" "+what, pills[0])
 	}
 	cells := func(sel string) [][]string {
 		var out [][]string
@@ -44,7 +44,7 @@ func checkLsePage(p *Page) {
 		return out
 	}
 
-	if run("rtc.lsefreq") {
+	if run("rtc.lsefreq", "pass", "passes under its default limits") {
 		rows := cells(card("rtc.lsefreq") + ` [data-lse="freq"]`)
 		if realBoard {
 			checkLseFreqReal(rows)
@@ -54,10 +54,10 @@ func checkLsePage(p *Page) {
 				strings.HasPrefix(rows[2][0], "偏差") && strings.HasPrefix(rows[3][0], "量了多久"),
 				"the frequency card shows 32767.596 Hz, -12.33 ppm, measured over 1000 ms", show(rows))
 		}
-		check(strings.Contains(p.L(card("rtc.lsefreq")+` [data-lse="freq"] .hint`).Text(), "主晶振的固定误差在偏差里"),
-			"and says the main crystal's fixed error is in the deviation and cancels out in the drift")
+		check(strings.Contains(p.L(card("rtc.lsefreq")+` [data-lse="freq"] .hint`).Text(), "不代表时钟准不准"),
+			"and says the deviation is against the main crystal, not how accurate the clock is")
 	}
-	if run("rtc.lsemargin") {
+	if run("rtc.lsemargin", "pass", "passes under its default limits") {
 		rows := cells(card("rtc.lsemargin") + ` [data-lse="margin"]`)
 		if realBoard {
 			checkLseMarginReal(rows)
@@ -149,16 +149,16 @@ func checkLsePage(p *Page) {
 }
 
 // checkLseFreqReal: a real crystal's reading is not the stub's, so the card is
-// judged on being consistent: within the deviation limit, Hz and ppm agreeing.
+// judged on being consistent: Hz and ppm agreeing (the deviation is not judged, decision 164).
 func checkLseFreqReal(rows [][]string) {
 	ok := len(rows) == 4 && strings.HasPrefix(rows[1][0], "频率") && strings.HasPrefix(rows[2][0], "偏差") &&
 		strings.HasPrefix(rows[3][0], "量了多久") && rows[3][len(rows[3])-1] == "1000"
 	if ok {
 		hz, e1 := strconv.ParseFloat(rows[1][len(rows[1])-1], 64)
 		ppm, e2 := strconv.ParseFloat(rows[2][len(rows[2])-1], 64)
-		ok = e1 == nil && e2 == nil && math.Abs(ppm) <= 40 && math.Abs((hz/32768-1)*1e6-ppm) <= 0.05
+		ok = e1 == nil && e2 == nil && math.Abs((hz/32768-1)*1e6-ppm) <= 0.05
 	}
-	check(ok, "the frequency card shows Hz and ppm that agree, within ±40 ppm, measured over 1000 ms", show(rows))
+	check(ok, "the frequency card shows Hz and ppm that agree, measured over 1000 ms", show(rows))
 }
 
 // checkLseMarginReal: one row per drive in order, mlow restarted twice, every

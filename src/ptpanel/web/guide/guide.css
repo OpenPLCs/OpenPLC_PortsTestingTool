@@ -1,0 +1,16 @@
+/* The user guide's page (decision 175); colours follow panel.css. */
+:root{--ink:#1f2328;--ink3:#6b7280;--line:#e3e5e8;--accent:#c0561b;--bg:#f6f7f9}
+body{margin:0 auto;max-width:1000px;padding:24px 20px 60px;background:var(--bg);color:var(--ink);
+  font:15px/1.65 -apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}
+nav{text-align:right;font-size:13px}
+a{color:var(--accent)}
+h1{font-size:26px;margin:4px 0 8px}
+h2{font-size:20px;margin:40px 0 10px;padding-top:12px;border-top:1px solid var(--line)}
+.lead{color:var(--ink3)}
+.toc{columns:2;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 12px 12px 36px}
+img{display:block;max-width:100%;border:1px solid var(--line);border-radius:8px;background:#fff;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);margin:12px 0}
+ol li::marker{color:var(--accent);font-weight:700}
+.note{background:#fbede3;border-radius:6px;padding:8px 12px;font-size:14px}
+code{background:#fff;border:1px solid var(--line);border-radius:4px;padding:0 4px}
+@media (max-width:640px){.toc{columns:1}}

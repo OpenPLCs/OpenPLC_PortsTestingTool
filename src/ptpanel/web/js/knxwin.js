@@ -14,14 +14,21 @@ const KNXWIN_CRC = { raw: "knxwin.crc.raw", inv: "knxwin.crc.inv", bad: "knxwin.
 
 let knxWin = { id: null, st: null, shown: false, paused: false, filter: "", wasRunning: false };
 
-function knxWinAct(body) { return liveAct(knxWin.id, body); }
-
 function knxWinBuild() {
   return anaWinBuild({ win: knxWin, id: "knxwin", p: "kw", title: "knxwin.title", hint: "knxwin.hint",
-    filter: "knxwin.filter", stop: "knx_stop", clear: "knx_clear", form: knxWinForm, draw: knxWinDraw });
+    filter: "knxwin.filter", endTip: "anawin.tip.end_knx", stop: "knx_stop", clear: "knx_clear",
+    form: knxWinForm, draw: knxWinDraw });
 }
 
-function knxWinForm(side) {
+// The page's check of one KNX send (decision 171): "" when fine. The
+// addresses are checked by the server.
+function knxWinCheck(value, every, count) {
+  const n = Number(value.trim());
+  if (value.trim() === "" || !Number.isInteger(n) || n < 0 || n > 63) { return T("anawin.err.value"); }
+  return anaWinCheckRepeat(every, count, 100);
+}
+
+function knxWinForm(side, act) {
   const f = el("div", "cwform");
   f.dataset.kwside = side;
   f.appendChild(el("b", null, T(side === "board" ? "knxwin.send.board" : "knxwin.send.pc")));
@@ -33,8 +40,9 @@ function knxWinForm(side) {
   const every = field("every", "knxwin.f.every", 6), count = field("count", "canwin.f.count", 5);
   const go = el("button", "primary", T("canwin.send"));
   go.dataset.kwsend = side;
-  go.onclick = () => knxWinAct({ op: "knx_send", side, ga: ga.value, value: val.value, src: src ? src.value : "",
-    every: Number(every.value) || 0, count: Number(count.value) || 1 });
+  go.onclick = () => anaWinSend(knxWin, knxWinDraw, act, knxWinCheck(val.value, every.value, count.value),
+    { op: "knx_send", side, ga: ga.value, value: val.value, src: src ? src.value : "",
+      every: Number(every.value) || 0, count: Number(count.value) || 1 });
   // No stop of its own: 停止发包 at the top stops both sides.
   f.appendChild(go);
   const rep = el("div", "hint"); rep.dataset.kwrepeat = side;
@@ -47,12 +55,14 @@ function knxWinCard(it, st) { return anaWinCard(knxWin, "knx", "knxwin.summary",
 
 function knxWinDraw(force) {
   const w = $("#knxwin") || knxWinBuild();
-  const st = knxWin.st;
-  w.hidden = !knxWin.shown || !st;
-  if (w.hidden || !st) { return; }
+  // st is null before the item's first run: an empty window that says why it cannot send.
+  const st = knxWin.st || { live: {}, running: false };
+  w.hidden = !knxWin.shown;
+  if (w.hidden) { return; }
   const v = st.live.knx || {}, run = !!st.running;
   const b = v.board || {}, p = v.pc || {};
   w.dataset.running = run ? "1" : "0";
+  anaWinErr(w, knxWin, "kw", run);
   for (const n of w.querySelectorAll("button, input, select")) {
     if (n.id === "kwclose" || n.id === "kwpause" || n.id === "kwfilter") { continue; }
     const pcSide = n.closest('[data-kwside="pc"]');
@@ -123,17 +133,15 @@ async function knxUsbLoad(body) {
 }
 
 function knxConnRow() {
-  const { r, v, dot } = connRow("knxusb", "conn.knxusb", "conn.knxusb_d");
+  const row = connRow("knxusb", "conn.knxusb", "conn.knxusb_d");
+  const { r, v } = row;
   const k = knxUsbInfo || {};
   const devs = k.devices || [];
   if (k.unsupported) {
-    v.appendChild(el("span", "sub", T("knxwin.why.unsupported")));
+    connMark(row, false, T("knxwin.why.unsupported"));   // connzone.js
     return r;
   }
-  if (!devs.length) {
-    v.appendChild(el("span", "sub", T("conn.knxusb_none")));
-  } else if (k.pick) {
-    dot.classList.add("ok");
+  if (devs.length && k.pick) {
     const i = devs.findIndex(d => d.path === k.pick);
     const shown = el("span", "mono", (k.labels || [])[i] || k.pick);
     shown.dataset.knxusbPick = k.pick;
@@ -146,14 +154,9 @@ function knxConnRow() {
     use.onclick = () => knxUsbLoad({ pick: sel.value });
     v.appendChild(use);
   }
-  const again = el("button", null, T("conn.recheck"));
-  again.dataset.knxusbRescan = "1";
-  again.onclick = () => knxUsbLoad({ rescan: true });
-  v.appendChild(again);
-  if (k.error) {
-    dot.classList.add("bad");
-    r.appendChild(el("div", "cerr", k.error));
-  }
+  // Green once an interface is chosen; 重试 lists them again (decision 170).
+  const why = k.error || (devs.length ? "" : T("conn.knxusb_none"));
+  connMark(row, !!k.pick && !k.error, why, () => knxUsbLoad({ rescan: true }));
   return r;
 }
 

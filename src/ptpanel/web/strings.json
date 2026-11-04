@@ -1031,13 +1031,6 @@
    "de": "{detail}",
    "de_of": "360784af"
   },
-  "go.echo.bad_request": {
-   "zh": "没说要开还是要关。",
-   "en": "Say whether to switch it on or off.",
-   "en_of": "f09c5a3f",
-   "de": "Angeben, ob ein- oder ausgeschaltet werden soll.",
-   "de_of": "f09c5a3f"
-  },
   "go.events.no_stream": {
    "zh": "这个浏览器不支持持续推送。",
    "en": "This browser does not support server push.",
@@ -1128,6 +1121,13 @@
    "en_of": "7f8a8ff2",
    "de": "Prüfen, ob ein anderes Programm ihn belegt oder der Adapter nicht richtig steckt.",
    "de_of": "7f8a8ff2"
+  },
+  "go.link.canable_not_rs485": {
+   "zh": "{com} 是 CANable，是 CAN 转换器，不能当 RS485 的对端。",
+   "en": "{com} is a CANable, a CAN adapter; it cannot be the RS485 peer.",
+   "en_of": "0918926a",
+   "de": "{com} ist ein CANable, ein CAN-Adapter; er kann nicht die RS485-Gegenstelle sein.",
+   "de_of": "0918926a"
   },
   "go.link.is_control": {
    "zh": "这个串口已经是控制口了，不能同时当被测链路的对端。",
@@ -1367,13 +1367,6 @@
    "de": "Das ist die simulierte Platine; ihre Messwerte sind erfunden, nichts archiviert",
    "de_of": "ac57dcbf"
   },
-  "html.autoecho": {
-   "zh": "自动回环应答",
-   "en": "Answer loopbacks automatically",
-   "en_of": "f5daa869",
-   "de": "Loopbacks automatisch beantworten",
-   "de_of": "f5daa869"
-  },
   "html.clear": {
    "zh": "清空",
    "en": "Clear",
@@ -1394,6 +1387,13 @@
    "en_of": "e18ed4da",
    "de": "Kriterien",
    "de_of": "e18ed4da"
+  },
+  "html.guide": {
+   "zh": "使用说明",
+   "en": "User guide",
+   "en_of": "15683f6c",
+   "de": "Anleitung (englisch)",
+   "de_of": "15683f6c"
   },
   "html.disconnect": {
    "zh": "断开",
@@ -1542,12 +1542,19 @@
    "de": "AI-Messwert",
    "de_of": "2a89468e"
   },
-  "lib.group.ain.read.what": {
-   "zh": "两路 AI 各在测试点上读数，按板上的 k、b 换算后和标准值比，每点 ±1 % 满量程。没开始时，实际值一栏显示现在的读数。",
-   "en": "Each AI channel is read at its test points, converted with the board's k and b and compared with the reference value, ±1 % of full scale per point. Before a run, the actual-value column shows the present reading.",
-   "en_of": "c39bd6a5",
-   "de": "Jeder AI-Kanal wird an seinen Prüfpunkten gelesen, mit k und b der Platine umgerechnet und mit dem Sollwert verglichen, ±1 % vom Endwert je Punkt. Vor dem Start zeigt die Istwert-Spalte den aktuellen Messwert.",
-   "de_of": "c39bd6a5"
+  "lib.group.ain.read.goal": {
+   "zh": "确认两路 AI 按板上的校准值换算后读得准。",
+   "en": "Check that both AI channels read accurately after the board's calibration is applied.",
+   "en_of": "100e6745",
+   "de": "Prüfen, dass beide AI-Kanäle nach der Kalibrierung der Platine genau lesen.",
+   "de_of": "100e6745"
+  },
+  "lib.group.ain.read.how": {
+   "zh": "每个测试点给 AI1、AI2 加上标准信号\n面板读两路，按板上的 k、b 换算\n和标准值比，每点偏差在 ±1 % 满量程以内算过\n• 没开始时，实际值一栏显示现在的读数",
+   "en": "Apply the reference signal to AI1 and AI2 at each test point\nThe panel reads both channels and converts them with the board's k and b\nEach point passes within ±1 % of full scale of the reference\n• Before the start, the actual-value column shows the current reading",
+   "en_of": "21790062",
+   "de": "An jedem Prüfpunkt das Referenzsignal an AI1 und AI2 anlegen\nDas Panel liest beide Kanäle und rechnet mit k und b der Platine um\nJeder Punkt besteht innerhalb ±1 % vom Messbereichsendwert des Sollwerts\n• Vor dem Start zeigt die Istwert-Spalte die aktuelle Messung",
+   "de_of": "21790062"
   },
   "lib.group.ain.cal.name": {
    "zh": "AI 校准",
@@ -1556,12 +1563,19 @@
    "de": "AI-Kalibrierung",
    "de_of": "e40e1a31"
   },
-  "lib.group.ain.cal.what": {
-   "zh": "两路 AI 各在拟合点上读数、填表上的实测值，拟合出 k、b；只拟合不判过不过。",
-   "en": "Each AI channel is read at its fit points with the meter's value typed in, and k and b are fitted; fitted only, not judged.",
-   "en_of": "d28957a5",
-   "de": "Jeder AI-Kanal wird an seinen Stützpunkten gelesen, der Messgerätwert eingetragen und k und b angepasst; nur angepasst, nicht bewertet.",
-   "de_of": "d28957a5"
+  "lib.group.ain.cal.goal": {
+   "zh": "求出两路 AI 的校准值 k、b。",
+   "en": "Work out the calibration k and b of both AI channels.",
+   "en_of": "57a327b0",
+   "de": "Die Kalibrierwerte k und b beider AI-Kanäle ermitteln.",
+   "de_of": "57a327b0"
+  },
+  "lib.group.ain.cal.how": {
+   "zh": "在每个拟合点给 AI 加信号，把表上的实测值填进来\n面板拟合出 k、b\n• 只拟合，不判过不过",
+   "en": "At each fitting point apply a signal to the AI and enter the measured value\nThe panel fits k and b\n• Only fits; no pass or fail",
+   "en_of": "36aed98a",
+   "de": "An jedem Anpassungspunkt ein Signal an den AI anlegen und den Messwert eintragen\nDas Panel ermittelt k und b\n• Nur Anpassung, keine Bewertung",
+   "de_of": "36aed98a"
   },
   "lib.group.aout.out.name": {
    "zh": "AO 输出",
@@ -1570,12 +1584,19 @@
    "de": "AO-Ausgabe",
    "de_of": "d4502942"
   },
-  "lib.group.aout.out.what": {
-   "zh": "两路 AO 各在测试点上输出，表上量到的值和预期比，每点 ±1 % 满量程。研发里可以在预期值一栏填一个电流点「输出」；老化里测完测试点后停在带负载电流（默认 20 mA），一直输出到老化结束。",
-   "en": "Each AO channel outputs its test points and the meter's value is compared with the expected one, ±1 % of full scale per point. In R&D a current can be typed in the expected column and output with 「输出」; in aging, after the test points the outputs hold the load current (20 mA by default) until aging ends.",
-   "en_of": "0fd1132d",
-   "de": "Jeder AO-Kanal gibt seine Prüfpunkte aus, der Messgerätwert wird mit dem Sollwert verglichen, ±1 % vom Endwert je Punkt. In der Entwicklung kann in der Soll-Spalte ein Strom eingetragen und mit 「输出」 ausgegeben werden; im Dauertest halten die Ausgänge nach den Prüfpunkten den Laststrom (Standard 20 mA) bis zum Ende.",
-   "de_of": "0fd1132d"
+  "lib.group.aout.out.goal": {
+   "zh": "确认两路 AO 按板上的校准值输出得准。",
+   "en": "Check that both AO channels output accurately with the board's calibration.",
+   "en_of": "117f4548",
+   "de": "Prüfen, dass beide AO-Kanäle mit der Kalibrierung der Platine genau ausgeben.",
+   "de_of": "117f4548"
+  },
+  "lib.group.aout.out.how": {
+   "zh": "两路 AO 依次输出每个测试点\n用表量，把量到的值和预期比，每点偏差在 ±1 % 满量程以内算过\n• 研发测试里可以在预期值一栏填一个电流点，点「输出」单独输出\n• 老化里测完测试点后停在带负载电流（默认 20 mA），一直输出到老化结束",
+   "en": "Both AO channels output each test point in turn\nMeasure with a meter and compare with the expected value; each point passes within ±1 % of full scale\n• In the R&D test you can type a current into the expected-value column and press “Output” to output just that\n• In burn-in, after the test points it stays at the load current (20 mA by default) until burn-in ends",
+   "en_of": "315ab4e8",
+   "de": "Beide AO-Kanäle geben nacheinander jeden Prüfpunkt aus\nMit dem Messgerät messen und mit dem Erwartungswert vergleichen; jeder Punkt besteht innerhalb ±1 % vom Messbereichsendwert\n• In der Entwicklungsprüfung kann man in der Spalte Erwartungswert einen Strom eintragen und „Ausgeben“ drücken, um nur diesen auszugeben\n• Im Dauertest bleibt er nach den Prüfpunkten auf dem Laststrom (Vorgabe 20 mA), bis der Dauertest endet",
+   "de_of": "315ab4e8"
   },
   "lib.group.aout.cal.name": {
    "zh": "AO 校准",
@@ -1584,12 +1605,19 @@
    "de": "AO-Kalibrierung",
    "de_of": "f9266668"
   },
-  "lib.group.aout.cal.what": {
-   "zh": "两路 AO 各在拟合点上输出、填表上的实测值，拟合出 k、b；只拟合不判过不过。",
-   "en": "Each AO channel outputs its fit points with the meter's value typed in, and k and b are fitted; fitted only, not judged.",
-   "en_of": "d7efcec0",
-   "de": "Jeder AO-Kanal gibt seine Stützpunkte aus, der Messgerätwert wird eingetragen und k und b angepasst; nur angepasst, nicht bewertet.",
-   "de_of": "d7efcec0"
+  "lib.group.aout.cal.goal": {
+   "zh": "求出两路 AO 的校准值 k、b。",
+   "en": "Work out the calibration k and b of both AO channels.",
+   "en_of": "371215fe",
+   "de": "Die Kalibrierwerte k und b beider AO-Kanäle ermitteln.",
+   "de_of": "371215fe"
+  },
+  "lib.group.aout.cal.how": {
+   "zh": "两路 AO 依次输出每个拟合点\n把表上的实测值填进来\n面板拟合出 k、b\n• 只拟合，不判过不过",
+   "en": "Both AO channels output each fitting point in turn\nEnter the value measured on the meter\nThe panel fits k and b\n• Only fits; no pass or fail",
+   "en_of": "e97e392d",
+   "de": "Beide AO-Kanäle geben nacheinander jeden Anpassungspunkt aus\nDen am Messgerät gemessenen Wert eintragen\nDas Panel ermittelt k und b\n• Nur Anpassung, keine Bewertung",
+   "de_of": "e97e392d"
   },
   "ana.col.ch": {
    "zh": "通道",
@@ -2157,20 +2185,6 @@
    "en_of": "f8a1c5e7",
    "de": "Antwort nicht möglich: {echo_note}",
    "de_of": "f8a1c5e7"
-  },
-  "ui.applyState.8": {
-   "zh": "关着 —— miss 会开始涨",
-   "en": "Off — Lost will start rising",
-   "en_of": "441beeab",
-   "de": "Aus — Verloren beginnt zu steigen",
-   "de_of": "441beeab"
-  },
-  "ui.applyState.9": {
-   "zh": "已回 {echo_count} 次",
-   "en": "Answered {echo_count} times",
-   "en_of": "d3c48ca8",
-   "de": "{echo_count}-mal beantwortet",
-   "de_of": "d3c48ca8"
   },
   "ui.applyState.connected": {
    "zh": "已连上 <b>{port}</b>　固件 {firmware}",
@@ -3369,12 +3383,19 @@
    "de": "Verbindungsprüfung",
    "de_of": "f26fb527"
   },
-  "lib.item.eth.link.what": {
-   "zh": "读网口芯片（PHY）的型号、连接状态和协商出的速率。",
-   "en": "Reads the Ethernet chip (PHY) model, link state and negotiated speed.",
-   "en_of": "ed2cb853",
-   "de": "Liest Modell, Verbindungsstatus und ausgehandelte Geschwindigkeit des Ethernet-Chips (PHY).",
-   "de_of": "ed2cb853"
+  "lib.item.eth.link.goal": {
+   "zh": "确认网口芯片（PHY）在工作、网线连上并协商出速率。",
+   "en": "Check that the Ethernet chip (PHY) works, the cable is linked and a speed was negotiated.",
+   "en_of": "31c8f512",
+   "de": "Prüfen, dass der Netzwerkchip (PHY) arbeitet, das Kabel verbunden ist und eine Geschwindigkeit ausgehandelt wurde.",
+   "de_of": "31c8f512"
+  },
+  "lib.item.eth.link.how": {
+   "zh": "插好网线，另一头接电脑或交换机\n点「开始」\n面板读出 PHY 的型号、连接状态和协商出的速率",
+   "en": "Plug in the network cable, the other end to the PC or a switch\nPress “Start”\nThe panel reads the PHY's model, link state and negotiated speed",
+   "en_of": "c5e06deb",
+   "de": "Netzwerkkabel einstecken, das andere Ende an PC oder Switch\n„Start“ drücken\nDas Panel liest Modell, Verbindungsstatus und ausgehandelte Geschwindigkeit des PHY",
+   "de_of": "c5e06deb"
   },
   "lib.item.eth.xfer.name": {
    "zh": "数据收发",
@@ -3383,12 +3404,19 @@
    "de": "Datenübertragung",
    "de_of": "f6b34640"
   },
-  "lib.item.eth.xfer.what": {
-   "zh": "分三段：先测下载（电脑 → 板子）、再测上传（板子 → 电脑），各给一个速率；最后满速率回送：电脑带序号尽力发，板子原样送回，算出回送速率、丢包率和来回延时。开始前先确认电脑网卡和板子报出的 IP 在同一网段，不然只会显示连不上。",
-   "en": "Three parts: download (PC → board), then upload (board → PC), each with its own speed; then full-speed echo: the PC sends numbered packets as fast as it can and the board sends them straight back, giving echo speed, loss rate and round-trip delay. First check the PC's network card is in the same subnet as the IP the board reports, or all you will see is that it cannot connect.",
-   "en_of": "55d2fe22",
-   "de": "Drei Teile: Download (PC → Platine), dann Upload (Platine → PC), jeweils mit eigener Geschwindigkeit; danach Echo mit voller Geschwindigkeit: der PC sendet nummerierte Pakete so schnell er kann, die Platine schickt sie unverändert zurück; daraus ergeben sich Echo-Geschwindigkeit, Verlustrate und Umlaufzeit. Vorher prüfen, dass die Netzwerkkarte des PCs im selben Subnetz liegt wie die IP, die die Platine meldet — sonst heißt es nur, dass keine Verbindung zustande kommt.",
-   "de_of": "55d2fe22"
+  "lib.item.eth.xfer.goal": {
+   "zh": "确认网口能双向传数据，并测出速率、丢包和延时。",
+   "en": "Check that the Ethernet port carries data both ways, and measure speed, loss and delay.",
+   "en_of": "603b3048",
+   "de": "Prüfen, dass der Netzwerkanschluss Daten in beide Richtungen überträgt, und Geschwindigkeit, Verlust und Verzögerung messen.",
+   "de_of": "603b3048"
+  },
+  "lib.item.eth.xfer.how": {
+   "zh": "确认电脑网卡和板子的 IP 在同一网段（左边「网口」那一行写着板子的地址），不然只会显示连不上\n点「开始」\n先测下载（电脑 → 板子）、再测上传（板子 → 电脑），各给一个速率\n最后满速率回送：电脑带序号尽力发，板子原样送回，算出回送速率、丢包率和来回延时",
+   "en": "Make sure the PC's network card and the board are in the same subnet (the “Network” row on the left shows the board's address); otherwise it only says it cannot connect\nPress “Start”\nFirst download (PC → board), then upload (board → PC), each giving a speed\nLast, full-speed echo: the PC sends numbered data as fast as it can, the board sends it back, giving echo speed, loss rate and round-trip delay",
+   "en_of": "e741fa8c",
+   "de": "Sicherstellen, dass Netzwerkkarte des PCs und Platine im selben Subnetz sind (die Zeile „Netzwerk“ links zeigt die Adresse der Platine); sonst wird nur „keine Verbindung“ angezeigt\n„Start“ drücken\nZuerst Download (PC → Platine), dann Upload (Platine → PC), jeweils mit Geschwindigkeit\nZuletzt Echo mit voller Geschwindigkeit: der PC sendet nummerierte Daten so schnell er kann, die Platine schickt sie zurück; daraus Echo-Geschwindigkeit, Verlustrate und Umlaufverzögerung",
+   "de_of": "e741fa8c"
   },
   "lib.item.usb.info.name": {
    "zh": "枚举信息",
@@ -3397,12 +3425,19 @@
    "de": "Enumerierungsdaten",
    "de_of": "d4762eb9"
   },
-  "lib.item.usb.info.what": {
-   "zh": "不传数据，只读板子这一侧 USB 的状态：有没有被电脑配置好（配置好算过），以及枚举过几次 —— 线不好或电脑反复重新识别时这个数会涨。",
-   "en": "Moves no data; reads the board's own USB state: whether the PC has configured it (configured passes), and how many times it has enumerated - this count climbs on a bad cable or a PC that keeps re-detecting the board.",
-   "en_of": "0a3cb3ed",
-   "de": "Überträgt keine Daten; liest den USB-Zustand auf der Platinenseite: ob der PC sie konfiguriert hat (konfiguriert = bestanden) und wie oft sie enumeriert wurde - die Zahl steigt bei schlechtem Kabel oder wenn der PC die Platine immer neu erkennt.",
-   "de_of": "0a3cb3ed"
+  "lib.item.usb.info.goal": {
+   "zh": "确认板子的 USB 被电脑认上了。",
+   "en": "Check that the PC has recognised the board's USB.",
+   "en_of": "ada35a90",
+   "de": "Prüfen, dass der PC den USB der Platine erkannt hat.",
+   "de_of": "ada35a90"
+  },
+  "lib.item.usb.info.how": {
+   "zh": "用 USB 线把板子接到电脑\n点「开始」\n面板读板子这一侧的 USB 状态：被电脑配置好算过\n• 同时记枚举过几次：线不好或电脑反复重新识别时这个数会涨",
+   "en": "Connect the board to the PC with a USB cable\nPress “Start”\nThe panel reads the board's own USB state: configured by the PC passes\n• It also records how many times it enumerated: this climbs with a bad cable or a PC that keeps re-detecting it",
+   "en_of": "348f427c",
+   "de": "Platine mit einem USB-Kabel an den PC anschließen\n„Start“ drücken\nDas Panel liest den USB-Zustand der Platine: vom PC konfiguriert ist bestanden\n• Es zählt auch, wie oft enumeriert wurde: die Zahl steigt bei schlechtem Kabel oder wenn der PC sie immer wieder neu erkennt",
+   "de_of": "348f427c"
   },
   "lib.item.usb.xfer.name": {
    "zh": "数据收发",
@@ -3411,12 +3446,19 @@
    "de": "Datenübertragung",
    "de_of": "f6b34640"
   },
-  "lib.item.usb.xfer.what": {
-   "zh": "和网口一样分三段（下载、上传、满速率回送），走板子的 USB 虚拟串口。",
-   "en": "The same three parts as Ethernet (download, upload, full-speed echo), over the board's USB virtual COM port.",
-   "en_of": "1b805150",
-   "de": "Dieselben drei Teile wie bei Ethernet (Download, Upload, Echo mit voller Geschwindigkeit), über den virtuellen USB-COM-Port der Platine.",
-   "de_of": "1b805150"
+  "lib.item.usb.xfer.goal": {
+   "zh": "确认 USB 虚拟串口能双向传数据，并测出速率、丢包和延时。",
+   "en": "Check that the USB virtual serial port carries data both ways, and measure speed, loss and delay.",
+   "en_of": "3b4e0ae9",
+   "de": "Prüfen, dass der virtuelle serielle USB-Port Daten in beide Richtungen überträgt, und Geschwindigkeit, Verlust und Verzögerung messen.",
+   "de_of": "3b4e0ae9"
+  },
+  "lib.item.usb.xfer.how": {
+   "zh": "用 USB 线把板子接到电脑，左边「板子 USB」那一行选好口\n点「开始」\n和网口一样分三段：下载、上传、满速率回送",
+   "en": "Connect the board to the PC with a USB cable and pick its port in the “Board USB” row on the left\nPress “Start”\nLike Ethernet, in three parts: download, upload, full-speed echo",
+   "en_of": "7b5348f9",
+   "de": "Platine per USB-Kabel an den PC anschließen und in der Zeile „Platinen-USB“ links den Port wählen\n„Start“ drücken\nWie bei Ethernet in drei Teilen: Download, Upload, Echo mit voller Geschwindigkeit",
+   "de_of": "7b5348f9"
   },
   "lib.item.sd.probe.name": {
    "zh": "识别卡",
@@ -3425,12 +3467,19 @@
    "de": "Kartenerkennung",
    "de_of": "eb6955e7"
   },
-  "lib.item.sd.probe.what": {
-   "zh": "读插卡检测脚、卡的识别信息、容量和文件系统（要是 FAT 或 exFAT）。",
-   "en": "Reads the card-detect pin, the card's identity, size and file system (must be FAT or exFAT).",
-   "en_of": "25efcd7b",
-   "de": "Liest den Karten-Erkennungspin, Kennung, Größe und Dateisystem der Karte (muss FAT oder exFAT sein).",
-   "de_of": "25efcd7b"
+  "lib.item.sd.probe.goal": {
+   "zh": "确认 SD 卡座和卡能被认出来。",
+   "en": "Check that the SD card slot and the card are recognised.",
+   "en_of": "30eda10c",
+   "de": "Prüfen, dass SD-Kartenhalter und Karte erkannt werden.",
+   "de_of": "30eda10c"
+  },
+  "lib.item.sd.probe.how": {
+   "zh": "插一张 FAT 或 exFAT 格式的 SD 卡\n点「开始」\n面板读插卡检测脚、卡的识别信息、容量和文件系统",
+   "en": "Insert an SD card formatted FAT or exFAT\nPress “Start”\nThe panel reads the card-detect pin, the card's identity, capacity and file system",
+   "en_of": "814dfd0d",
+   "de": "Eine SD-Karte mit FAT oder exFAT einstecken\n„Start“ drücken\nDas Panel liest den Kartenerkennungs-Pin, die Kennung der Karte, Kapazität und Dateisystem",
+   "de_of": "814dfd0d"
   },
   "lib.item.sd.rw.name": {
    "zh": "读写",
@@ -3439,12 +3488,19 @@
    "de": "Lesen und Schreiben",
    "de_of": "9400a0af"
   },
-  "lib.item.sd.rw.what": {
-   "zh": "写一个测试文件、读回逐字节比对，同时记下读写速度。",
-   "en": "Writes a test file, reads it back and compares byte by byte, recording the read and write speed.",
-   "en_of": "b290495c",
-   "de": "Schreibt eine Testdatei, liest sie zurück und vergleicht Byte für Byte; Lese- und Schreibgeschwindigkeit werden festgehalten.",
-   "de_of": "b290495c"
+  "lib.item.sd.rw.goal": {
+   "zh": "确认 SD 卡能正确写入和读出。",
+   "en": "Check that the SD card writes and reads back correctly.",
+   "en_of": "f6361484",
+   "de": "Prüfen, dass die SD-Karte richtig schreibt und zurückliest.",
+   "de_of": "f6361484"
+  },
+  "lib.item.sd.rw.how": {
+   "zh": "插好 SD 卡\n点「开始」\n板子写一个测试文件、读回逐字节比对，同时记下读写速度",
+   "en": "Insert the SD card\nPress “Start”\nThe board writes a test file, reads it back and compares byte by byte, recording read and write speed",
+   "en_of": "b7d57b52",
+   "de": "SD-Karte einstecken\n„Start“ drücken\nDie Platine schreibt eine Testdatei, liest sie zurück und vergleicht Byte für Byte; Lese- und Schreibgeschwindigkeit werden festgehalten",
+   "de_of": "b7d57b52"
   },
   "lib.item.sdram.probe.name": {
    "zh": "总线检查",
@@ -3453,12 +3509,19 @@
    "de": "Busprüfung",
    "de_of": "3c3acb94"
   },
-  "lib.item.sdram.probe.what": {
-   "zh": "启动内存控制器，查数据线和地址线有没有断、短路。",
-   "en": "Starts the memory controller and checks the data and address lines for breaks and shorts.",
-   "en_of": "6123044f",
-   "de": "Startet den Speicher-Controller und prüft Daten- und Adressleitungen auf Unterbrechungen und Kurzschlüsse.",
-   "de_of": "6123044f"
+  "lib.item.sdram.probe.goal": {
+   "zh": "确认外部内存（SDRAM）的数据线和地址线没有断路、短路。",
+   "en": "Check that the external memory (SDRAM) has no open or shorted data or address lines.",
+   "en_of": "b4c522ca",
+   "de": "Prüfen, dass der externe Speicher (SDRAM) keine offenen oder kurzgeschlossenen Daten- oder Adressleitungen hat.",
+   "de_of": "b4c522ca"
+  },
+  "lib.item.sdram.probe.how": {
+   "zh": "点「开始」\n板子启动内存控制器，逐根检查数据线和地址线",
+   "en": "Press “Start”\nThe board starts the memory controller and checks every data and address line",
+   "en_of": "8460af55",
+   "de": "„Start“ drücken\nDie Platine startet den Speichercontroller und prüft jede Daten- und Adressleitung",
+   "de_of": "8460af55"
   },
   "lib.item.sdram.sweep.name": {
    "zh": "全片扫描",
@@ -3467,12 +3530,19 @@
    "de": "Kompletter Durchlauf",
    "de_of": "ca2b2053"
   },
-  "lib.item.sdram.sweep.what": {
-   "zh": "整片 64 MB 用四种图案各写一遍、读回比对，并给出写速率和读速率。",
-   "en": "Writes all 64 MB once with each of four patterns and reads it back to compare, giving the write and read speed.",
-   "en_of": "fde4164d",
-   "de": "Beschreibt alle 64 MB einmal mit jedem von vier Mustern und liest zum Vergleich zurück; dazu Schreib- und Lesegeschwindigkeit.",
-   "de_of": "fde4164d"
+  "lib.item.sdram.sweep.goal": {
+   "zh": "确认整片 64 MB 内存每个地址都能正确读写。",
+   "en": "Check that every address of the whole 64 MB memory reads and writes correctly.",
+   "en_of": "4aa15e69",
+   "de": "Prüfen, dass jede Adresse des gesamten 64-MB-Speichers richtig gelesen und geschrieben wird.",
+   "de_of": "4aa15e69"
+  },
+  "lib.item.sdram.sweep.how": {
+   "zh": "点「开始」\n板子用四种图案把整片各写一遍、读回比对\n卡上给出写速率和读速率",
+   "en": "Press “Start”\nThe board writes the whole chip with four patterns, reading each back to compare\nThe card shows write and read speed",
+   "en_of": "6416e435",
+   "de": "„Start“ drücken\nDie Platine beschreibt den ganzen Chip mit vier Mustern und liest jedes zum Vergleich zurück\nDie Karte zeigt Schreib- und Lesegeschwindigkeit",
+   "de_of": "6416e435"
   },
   "lib.item.sdram.hold.name": {
    "zh": "长时间读写",
@@ -3481,12 +3551,19 @@
    "de": "Langzeit-Lesen/Schreiben",
    "de_of": "8c562383"
   },
-  "lib.item.sdram.hold.what": {
-   "zh": "往随机地址写数据，放一段时间（可调）再读回核对，一轮接一轮；卡上显示跑了几轮、查过多少、错了多少、第一个出错的地址。数据放得住，说明内存的自动刷新在工作。",
-   "en": "Writes data to random addresses, leaves it for a while (adjustable), reads it back and checks it, round after round; the card shows how many rounds ran, how much was checked, how much failed and the first bad address. Data that survives the wait shows the memory's auto-refresh is working.",
-   "en_of": "63ec3ce9",
-   "de": "Schreibt Daten an zufällige Adressen, lässt sie eine Weile liegen (einstellbar), liest sie zurück und prüft sie, Runde um Runde; die Karte zeigt die Zahl der Runden, wie viel geprüft wurde, wie viel fehlschlug und die erste fehlerhafte Adresse. Bleiben die Daten erhalten, arbeitet der automatische Refresh des Speichers.",
-   "de_of": "63ec3ce9"
+  "lib.item.sdram.hold.goal": {
+   "zh": "确认内存里的数据放一段时间后不丢，也就是内存的自动刷新在工作。",
+   "en": "Check that data left in memory for a while is not lost, i.e. the memory's self-refresh works.",
+   "en_of": "d18f9c40",
+   "de": "Prüfen, dass Daten nach einer Wartezeit im Speicher erhalten bleiben, d. h. die Selbstauffrischung arbeitet.",
+   "de_of": "d18f9c40"
+  },
+  "lib.item.sdram.hold.how": {
+   "zh": "需要时在可调参数里改放置时间\n点「开始」\n板子往随机地址写数据，放够时间再读回核对，一轮接一轮\n卡上显示跑了几轮、查过多少、错了多少、第一个出错的地址",
+   "en": "If needed, change the hold time in the adjustable parameters\nPress “Start”\nThe board writes data to random addresses, waits, reads it back and checks, round after round\nThe card shows rounds run, how much was checked, errors and the first failing address",
+   "en_of": "5307d437",
+   "de": "Bei Bedarf die Haltezeit in den einstellbaren Parametern ändern\n„Start“ drücken\nDie Platine schreibt Daten an zufällige Adressen, wartet, liest zurück und prüft, Runde um Runde\nDie Karte zeigt Runden, geprüfte Menge, Fehler und die erste fehlerhafte Adresse",
+   "de_of": "5307d437"
   },
   "lib.item.reset.cause.name": {
    "zh": "按键复位",
@@ -3495,12 +3572,19 @@
    "de": "Reset per Taster",
    "de_of": "1b2267e5"
   },
-  "lib.item.reset.cause.what": {
-   "zh": "请人按一下复位键，板子重启后读出上次复位的原因。",
-   "en": "A person presses the reset button; after the restart the board reports why it last reset.",
-   "en_of": "37f97648",
-   "de": "Eine Person drückt den Reset-Taster; nach dem Neustart meldet die Platine den Grund des letzten Resets.",
-   "de_of": "37f97648"
+  "lib.item.reset.cause.goal": {
+   "zh": "确认复位键能让板子重启，并且板子认得出是按键复位的。",
+   "en": "Check that the reset button restarts the board and the board knows it was a button reset.",
+   "en_of": "2cfa87c5",
+   "de": "Prüfen, dass die Reset-Taste die Platine neu startet und die Platine den Tasten-Reset erkennt.",
+   "de_of": "2cfa87c5"
+  },
+  "lib.item.reset.cause.how": {
+   "zh": "点「开始」\n面板提示时按一下板子上的复位键\n板子重启后，面板读出上次复位的原因",
+   "en": "Press “Start”\nWhen the panel asks, press the reset button on the board once\nAfter the restart the panel reads why the board last reset",
+   "en_of": "2cb94e70",
+   "de": "„Start“ drücken\nWenn das Panel fragt, einmal die Reset-Taste auf der Platine drücken\nNach dem Neustart liest das Panel den Grund des letzten Resets",
+   "de_of": "2cb94e70"
   },
   "lib.item.led.blink.name": {
    "zh": "心跳灯 LED3",
@@ -3509,12 +3593,19 @@
    "de": "Herzschlag-LED3",
    "de_of": "a17a669c"
   },
-  "lib.item.led.blink.what": {
-   "zh": "主控板（最上面那块，有网口、USB-C 和 SD 卡座）角上的绿灯 LED3（旁边印着 HBEAT）先闪 6 下，然后面板让它一直闪着，问你看见没有。BOOT0 键旁边一直亮着的一绿一黄是电源灯（3V3 OK、5V0 OK），不是这一项。",
-   "en": "The green LED3 (marked HBEAT) in the corner of the main board (the top one, with the network port, USB-C and SD slot) blinks six times, then the panel keeps it blinking while it asks whether you see it. The green and yellow lamps that stay lit next to the BOOT0 key are power lamps (3V3 OK, 5V0 OK), not this item.",
-   "en_of": "443daf75",
-   "de": "Die grüne LED3 (beschriftet HBEAT) in der Ecke der Hauptplatine (die oberste, mit Netzwerkbuchse, USB-C und SD-Steckplatz) blinkt sechsmal, dann lässt das Panel sie weiter blinken und fragt, ob Sie sie sehen. Die grüne und die gelbe Lampe neben der BOOT0-Taste, die dauernd leuchten, sind Betriebsanzeigen (3V3 OK, 5V0 OK), nicht dieser Test.",
-   "de_of": "443daf75"
+  "lib.item.led.blink.goal": {
+   "zh": "确认主控板上的心跳灯 LED3 能亮。",
+   "en": "Check that the heartbeat LED LED3 on the main board lights.",
+   "en_of": "be703d1e",
+   "de": "Prüfen, dass die Herzschlag-LED LED3 auf der Hauptplatine leuchtet.",
+   "de_of": "be703d1e"
+  },
+  "lib.item.led.blink.how": {
+   "zh": "找到主控板（最上面那块，有网口、USB-C 和 SD 卡座）角上的绿灯 LED3，旁边印着 HBEAT\n点「开始」：它先闪 6 下，然后一直闪着\n面板问你看见没有，照实回答\n• BOOT0 键旁边一直亮着的一绿一黄是电源灯（3V3 OK、5V0 OK），不是这一项",
+   "en": "Find the green LED3 (marked HBEAT) in the corner of the main board (the top one, with Ethernet, USB-C and the SD slot)\nPress “Start”: it blinks 6 times, then keeps blinking\nThe panel asks whether you saw it; answer what you saw\n• The green and yellow lights always on beside the BOOT0 button are power lights (3V3 OK, 5V0 OK), not this item",
+   "en_of": "8011c5d0",
+   "de": "Die grüne LED3 (beschriftet HBEAT) in der Ecke der Hauptplatine finden (die oberste, mit Netzwerk, USB-C und SD-Halter)\n„Start“ drücken: sie blinkt 6-mal, danach dauernd\nDas Panel fragt, ob man sie gesehen hat; ehrlich antworten\n• Die grüne und gelbe Leuchte neben der BOOT0-Taste, die immer an sind, sind Betriebsleuchten (3V3 OK, 5V0 OK), nicht dieser Test",
+   "de_of": "8011c5d0"
   },
   "lib.item.din.level.name": {
    "zh": "逐路读电平",
@@ -3523,12 +3614,19 @@
    "de": "Jeden Eingang lesen",
    "de_of": "41b4a668"
   },
-  "lib.item.din.level.what": {
-   "zh": "被测板读 DI1–8 每路的 0 / 1：逐路只给这一路 24 V（标准机的 DO 逐路拉高，或人逐路接线），只有这一路读到高才对。",
-   "en": "The board under test reads 0 / 1 on DI1–8: 24 V goes to one input at a time (the reference board's DO in turn, or a person moving the wire), and only that input may read high.",
-   "en_of": "e6f7ebf4",
-   "de": "Die Prüfplatine liest 0 / 1 an DI1–8: 24 V liegt jeweils an nur einem Eingang (DO der Referenzplatine nacheinander oder eine Person steckt um), und nur dieser Eingang darf High lesen.",
-   "de_of": "e6f7ebf4"
+  "lib.item.din.level.goal": {
+   "zh": "确认 DI1–8 每一路都能单独读到 24 V，路与路之间没有短路。",
+   "en": "Check that each of DI1–8 reads 24 V on its own and no two inputs are shorted.",
+   "en_of": "25cd019f",
+   "de": "Prüfen, dass jeder Eingang DI1–8 einzeln 24 V liest und keine zwei Eingänge kurzgeschlossen sind.",
+   "de_of": "25cd019f"
+  },
+  "lib.item.din.level.how": {
+   "zh": "逐路只给这一路 24 V：研发测试由人逐路接线，工装测试由标准机的 DO 逐路拉高\n被测板读 DI1–8 每一路的 0 / 1（研发测试在 DI 卡上点「开始读取」）\n只有给了电的那一路读到 1 才算过",
+   "en": "Give 24 V to one input at a time: by hand in the R&D test, by the reference board's DO in the fixture test\nThe board under test reads 0 / 1 on each of DI1–8 (in the R&D test press “Start reading” on the DI card)\nIt passes only if just the powered input reads 1",
+   "en_of": "ef95d061",
+   "de": "Jeweils nur einem Eingang 24 V geben: in der Entwicklungsprüfung von Hand, in der Vorrichtungsprüfung über die DO der Referenzplatine\nDer Prüfling liest 0 / 1 an DI1–8 (in der Entwicklungsprüfung auf der DI-Karte „Lesen starten“ drücken)\nBestanden nur, wenn allein der bestromte Eingang 1 liest",
+   "de_of": "ef95d061"
   },
   "lib.item.din.quad.name": {
    "zh": "编码器计数",
@@ -3537,12 +3635,19 @@
    "de": "Encoderzählung",
    "de_of": "0956b2b1"
   },
-  "lib.item.din.quad.what": {
-   "zh": "把 8 路当成 4 组编码器（DI1、DI2 是第 1 组，依此类推）：人送脉冲，卡片实时显示每组数到几、漏了几步，人填自己送了几步来比。",
-   "en": "Treats the 8 inputs as 4 encoders (DI1, DI2 are group 1, and so on): a person sends pulses, the card shows each group's count and missed steps live, and the person types how many steps were sent to compare.",
-   "en_of": "5ec8a2a8",
-   "de": "Behandelt die 8 Eingänge als 4 Drehgeber (DI1, DI2 sind Gruppe 1 usw.): eine Person sendet Impulse, die Karte zeigt Zählerstand und verlorene Schritte jeder Gruppe live, die Person gibt die gesendeten Schritte zum Vergleich ein.",
-   "de_of": "5ec8a2a8"
+  "lib.item.din.quad.goal": {
+   "zh": "确认 DI 能正确数编码器脉冲、不漏步。",
+   "en": "Check that the DIs count encoder pulses correctly without missing steps.",
+   "en_of": "2f9c1ea8",
+   "de": "Prüfen, dass die DI Drehgeberimpulse richtig und ohne Schrittverlust zählen.",
+   "de_of": "2f9c1ea8"
+  },
+  "lib.item.din.quad.how": {
+   "zh": "把 8 路当成 4 组编码器接上：DI1、DI2 是第 1 组，DI3、DI4 是第 2 组，依此类推\n点「开始」后送脉冲，卡片实时显示每组数到几、漏了几步\n送完把自己送了几步填进卡片，面板拿来比",
+   "en": "Wire the 8 inputs as 4 encoders: DI1 and DI2 are encoder 1, DI3 and DI4 encoder 2, and so on\nPress “Start” and send pulses; the card shows live what each encoder counted and how many steps it missed\nWhen done, enter how many steps you sent; the panel compares",
+   "en_of": "2c492aec",
+   "de": "Die 8 Eingänge als 4 Drehgeber anschließen: DI1 und DI2 sind Geber 1, DI3 und DI4 Geber 2 usw.\n„Start“ drücken und Impulse geben; die Karte zeigt laufend den Zählerstand jedes Gebers und verlorene Schritte\nDanach eintragen, wie viele Schritte gegeben wurden; das Panel vergleicht",
+   "de_of": "2c492aec"
   },
   "lib.item.ain.read1.name": {
    "zh": "AI1 读数",
@@ -3551,12 +3656,19 @@
    "de": "AI1-Messwert",
    "de_of": "0b811943"
   },
-  "lib.item.ain.read1.what": {
-   "zh": "标准值来源依次给出每个点，被测板读 AI1，用板子上的校准公式换算后算偏差。",
-   "en": "The reference source gives each point in turn; the board under test reads AI1, converts it with the board's calibration formula and computes the error.",
-   "en_of": "be8b236a",
-   "de": "Die Referenzquelle gibt jeden Punkt nacheinander vor; die Prüfplatine liest AI1, rechnet mit der Kalibrierformel der Platine um und berechnet die Abweichung.",
-   "de_of": "be8b236a"
+  "lib.item.ain.read1.goal": {
+   "zh": "确认 AI1 按板上的校准值换算后读得准。",
+   "en": "Check that AI1 reads accurately after the board's calibration is applied.",
+   "en_of": "0e9a1238",
+   "de": "Prüfen, dass AI1 nach der Kalibrierung der Platine genau liest.",
+   "de_of": "0e9a1238"
+  },
+  "lib.item.ain.read1.how": {
+   "zh": "标准值来源（标准机或人）依次给出每个测试点\n被测板读 AI1，用板上的校准公式换算\n和标准值比，算出偏差",
+   "en": "The reference source (reference board or a person) gives each test point in turn\nThe board under test reads AI1 and converts it with the board's calibration\nThe panel compares it with the reference and works out the deviation",
+   "en_of": "7ae2ce93",
+   "de": "Die Sollwertquelle (Referenzplatine oder ein Mensch) gibt nacheinander jeden Prüfpunkt vor\nDer Prüfling liest AI1 und rechnet mit ihrer Kalibrierung um\nDas Panel vergleicht mit dem Sollwert und berechnet die Abweichung",
+   "de_of": "7ae2ce93"
   },
   "lib.item.ain.cal1.name": {
    "zh": "AI1 校准",
@@ -3565,12 +3677,19 @@
    "de": "AI1-Kalibrierung",
    "de_of": "4f749708"
   },
-  "lib.item.ain.cal1.what": {
-   "zh": "人工逐点给标准值、填进面板，拟合出 k、b，存本地文件，再手动烧进板子。",
-   "en": "A person supplies each reference value and types it in; k and b are fitted, saved to a local file and then burned into the board by hand.",
-   "en_of": "0298110a",
-   "de": "Eine Person gibt jeden Referenzwert vor und trägt ihn ein; k und b werden angepasst, in einer lokalen Datei gespeichert und dann von Hand in die Platine geschrieben.",
-   "de_of": "0298110a"
+  "lib.item.ain.cal1.goal": {
+   "zh": "求出 AI1 的校准值 k、b，烧进板子。",
+   "en": "Work out AI1's calibration k and b and burn them into the board.",
+   "en_of": "ad354063",
+   "de": "Die Kalibrierwerte k und b von AI1 ermitteln und in die Platine brennen.",
+   "de_of": "ad354063"
+  },
+  "lib.item.ain.cal1.how": {
+   "zh": "人逐点给 AI1 加标准信号，把标准值填进面板\n面板拟合出 k、b，存在本机文件里\n点「烧进板子」写进板子",
+   "en": "Apply a reference signal to AI1 point by point and enter each reference value\nThe panel fits k and b and saves them in a file on this PC\nPress “Burn into board” to write them to the board",
+   "en_of": "60faf295",
+   "de": "Punkt für Punkt ein Referenzsignal an AI1 anlegen und den Sollwert eintragen\nDas Panel ermittelt k und b und speichert sie in einer Datei auf diesem PC\n„Auf Platine brennen“ drücken, um sie auf die Platine zu schreiben",
+   "de_of": "60faf295"
   },
   "lib.item.aout.out1.name": {
    "zh": "AO1 输出",
@@ -3579,12 +3698,19 @@
    "de": "AO1-Ausgang",
    "de_of": "0d7611e7"
   },
-  "lib.item.aout.out1.what": {
-   "zh": "被测板 AO1 依次输出每个点（按板子上的校准公式），标准值来源读实际值，算偏差。",
-   "en": "The board under test outputs each point on AO1 in turn (using the board's calibration formula); the reference source reads the actual value and the error is computed.",
-   "en_of": "c592f2ac",
-   "de": "Die Prüfplatine gibt jeden Punkt nacheinander auf AO1 aus (mit der Kalibrierformel der Platine); die Referenzquelle liest den Istwert, die Abweichung wird berechnet.",
-   "de_of": "c592f2ac"
+  "lib.item.aout.out1.goal": {
+   "zh": "确认 AO1 按板上的校准值输出得准。",
+   "en": "Check that AO1 outputs accurately with the board's calibration.",
+   "en_of": "85cbbe36",
+   "de": "Prüfen, dass AO1 mit der Kalibrierung der Platine genau ausgibt.",
+   "de_of": "85cbbe36"
+  },
+  "lib.item.aout.out1.how": {
+   "zh": "被测板 AO1 按板上的校准公式依次输出每个测试点\n标准值来源（标准机或人用仪表）读出实际值\n和设定值比，算出偏差",
+   "en": "The board under test outputs each test point on AO1 in turn, using the board's calibration\nThe reference source (reference board, or a person with a meter) reads the actual value\nThe panel compares it with the set value and works out the deviation",
+   "en_of": "4ab6294d",
+   "de": "Der Prüfling gibt nacheinander jeden Prüfpunkt an AO1 aus, mit ihrer Kalibrierung\nDie Sollwertquelle (Referenzplatine oder ein Mensch mit Messgerät) liest den Istwert\nDas Panel vergleicht mit dem eingestellten Wert und berechnet die Abweichung",
+   "de_of": "4ab6294d"
   },
   "lib.item.aout.cal1.name": {
    "zh": "AO1 校准",
@@ -3593,12 +3719,19 @@
    "de": "AO1-Kalibrierung",
    "de_of": "43d8eedb"
   },
-  "lib.item.aout.cal1.what": {
-   "zh": "被测板依次输出每个点，人把仪表读数填进面板，拟合出 k、b，存本地文件，再手动烧进板子。",
-   "en": "The board outputs each point in turn and a person types in the meter reading; k and b are fitted, saved to a local file and then burned into the board by hand.",
-   "en_of": "0080a2c1",
-   "de": "Die Platine gibt jeden Punkt nacheinander aus, eine Person trägt den Messgerätewert ein; k und b werden angepasst, lokal gespeichert und dann von Hand in die Platine geschrieben.",
-   "de_of": "0080a2c1"
+  "lib.item.aout.cal1.goal": {
+   "zh": "求出 AO1 的校准值 k、b，烧进板子。",
+   "en": "Work out AO1's calibration k and b and burn them into the board.",
+   "en_of": "bfa52a44",
+   "de": "Die Kalibrierwerte k und b von AO1 ermitteln und in die Platine brennen.",
+   "de_of": "bfa52a44"
+  },
+  "lib.item.aout.cal1.how": {
+   "zh": "被测板 AO1 依次输出每个拟合点\n人用仪表量，把读数填进面板\n面板拟合出 k、b，存在本机文件里\n点「烧进板子」写进板子",
+   "en": "The board under test outputs each fitting point on AO1 in turn\nMeasure it with a meter and enter the reading\nThe panel fits k and b and saves them in a file on this PC\nPress “Burn into board” to write them to the board",
+   "en_of": "1f170f3c",
+   "de": "Der Prüfling gibt nacheinander jeden Anpassungspunkt an AO1 aus\nMit dem Messgerät messen und den Messwert eintragen\nDas Panel ermittelt k und b und speichert sie in einer Datei auf diesem PC\n„Auf Platine brennen“ drücken, um sie auf die Platine zu schreiben",
+   "de_of": "1f170f3c"
   },
   "lib.item.ain.read2.name": {
    "zh": "AI2 读数",
@@ -3607,12 +3740,19 @@
    "de": "AI2-Messwert",
    "de_of": "d21da085"
   },
-  "lib.item.ain.read2.what": {
-   "zh": "标准值来源依次给出每个点，被测板读 AI2，用板子上的校准公式换算后算偏差。",
-   "en": "The reference source gives each point in turn; the board under test reads AI2, converts it with the board's calibration formula and computes the error.",
-   "en_of": "73692951",
-   "de": "Die Referenzquelle gibt jeden Punkt nacheinander vor; die Prüfplatine liest AI2, rechnet mit der Kalibrierformel der Platine um und berechnet die Abweichung.",
-   "de_of": "73692951"
+  "lib.item.ain.read2.goal": {
+   "zh": "确认 AI2 按板上的校准值换算后读得准。",
+   "en": "Check that AI2 reads accurately after the board's calibration is applied.",
+   "en_of": "e6c6542a",
+   "de": "Prüfen, dass AI2 nach der Kalibrierung der Platine genau liest.",
+   "de_of": "e6c6542a"
+  },
+  "lib.item.ain.read2.how": {
+   "zh": "标准值来源（标准机或人）依次给出每个测试点\n被测板读 AI2，用板上的校准公式换算\n和标准值比，算出偏差",
+   "en": "The reference source (reference board or a person) gives each test point in turn\nThe board under test reads AI2 and converts it with the board's calibration\nThe panel compares it with the reference and works out the deviation",
+   "en_of": "f0b84741",
+   "de": "Die Sollwertquelle (Referenzplatine oder ein Mensch) gibt nacheinander jeden Prüfpunkt vor\nDer Prüfling liest AI2 und rechnet mit ihrer Kalibrierung um\nDas Panel vergleicht mit dem Sollwert und berechnet die Abweichung",
+   "de_of": "f0b84741"
   },
   "lib.item.ain.cal2.name": {
    "zh": "AI2 校准",
@@ -3621,12 +3761,19 @@
    "de": "AI2-Kalibrierung",
    "de_of": "5c104961"
   },
-  "lib.item.ain.cal2.what": {
-   "zh": "人工逐点给标准值、填进面板，拟合出 k、b，存本地文件，再手动烧进板子。",
-   "en": "A person supplies each reference value and types it in; k and b are fitted, saved to a local file and then burned into the board by hand.",
-   "en_of": "0298110a",
-   "de": "Eine Person gibt jeden Referenzwert vor und trägt ihn ein; k und b werden angepasst, in einer lokalen Datei gespeichert und dann von Hand in die Platine geschrieben.",
-   "de_of": "0298110a"
+  "lib.item.ain.cal2.goal": {
+   "zh": "求出 AI2 的校准值 k、b，烧进板子。",
+   "en": "Work out AI2's calibration k and b and burn them into the board.",
+   "en_of": "95b9a5ca",
+   "de": "Die Kalibrierwerte k und b von AI2 ermitteln und in die Platine brennen.",
+   "de_of": "95b9a5ca"
+  },
+  "lib.item.ain.cal2.how": {
+   "zh": "人逐点给 AI2 加标准信号，把标准值填进面板\n面板拟合出 k、b，存在本机文件里\n点「烧进板子」写进板子",
+   "en": "Apply a reference signal to AI2 point by point and enter each reference value\nThe panel fits k and b and saves them in a file on this PC\nPress “Burn into board” to write them to the board",
+   "en_of": "e62664f2",
+   "de": "Punkt für Punkt ein Referenzsignal an AI2 anlegen und den Sollwert eintragen\nDas Panel ermittelt k und b und speichert sie in einer Datei auf diesem PC\n„Auf Platine brennen“ drücken, um sie auf die Platine zu schreiben",
+   "de_of": "e62664f2"
   },
   "lib.item.aout.out2.name": {
    "zh": "AO2 输出",
@@ -3635,12 +3782,19 @@
    "de": "AO2-Ausgang",
    "de_of": "025182ee"
   },
-  "lib.item.aout.out2.what": {
-   "zh": "被测板 AO2 依次输出每个点（按板子上的校准公式），标准值来源读实际值，算偏差。",
-   "en": "The board under test outputs each point on AO2 in turn (using the board's calibration formula); the reference source reads the actual value and the error is computed.",
-   "en_of": "acc43b78",
-   "de": "Die Prüfplatine gibt jeden Punkt nacheinander auf AO2 aus (mit der Kalibrierformel der Platine); die Referenzquelle liest den Istwert, die Abweichung wird berechnet.",
-   "de_of": "acc43b78"
+  "lib.item.aout.out2.goal": {
+   "zh": "确认 AO2 按板上的校准值输出得准。",
+   "en": "Check that AO2 outputs accurately with the board's calibration.",
+   "en_of": "71adefdc",
+   "de": "Prüfen, dass AO2 mit der Kalibrierung der Platine genau ausgibt.",
+   "de_of": "71adefdc"
+  },
+  "lib.item.aout.out2.how": {
+   "zh": "被测板 AO2 按板上的校准公式依次输出每个测试点\n标准值来源（标准机或人用仪表）读出实际值\n和设定值比，算出偏差",
+   "en": "The board under test outputs each test point on AO2 in turn, using the board's calibration\nThe reference source (reference board, or a person with a meter) reads the actual value\nThe panel compares it with the set value and works out the deviation",
+   "en_of": "4f79d1a5",
+   "de": "Der Prüfling gibt nacheinander jeden Prüfpunkt an AO2 aus, mit ihrer Kalibrierung\nDie Sollwertquelle (Referenzplatine oder ein Mensch mit Messgerät) liest den Istwert\nDas Panel vergleicht mit dem eingestellten Wert und berechnet die Abweichung",
+   "de_of": "4f79d1a5"
   },
   "lib.item.aout.cal2.name": {
    "zh": "AO2 校准",
@@ -3649,12 +3803,19 @@
    "de": "AO2-Kalibrierung",
    "de_of": "02427703"
   },
-  "lib.item.aout.cal2.what": {
-   "zh": "被测板依次输出每个点，人把仪表读数填进面板，拟合出 k、b，存本地文件，再手动烧进板子。",
-   "en": "The board outputs each point in turn and a person types in the meter reading; k and b are fitted, saved to a local file and then burned into the board by hand.",
-   "en_of": "0080a2c1",
-   "de": "Die Platine gibt jeden Punkt nacheinander aus, eine Person trägt den Messgerätewert ein; k und b werden angepasst, lokal gespeichert und dann von Hand in die Platine geschrieben.",
-   "de_of": "0080a2c1"
+  "lib.item.aout.cal2.goal": {
+   "zh": "求出 AO2 的校准值 k、b，烧进板子。",
+   "en": "Work out AO2's calibration k and b and burn them into the board.",
+   "en_of": "ea6516ba",
+   "de": "Die Kalibrierwerte k und b von AO2 ermitteln und in die Platine brennen.",
+   "de_of": "ea6516ba"
+  },
+  "lib.item.aout.cal2.how": {
+   "zh": "被测板 AO2 依次输出每个拟合点\n人用仪表量，把读数填进面板\n面板拟合出 k、b，存在本机文件里\n点「烧进板子」写进板子",
+   "en": "The board under test outputs each fitting point on AO2 in turn\nMeasure it with a meter and enter the reading\nThe panel fits k and b and saves them in a file on this PC\nPress “Burn into board” to write them to the board",
+   "en_of": "bc4f284d",
+   "de": "Der Prüfling gibt nacheinander jeden Anpassungspunkt an AO2 aus\nMit dem Messgerät messen und den Messwert eintragen\nDas Panel ermittelt k und b und speichert sie in einer Datei auf diesem PC\n„Auf Platine brennen“ drücken, um sie auf die Platine zu schreiben",
+   "de_of": "bc4f284d"
   },
   "lib.item.aout.load.name": {
    "zh": "带负载输出",
@@ -3663,12 +3824,19 @@
    "de": "Ausgang unter Last",
    "de_of": "1cb84f78"
   },
-  "lib.item.aout.load.what": {
-   "zh": "AO 接负载，每路按卡片上给这一路填的值输出（单位跟这一路的档位，必填，按板上的校准值换算），每路量一次，和这一路设的值比，偏差 ±1 % 满量程以内算过。",
-   "en": "AO into a load: each channel outputs the value typed for it on the card (in that channel's range unit, required, converted with the board's own calibration); each channel is measured once and compared with its own set value, within ±1 % of full scale passes.",
-   "en_of": "cf562b46",
-   "de": "AO an einer Last: jeder Kanal gibt den auf der Karte für ihn eingetragenen Wert aus (in der Einheit seines Bereichs, Pflichtfeld, umgerechnet mit der Kalibrierung der Platine); jeder Kanal wird einmal gemessen und mit seinem eigenen Sollwert verglichen, innerhalb ±1 % des Messbereichsendwerts ist bestanden.",
-   "de_of": "cf562b46"
+  "lib.item.aout.load.goal": {
+   "zh": "确认 AO 接上负载后仍按设定值输出。",
+   "en": "Check that the AO still outputs the set value with a load connected.",
+   "en_of": "9d483959",
+   "de": "Prüfen, dass der AO mit angeschlossener Last weiterhin den eingestellten Wert ausgibt.",
+   "de_of": "9d483959"
+  },
+  "lib.item.aout.load.how": {
+   "zh": "AO 接上负载\n在卡片上给每一路填输出值（单位跟这一路的档位，必填）\n点「开始」，每路按板上的校准值换算后输出，量一次\n和设定值比，偏差在 ±1 % 满量程以内算过",
+   "en": "Connect a load to the AO\nOn the card, enter an output value for each channel (in that channel's range unit; required)\nPress “Start”; each channel outputs it through the board's calibration and is measured once\nIt passes within ±1 % of full scale of the set value",
+   "en_of": "de864621",
+   "de": "Eine Last an den AO anschließen\nAuf der Karte für jeden Kanal einen Ausgabewert eintragen (in der Einheit seines Messbereichs; Pflicht)\n„Start“ drücken; jeder Kanal gibt ihn über die Kalibrierung der Platine aus und wird einmal gemessen\nBestanden innerhalb ±1 % vom Messbereichsendwert des eingestellten Werts",
+   "de_of": "de864621"
   },
   "lib.item.rs232.peer.name": {
    "zh": "与上位机收发",
@@ -3677,12 +3845,19 @@
    "de": "Austausch mit dem PC",
    "de_of": "b1ce4083"
   },
-  "lib.item.rs232.peer.what": {
-   "zh": "电脑经 USB-232 转换器和板子互发，逐帧比对。选了别的波特率时，测的这段时间整条控制口和电脑一起切过去，测完切回。",
-   "en": "The PC and the board exchange frames through a USB-232 adapter and compare them frame by frame. With another baud rate picked, the whole control port and the PC switch to it for the test and back afterwards.",
-   "en_of": "6ce39d75",
-   "de": "PC und Platine tauschen über einen USB-232-Adapter Rahmen aus und vergleichen sie Rahmen für Rahmen. Bei einer anderen Baudrate wechseln der ganze Steuerport und der PC für den Test dorthin und danach zurück.",
-   "de_of": "6ce39d75"
+  "lib.item.rs232.peer.goal": {
+   "zh": "确认 RS232 口能和电脑双向收发、不丢数据。",
+   "en": "Check that the RS232 port exchanges data with the PC both ways without loss.",
+   "en_of": "99ffe9c2",
+   "de": "Prüfen, dass der RS232-Anschluss mit dem PC in beide Richtungen ohne Verlust Daten austauscht.",
+   "de_of": "99ffe9c2"
+  },
+  "lib.item.rs232.peer.how": {
+   "zh": "电脑经 USB-232 转换器接板子的 RS232\n点「开始」，电脑和板子互发，逐帧比对\n• 选了别的波特率时，测的这段时间控制口和电脑一起切过去，测完切回",
+   "en": "The PC is connected to the board's RS232 through a USB-232 converter\nPress “Start”; PC and board send to each other and every frame is compared\n• With another baud rate chosen, the control port and the PC switch to it during the test and back afterwards",
+   "en_of": "587ce636",
+   "de": "Der PC ist über einen USB-232-Wandler mit RS232 der Platine verbunden\n„Start“ drücken; PC und Platine senden sich gegenseitig, jeder Rahmen wird verglichen\n• Bei einer anderen Baudrate wechseln Steuerport und PC während des Tests dorthin und danach zurück",
+   "de_of": "587ce636"
   },
   "lib.item.rs485.peer.name": {
    "zh": "与上位机收发",
@@ -3691,12 +3866,19 @@
    "de": "Austausch mit dem PC",
    "de_of": "b1ce4083"
   },
-  "lib.item.rs485.peer.what": {
-   "zh": "电脑经 USB-485 转换器和板子互发，逐帧比对。",
-   "en": "The PC and the board exchange frames through a USB-485 adapter and compare them frame by frame.",
-   "en_of": "a2fbe507",
-   "de": "PC und Platine tauschen über einen USB-485-Adapter Rahmen aus und vergleichen sie Rahmen für Rahmen.",
-   "de_of": "a2fbe507"
+  "lib.item.rs485.peer.goal": {
+   "zh": "确认 RS485 口能和电脑双向收发、不丢数据。",
+   "en": "Check that the RS485 port exchanges data with the PC both ways without loss.",
+   "en_of": "798d386a",
+   "de": "Prüfen, dass der RS485-Anschluss mit dem PC in beide Richtungen ohne Verlust Daten austauscht.",
+   "de_of": "798d386a"
+  },
+  "lib.item.rs485.peer.how": {
+   "zh": "电脑经 USB-485 转换器接板子的 RS485，A、B 不要接反\n左边 RS485 那一行认出或选好转换器的口\n点「开始」，电脑和板子互发，逐帧比对",
+   "en": "Connect the PC to the board's RS485 through a USB-485 converter; do not swap A and B\nThe RS485 row on the left recognises the converter's port, or pick it\nPress “Start”; PC and board send to each other and every frame is compared",
+   "en_of": "f491f9c9",
+   "de": "PC über einen USB-485-Wandler mit RS485 der Platine verbinden; A und B nicht vertauschen\nDie Zeile RS485 links erkennt den Port des Wandlers, sonst ihn wählen\n„Start“ drücken; PC und Platine senden sich gegenseitig, jeder Rahmen wird verglichen",
+   "de_of": "f491f9c9"
   },
   "lib.item.rs485.pins.name": {
    "zh": "收发切换脚自检",
@@ -3705,12 +3887,19 @@
    "de": "Selbsttest Richtungspin",
    "de_of": "f396ca15"
   },
-  "lib.item.rs485.pins.what": {
-   "zh": "不接线：把收发切换脚和发送脚当普通引脚拉高、拉低再读回，分清「没接对端」和「脚坏了」。",
-   "en": "No wiring needed: drives the direction pin and the transmit pin high and low as plain pins and reads them back, to tell \"no peer connected\" from \"broken pin\".",
-   "en_of": "bcc3eb05",
-   "de": "Keine Verdrahtung nötig: setzt Richtungs- und Sendepin als normale Pins hoch und tief und liest zurück, um „keine Gegenstelle“ von „Pin defekt“ zu unterscheiden.",
-   "de_of": "bcc3eb05"
+  "lib.item.rs485.pins.goal": {
+   "zh": "分清 RS485 是「没接对端」还是「收发脚坏了」。",
+   "en": "Tell “no far end connected” apart from “the RS485 pins are broken”.",
+   "en_of": "3473bc32",
+   "de": "„Keine Gegenstelle angeschlossen“ von „RS485-Pins defekt“ unterscheiden.",
+   "de_of": "3473bc32"
+  },
+  "lib.item.rs485.pins.how": {
+   "zh": "不用接线\n点「开始」\n板子把收发切换脚和发送脚当普通引脚拉高、拉低再读回",
+   "en": "No wiring needed\nPress “Start”\nThe board drives the direction pin and the transmit pin high and low as plain pins and reads them back",
+   "en_of": "e12dce5a",
+   "de": "Keine Verdrahtung nötig\n„Start“ drücken\nDie Platine schaltet Richtungs- und Sendepin als normale Pins hoch und tief und liest sie zurück",
+   "de_of": "e12dce5a"
   },
   "lib.item.can.peer.name": {
    "zh": "对发",
@@ -3719,12 +3908,19 @@
    "de": "Gegenseitiger Austausch",
    "de_of": "31bf278f"
   },
-  "lib.item.can.peer.what": {
-   "zh": "经过收发器和接线，和对端互相发帧。这一项才证明收发器是好的。",
-   "en": "Exchanges frames with the peer through the transceiver and the wiring. Only this item proves the transceiver works.",
-   "en_of": "372ea765",
-   "de": "Tauscht über Transceiver und Verdrahtung Rahmen mit der Gegenstelle aus. Nur dieser Punkt beweist, dass der Transceiver funktioniert.",
-   "de_of": "372ea765"
+  "lib.item.can.peer.goal": {
+   "zh": "确认 CAN 收发器和接线是好的，能和对端互发。",
+   "en": "Check that the CAN transceiver and wiring work and frames go both ways with the far end.",
+   "en_of": "d6e0b4f1",
+   "de": "Prüfen, dass CAN-Transceiver und Verdrahtung funktionieren und Rahmen in beide Richtungen mit der Gegenstelle laufen.",
+   "de_of": "d6e0b4f1"
+  },
+  "lib.item.can.peer.how": {
+   "zh": "板子的 CAN 接到对端，在卡片上选对端\n点「开始」，两边互相发帧、逐帧比对\n• 只有这一项能证明收发器是好的",
+   "en": "Connect the board's CAN to the far end and choose it on the card\nPress “Start”; both sides send frames and every frame is compared\n• Only this item proves the transceiver works",
+   "en_of": "eaeeba0b",
+   "de": "CAN der Platine mit der Gegenstelle verbinden und sie auf der Karte wählen\n„Start“ drücken; beide Seiten senden Rahmen, jeder wird verglichen\n• Nur dieser Test beweist, dass der Transceiver funktioniert",
+   "de_of": "eaeeba0b"
   },
   "lib.item.can.loop.name": {
    "zh": "控制器内部回环",
@@ -3733,12 +3929,19 @@
    "de": "Interne Controller-Schleife",
    "de_of": "6614d1ea"
   },
-  "lib.item.can.loop.what": {
-   "zh": "CAN 控制器在芯片内部自发自收，不出芯片，只证明控制器和时钟配置对。",
-   "en": "The CAN controller sends and receives inside the chip; nothing leaves the chip. Only proves the controller and clock setup are right.",
-   "en_of": "8cca9543",
-   "de": "Der CAN-Controller sendet und empfängt im Chip; nichts verlässt den Chip. Beweist nur, dass Controller und Takt richtig eingestellt sind.",
-   "de_of": "8cca9543"
+  "lib.item.can.loop.goal": {
+   "zh": "确认 CAN 控制器和时钟配置正确。",
+   "en": "Check that the CAN controller and its clock setup are right.",
+   "en_of": "1cae901a",
+   "de": "Prüfen, dass CAN-Controller und Takteinstellung stimmen.",
+   "de_of": "1cae901a"
+  },
+  "lib.item.can.loop.how": {
+   "zh": "不用接线\n点「开始」，CAN 控制器在芯片内部自发自收\n• 不出芯片，证明不了收发器和接线",
+   "en": "No wiring needed\nPress “Start”; the CAN controller sends and receives inside the chip\n• Nothing leaves the chip, so it proves nothing about the transceiver or wiring",
+   "en_of": "6befde69",
+   "de": "Keine Verdrahtung nötig\n„Start“ drücken; der CAN-Controller sendet und empfängt im Chip\n• Nichts verlässt den Chip, über Transceiver und Verdrahtung sagt es nichts",
+   "de_of": "6befde69"
   },
   "lib.item.can.ext.name": {
    "zh": "外部回环",
@@ -3747,12 +3950,19 @@
    "de": "Externe Schleife",
    "de_of": "cc6f9d76"
   },
-  "lib.item.can.ext.what": {
-   "zh": "自发自收经过芯片引脚，但不经过收发器和接线。",
-   "en": "Sends and receives through the chip's pins, but not through the transceiver or the wiring.",
-   "en_of": "240d9ffd",
-   "de": "Senden und Empfangen über die Chip-Pins, aber nicht über Transceiver und Verdrahtung.",
-   "de_of": "240d9ffd"
+  "lib.item.can.ext.goal": {
+   "zh": "确认 CAN 控制器到芯片引脚这一段是好的。",
+   "en": "Check the path from the CAN controller to the chip's pins.",
+   "en_of": "b3401cbb",
+   "de": "Den Weg vom CAN-Controller bis zu den Pins des Chips prüfen.",
+   "de_of": "b3401cbb"
+  },
+  "lib.item.can.ext.how": {
+   "zh": "不用接线\n点「开始」，自发自收经过芯片引脚\n• 不经过收发器和接线",
+   "en": "No wiring needed\nPress “Start”; it sends and receives through the chip's pins\n• Does not go through the transceiver or wiring",
+   "en_of": "177417d2",
+   "de": "Keine Verdrahtung nötig\n„Start“ drücken; Senden und Empfangen laufen über die Pins des Chips\n• Geht nicht über Transceiver und Verdrahtung",
+   "de_of": "177417d2"
   },
   "lib.item.knx.bus.name": {
    "zh": "总线电源",
@@ -3761,12 +3971,19 @@
    "de": "Busspannung",
    "de_of": "06e71cf7"
   },
-  "lib.item.knx.bus.what": {
-   "zh": "看 KNX 总线有没有电、接收脚的上拉是否正常。",
-   "en": "Checks whether the KNX bus is powered and the receive pin's pull-up behaves.",
-   "en_of": "ab7b5542",
-   "de": "Prüft, ob der KNX-Bus Spannung hat und der Pull-up des Empfangspins sich richtig verhält.",
-   "de_of": "ab7b5542"
+  "lib.item.knx.bus.goal": {
+   "zh": "确认 KNX 总线有电、接收脚的上拉正常。",
+   "en": "Check that the KNX bus is powered and the receive pin's pull-up is right.",
+   "en_of": "cadbe3ae",
+   "de": "Prüfen, dass der KNX-Bus Spannung hat und der Pull-up des Empfangspins stimmt.",
+   "de_of": "cadbe3ae"
+  },
+  "lib.item.knx.bus.how": {
+   "zh": "接上有电的 KNX 总线\n点「开始」，面板读总线有没有电和接收脚的状态",
+   "en": "Connect a powered KNX bus\nPress “Start”; the panel reads whether the bus has power and the state of the receive pin",
+   "en_of": "bae56376",
+   "de": "Einen KNX-Bus mit Spannung anschließen\n„Start“ drücken; das Panel liest, ob der Bus Spannung hat, und den Zustand des Empfangspins",
+   "de_of": "bae56376"
   },
   "lib.item.knx.loop.name": {
    "zh": "回环收发",
@@ -3775,12 +3992,19 @@
    "de": "Schleifenaustausch",
    "de_of": "00ae4662"
   },
-  "lib.item.knx.loop.what": {
-   "zh": "板子每个周期往总线发一个字符，同时从总线读回来比对。",
-   "en": "Each period the board sends one character onto the bus and reads it back from the bus to compare.",
-   "en_of": "a8bf7ace",
-   "de": "Die Platine sendet in jeder Periode ein Zeichen auf den Bus und liest es zum Vergleich vom Bus zurück.",
-   "de_of": "a8bf7ace"
+  "lib.item.knx.loop.goal": {
+   "zh": "确认板子能往 KNX 总线发字符并读回来。",
+   "en": "Check that the board can send characters onto the KNX bus and read them back.",
+   "en_of": "dac041f5",
+   "de": "Prüfen, dass die Platine Zeichen auf den KNX-Bus senden und zurücklesen kann.",
+   "de_of": "dac041f5"
+  },
+  "lib.item.knx.loop.how": {
+   "zh": "接上有电的 KNX 总线\n点「开始」，板子每个周期往总线发一个字符，同时读回来比对",
+   "en": "Connect a powered KNX bus\nPress “Start”; each cycle the board sends one character onto the bus and reads it back to compare",
+   "en_of": "5d8f6a94",
+   "de": "Einen KNX-Bus mit Spannung anschließen\n„Start“ drücken; die Platine sendet in jedem Zyklus ein Zeichen auf den Bus und liest es zum Vergleich zurück",
+   "de_of": "5d8f6a94"
   },
   "lib.item.knx.frames.name": {
    "zh": "收发整帧",
@@ -3789,12 +4013,19 @@
    "de": "Ganze Telegramme senden und empfangen",
    "de_of": "57b1d87a"
   },
-  "lib.item.knx.frames.what": {
-   "zh": "开 60 秒：每个周期往组地址（默认 31/7/255）发一条写值报文，卡片上列出收发的报文，并统计收到的完整报文和其中校验错的。组地址填 none 就只听不发。",
-   "en": "Runs for 60 s: each period it sends a value-write telegram to the group address (default 31/7/255), lists the telegrams sent and received on the card, and counts complete telegrams received and how many fail their check. Group address none: listen only, send nothing.",
-   "en_of": "e3f0e228",
-   "de": "Läuft 60 s: sendet in jeder Periode ein Schreibtelegramm an die Gruppenadresse (Standard 31/7/255), listet die gesendeten und empfangenen Telegramme auf der Karte und zählt vollständig empfangene Telegramme und wie viele die Prüfung nicht bestehen. Gruppenadresse none: nur mithören, nichts senden.",
-   "de_of": "e3f0e228"
+  "lib.item.knx.frames.goal": {
+   "zh": "确认板子能在 KNX 总线上收发完整报文、校验正确。",
+   "en": "Check that the board sends and receives whole KNX telegrams with correct checksums.",
+   "en_of": "d28aab51",
+   "de": "Prüfen, dass die Platine ganze KNX-Telegramme mit richtiger Prüfsumme sendet und empfängt.",
+   "de_of": "d28aab51"
+  },
+  "lib.item.knx.frames.how": {
+   "zh": "接上有电的 KNX 总线\n需要时改组地址（默认 31/7/255；填 none 就只听不发）\n点「开始」，开 60 秒：每个周期往组地址发一条写值报文\n卡片列出收发的报文，并统计收到的完整报文和其中校验错的",
+   "en": "Connect a powered KNX bus\nIf needed, change the group address (31/7/255 by default; none only listens)\nPress “Start”; it runs 60 s, sending a write telegram to the group address each cycle\nThe card lists the telegrams sent and received and counts whole telegrams and those with a bad checksum",
+   "en_of": "97f31cc9",
+   "de": "Einen KNX-Bus mit Spannung anschließen\nBei Bedarf die Gruppenadresse ändern (Vorgabe 31/7/255; none hört nur zu)\n„Start“ drücken; es läuft 60 s und sendet in jedem Zyklus ein Schreibtelegramm an die Gruppenadresse\nDie Karte listet gesendete und empfangene Telegramme und zählt ganze Telegramme und solche mit falscher Prüfsumme",
+   "de_of": "97f31cc9"
   },
   "lib.item.dout.load.name": {
    "zh": "带负载输出",
@@ -3803,12 +4034,19 @@
    "de": "Ausgang unter Last",
    "de_of": "1cb84f78"
   },
-  "lib.item.dout.load.what": {
-   "zh": "选中的几路接负载、开到 24 V。研发测试：逐路只开一路，人量 24 V 电源和端子之间的压降。工装测试：继电器全吸合，DO1–6 经继电器、DO7、DO8 直接接标准机 DI，逐路只开一路、最后全关，标准机只有对应那一路读到高才对。",
-   "en": "The selected outputs drive a load at 24 V. R&D: one output on at a time, a person measures the drop between the 24 V supply and the terminal. Fixture tests: all relays closed, DO1–6 reach the reference board's DI through the relays and DO7, DO8 directly; one output on at a time and then all off, and only the matching input on the reference board may read high.",
-   "en_of": "6a90139a",
-   "de": "Die gewählten Ausgänge treiben eine Last mit 24 V. F&E: jeweils ein Ausgang an, eine Person misst den Spannungsabfall zwischen 24-V-Versorgung und Klemme. Vorrichtungsprüfungen: alle Relais geschlossen, DO1–6 gehen über die Relais und DO7, DO8 direkt auf die DI der Referenzplatine; jeweils ein Ausgang an und zuletzt alle aus, und nur der zugehörige Eingang der Referenzplatine darf High lesen.",
-   "de_of": "6a90139a"
+  "lib.item.dout.load.goal": {
+   "zh": "确认 DO 每一路接上负载都能输出 24 V，路与路之间不串。",
+   "en": "Check that each DO drives 24 V into a load and channels do not affect each other.",
+   "en_of": "9e593be4",
+   "de": "Prüfen, dass jeder DO 24 V in eine Last treibt und sich die Kanäle nicht gegenseitig beeinflussen.",
+   "de_of": "9e593be4"
+  },
+  "lib.item.dout.load.how": {
+   "zh": "选中的几路接上负载\n点「开始」，逐路只开一路到 24 V，最后全关\n研发测试：人量 24 V 电源和端子之间的压降；工装测试：标准机只有对应那一路读到高才算过\n• 工装测试里继电器全吸合，DO1–6 经继电器、DO7、DO8 直接接标准机 DI",
+   "en": "Connect loads to the chosen outputs\nPress “Start”; one output at a time is switched to 24 V, then all off\nR&D test: measure the drop between the 24 V supply and the terminal; fixture test: passes only if the reference board reads high on just that channel\n• In the fixture test all relays are closed; DO1–6 go through the relays, DO7 and DO8 straight to the reference board's DI",
+   "en_of": "7f5f1875",
+   "de": "Lasten an die gewählten Ausgänge anschließen\n„Start“ drücken; jeweils ein Ausgang wird auf 24 V geschaltet, zuletzt alle aus\nEntwicklungsprüfung: den Spannungsabfall zwischen 24-V-Versorgung und Klemme messen; Vorrichtungsprüfung: bestanden nur, wenn die Referenzplatine allein diesen Kanal hoch liest\n• In der Vorrichtungsprüfung sind alle Relais angezogen; DO1–6 laufen über die Relais, DO7 und DO8 direkt an die DI der Referenzplatine",
+   "de_of": "7f5f1875"
   },
   "lib.item.dout.blink.name": {
    "zh": "翻转计数",
@@ -3817,12 +4055,19 @@
    "de": "Umschaltungen zählen",
    "de_of": "e5be3b00"
   },
-  "lib.item.dout.blink.what": {
-   "zh": "DO1–DO8 一起亮灭翻转 6 次：点开始后看着 DO 的灯数它翻了几次，跑完填进来，差 1 次以内算过。",
-   "en": "DO1–DO8 toggle on and off 6 times together: after Start, count the DO lamps' toggles and type the number at the end; within 1 passes.",
-   "en_of": "e7937e53",
-   "de": "DO1–DO8 schalten 6-mal gemeinsam um: nach Start die Umschaltungen an den DO-Lampen zählen und am Ende eintragen; auf 1 genau gilt als bestanden.",
-   "de_of": "e7937e53"
+  "lib.item.dout.blink.goal": {
+   "zh": "确认 DO1–DO8 都能开关。",
+   "en": "Check that DO1–DO8 all switch.",
+   "en_of": "34e4e449",
+   "de": "Prüfen, dass DO1–DO8 alle schalten.",
+   "de_of": "34e4e449"
+  },
+  "lib.item.dout.blink.how": {
+   "zh": "点「开始」，DO1–DO8 一起亮灭翻转 6 次\n看着 DO 的灯数它翻了几次\n跑完把次数填进来，差 1 次以内算过",
+   "en": "Press “Start”; DO1–DO8 toggle on and off together 6 times\nWatch the DO lights and count the toggles\nAfterwards enter the count; within 1 passes",
+   "en_of": "2f289cd6",
+   "de": "„Start“ drücken; DO1–DO8 schalten zusammen 6-mal ein und aus\nDie DO-Leuchten beobachten und die Wechsel zählen\nDanach die Zahl eintragen; höchstens 1 daneben ist bestanden",
+   "de_of": "2f289cd6"
   },
   "lib.item.dout.square.name": {
    "zh": "PWM 方波（示波器看）",
@@ -3831,12 +4076,19 @@
    "de": "PWM-Rechteck (am Oszilloskop prüfen)",
    "de_of": "7f735b3e"
   },
-  "lib.item.dout.square.what": {
-   "zh": "按设定的位数、频率和占空比输出 PWM 方波；输出开着的时候问你：示波器上看到的频率和占空比对不对。",
-   "en": "Outputs a PWM square wave with the set resolution, frequency and duty cycle, and asks while it is on whether the frequency and duty cycle on the scope look right.",
-   "en_of": "d157fff7",
-   "de": "Gibt ein PWM-Rechteck mit eingestellter Auflösung, Frequenz und Tastverhältnis aus und fragt, solange es läuft, ob Frequenz und Tastverhältnis am Oszilloskop stimmen.",
-   "de_of": "d157fff7"
+  "lib.item.dout.square.goal": {
+   "zh": "确认 DO 能输出设定频率和占空比的 PWM 方波。",
+   "en": "Check that a DO outputs a PWM square wave at the set frequency and duty cycle.",
+   "en_of": "528eff75",
+   "de": "Prüfen, dass ein DO eine PWM-Rechteckwelle mit eingestellter Frequenz und Tastgrad ausgibt.",
+   "de_of": "528eff75"
+  },
+  "lib.item.dout.square.how": {
+   "zh": "示波器接到要看的 DO 端子\n设好位数、频率和占空比，点「开始」\n输出开着的时候面板问你示波器上看到的频率和占空比对不对，照实回答",
+   "en": "Connect an oscilloscope to the DO terminal to watch\nSet the resolution, frequency and duty cycle, then press “Start”\nWhile the output is on the panel asks whether the scope shows the right frequency and duty cycle; answer what you see",
+   "en_of": "1476912c",
+   "de": "Ein Oszilloskop an die zu beobachtende DO-Klemme anschließen\nAuflösung, Frequenz und Tastgrad einstellen, dann „Start“ drücken\nWährend der Ausgang an ist, fragt das Panel, ob das Oszilloskop die richtige Frequenz und den richtigen Tastgrad zeigt; ehrlich antworten",
+   "de_of": "1476912c"
   },
   "lib.item.relay.cycle.name": {
    "zh": "继电器开合",
@@ -3845,12 +4097,19 @@
    "de": "Relais schalten",
    "de_of": "bdf0cc14"
   },
-  "lib.item.relay.cycle.what": {
-   "zh": "每一路继电器单独勾选，单独填吸合多久、断开多久和总开合次数；板子自己计时、计数，跑满就停。研发测试跑完问你负载实际开合了几次；工装测试里对应的 DO 一直开着，标准机 DI 数实际开合了几次。",
-   "en": "Each relay is ticked on its own, with its own closed time, open time and total number of open/close cycles; the board times and counts and stops each relay at its number. In R&D you are asked afterwards how many cycles the load actually showed; in the fixture tests the relay's DO stays on and the reference board's DI counts the actual cycles.",
-   "en_of": "dd230be7",
-   "de": "Jedes Relais wird einzeln angehakt, mit eigener Schließzeit, Öffnungszeit und Gesamtzahl der Schaltspiele; die Platine zeitet, zählt und stoppt jedes Relais bei seiner Anzahl. In F&E wirst du danach gefragt, wie viele Schaltspiele die Last tatsächlich zeigte; in den Vorrichtungsprüfungen bleibt der DO des Relais an und die DI der Referenzplatine zählen die tatsächlichen Schaltspiele.",
-   "de_of": "dd230be7"
+  "lib.item.relay.cycle.goal": {
+   "zh": "确认每一路继电器都能按设定次数正常开合。",
+   "en": "Check that each relay opens and closes properly for the set number of times.",
+   "en_of": "4a91a40e",
+   "de": "Prüfen, dass jedes Relais die eingestellte Anzahl Schaltspiele richtig ausführt.",
+   "de_of": "4a91a40e"
+  },
+  "lib.item.relay.cycle.how": {
+   "zh": "勾要测的继电器，每路填吸合多久、断开多久和总开合次数\n触点上接负载，点「开始」，板子自己计时、计数，跑满就停\n研发测试跑完，把负载实际开合了几次填进来；工装测试由标准机 DI 数",
+   "en": "Tick the relays to test and give each its on time, off time and total number of cycles\nConnect a load to the contacts and press “Start”; the board times and counts by itself and stops when done\nIn the R&D test, enter how many times the load actually switched; in the fixture test the reference board's DI counts",
+   "en_of": "00751457",
+   "de": "Die zu prüfenden Relais ankreuzen und für jedes Einschaltdauer, Ausschaltdauer und Gesamtzahl der Schaltspiele angeben\nEine Last an die Kontakte anschließen und „Start“ drücken; die Platine misst Zeit und zählt selbst und hört am Ende auf\nIn der Entwicklungsprüfung eintragen, wie oft die Last tatsächlich geschaltet hat; in der Vorrichtungsprüfung zählt die DI der Referenzplatine",
+   "de_of": "00751457"
   },
   "lib.item.temp.read.name": {
    "zh": "两路温度",
@@ -3859,12 +4118,19 @@
    "de": "Zwei Temperaturen",
    "de_of": "b60c777f"
   },
-  "lib.item.temp.read.what": {
-   "zh": "读短路保护处、高边开关处两个温度传感器。",
-   "en": "Reads the two temperature sensors at the short-circuit protection and at the high-side switches.",
-   "en_of": "c387d9bc",
-   "de": "Liest die zwei Temperatursensoren am Kurzschlussschutz und an den High-Side-Schaltern.",
-   "de_of": "c387d9bc"
+  "lib.item.temp.read.goal": {
+   "zh": "确认板上两个温度传感器能读出温度。",
+   "en": "Check that the board's two temperature sensors read.",
+   "en_of": "3fd668d4",
+   "de": "Prüfen, dass die zwei Temperatursensoren der Platine Werte liefern.",
+   "de_of": "3fd668d4"
+  },
+  "lib.item.temp.read.how": {
+   "zh": "点「开始」\n面板读短路保护处、高边开关处两个温度传感器",
+   "en": "Press “Start”\nThe panel reads the two sensors: at the short-circuit protection and at the high-side switch",
+   "en_of": "798f1913",
+   "de": "„Start“ drücken\nDas Panel liest die zwei Sensoren: am Kurzschlussschutz und am High-Side-Schalter",
+   "de_of": "798f1913"
   },
   "shell.types": {
    "zh": "第三步：选测试类型",
@@ -4034,12 +4300,19 @@
    "de": "Nicht geprüft",
    "de_of": "d8f60a86"
   },
-  "shell.item.what": {
-   "zh": "测什么",
-   "en": "What it tests",
-   "en_of": "307fd291",
-   "de": "Was geprüft wird",
-   "de_of": "307fd291"
+  "shell.item.goal": {
+   "zh": "目标",
+   "en": "Goal",
+   "en_of": "941f0831",
+   "de": "Ziel",
+   "de_of": "941f0831"
+  },
+  "shell.item.how": {
+   "zh": "测试方法",
+   "en": "How to test",
+   "en_of": "2c3b608f",
+   "de": "Prüfablauf",
+   "de_of": "2c3b608f"
   },
   "shell.item.peer": {
    "zh": "对端",
@@ -4147,11 +4420,11 @@
    "de_of": "5e2b4df8"
   },
   "conn.title": {
-   "zh": "第二步：接其余连接",
-   "en": "Step 2: the other connections",
-   "en_of": "686b34a3",
-   "de": "Schritt 2: die weiteren Verbindungen",
-   "de_of": "686b34a3"
+   "zh": "第二步：连接其余端口",
+   "en": "Step 2: connect the other ports",
+   "en_of": "95379f5d",
+   "de": "Schritt 2: die weiteren Ports verbinden",
+   "de_of": "95379f5d"
   },
   "conn.usb": {
    "zh": "板子 USB",
@@ -4245,11 +4518,11 @@
    "de_of": "4a8b79e4"
   },
   "conn.no_adapter": {
-   "zh": "除了控制口没有别的串口，插上转换器后点「刷新」",
-   "en": "No serial port besides the control port; plug in the converter and press Refresh",
-   "en_of": "a99b07af",
-   "de": "Außer dem Steuerport kein serieller Port; Wandler einstecken und „Aktualisieren“ drücken",
-   "de_of": "a99b07af"
+   "zh": "除了控制口没有别的串口，插上转换器后点「重试」",
+   "en": "No serial port besides the control port; plug in the converter and press Retry",
+   "en_of": "ac3139dd",
+   "de": "Außer dem Steuerport kein serieller Port; Wandler einstecken und „Erneut versuchen“ drücken",
+   "de_of": "ac3139dd"
   },
   "conn.ref": {
    "zh": "标准机",
@@ -4307,12 +4580,12 @@
    "de": "Kein ST-Link eingesteckt",
    "de_of": "63b78120"
   },
-  "conn.recheck": {
-   "zh": "再查",
-   "en": "Check again",
-   "en_of": "bb90f924",
-   "de": "Erneut prüfen",
-   "de_of": "bb90f924"
+  "conn.retry": {
+   "zh": "重试",
+   "en": "Retry",
+   "en_of": "e2d53a6d",
+   "de": "Erneut versuchen",
+   "de_of": "e2d53a6d"
   },
   "conn.instrument": {
    "zh": "专业设备",
@@ -5651,12 +5924,19 @@
    "de": "AI Live-Messwert",
    "de_of": "fe3691b2"
   },
-  "lib.item.ain.live.what": {
-   "zh": "AI1、AI2 一直在读，卡片随板子每一帧刷新：按登记的档位和板上的校准值换成端子上的电压或电流。自己给 AI 加信号，在「标准值」里填加上去的值；点「结束这一项」时按填的标准值判（±1 % 满量程），没填就只显示。",
-   "en": "AI1 and AI2 are read continuously and the card refreshes with every frame from the board, converted to the terminal's voltage or current with the registered range and the board's calibration. Apply a signal to the AI yourself and type it under \"Reference\"; \"End this item\" judges against what you typed (±1 % of full scale), or only shows the readings if nothing was typed.",
-   "en_of": "32afc790",
-   "de": "AI1 und AI2 werden laufend gelesen, die Karte aktualisiert sich mit jedem Frame der Platine und rechnet mit dem registrierten Bereich und der Kalibrierung der Platine in Spannung oder Strom an der Klemme um. Legen Sie selbst ein Signal an und tragen Sie es unter „Sollwert“ ein; „Prüfpunkt beenden“ bewertet danach (±1 % vom Messbereich), ohne Eingabe wird nur angezeigt.",
-   "de_of": "32afc790"
+  "lib.item.ain.live.goal": {
+   "zh": "用自己加的信号检查 AI1、AI2 读得准不准。",
+   "en": "Check with your own signal whether AI1 and AI2 read accurately.",
+   "en_of": "9c5284e1",
+   "de": "Mit einem eigenen Signal prüfen, ob AI1 und AI2 genau lesen.",
+   "de_of": "9c5284e1"
+  },
+  "lib.item.ain.live.how": {
+   "zh": "给 AI 加信号，电压或电流跟登记的档位\n点「开始读取」，卡片随板子每一帧刷新读数，已按档位和板上的校准值换成端子上的值\n在「标准值」里填加上去的值\n点「结束这一项」，按填的标准值判（±1 % 满量程）；没填就只显示",
+   "en": "Apply a signal to the AI, voltage or current as in the registered range\nPress “Start reading”; the card updates with every board frame, already converted to the terminal value with the range and the board's calibration\nEnter the applied value under “Reference”\nPress “End this item”; it is judged against the reference (±1 % of full scale); without one it is only shown",
+   "en_of": "5765e0fc",
+   "de": "Ein Signal an den AI anlegen, Spannung oder Strom wie im eingetragenen Messbereich\n„Lesen starten“ drücken; die Karte aktualisiert mit jedem Rahmen der Platine, schon mit Messbereich und Kalibrierung in den Klemmenwert umgerechnet\nDen angelegten Wert unter „Sollwert“ eintragen\n„Diesen Test beenden“ drücken; bewertet wird gegen den Sollwert (±1 % vom Messbereichsendwert); ohne Sollwert nur Anzeige",
+   "de_of": "5765e0fc"
   },
   "lib.item.aout.manual.name": {
    "zh": "AO 手动输出",
@@ -5665,12 +5945,19 @@
    "de": "AO manuell ausgeben",
    "de_of": "43323290"
   },
-  "lib.item.aout.manual.what": {
-   "zh": "在卡片上给 AO1、AO2 各填一个电流（0–20 mA）点「输出」，按板上的校准值换算后输出；用万用表串在回路里量，量到的填进「标准值」，点「结束这一项」时按它判（±1 % 满量程），没填就只显示。结束时两路回到 0。",
-   "en": "Type a current (0–20 mA) for AO1 or AO2 on the card and press \"Output\"; it is converted with the board's calibration and driven. Measure it with a multimeter in the loop and type the reading under \"Reference\"; \"End this item\" judges against it (±1 % of full scale), or only shows if nothing was typed. Both outputs go back to 0 at the end.",
-   "en_of": "d410a7c9",
-   "de": "Für AO1 oder AO2 einen Strom (0–20 mA) eingeben und „Ausgeben“ drücken; er wird mit der Kalibrierung der Platine umgerechnet und ausgegeben. Mit dem Multimeter im Stromkreis messen und unter „Sollwert“ eintragen; „Prüfpunkt beenden“ bewertet danach (±1 % vom Messbereich), ohne Eingabe wird nur angezeigt. Am Ende gehen beide Ausgänge auf 0.",
-   "de_of": "d410a7c9"
+  "lib.item.aout.manual.goal": {
+   "zh": "用万用表检查 AO1、AO2 输出得准不准。",
+   "en": "Check with a multimeter whether AO1 and AO2 output accurately.",
+   "en_of": "e4c6d9a5",
+   "de": "Mit einem Multimeter prüfen, ob AO1 und AO2 genau ausgeben.",
+   "de_of": "e4c6d9a5"
+  },
+  "lib.item.aout.manual.how": {
+   "zh": "万用表串在 AO 回路里\n给 AO1、AO2 各填一个电流（0–20 mA），点「输出」\n把量到的填进「标准值」\n点「结束这一项」，按标准值判（±1 % 满量程）；没填就只显示\n• 结束时两路回到 0",
+   "en": "Put the multimeter in series in the AO loop\nEnter a current (0–20 mA) for AO1 and AO2 and press “Output”\nEnter what you measured under “Reference”\nPress “End this item”; it is judged against the reference (±1 % of full scale); without one it is only shown\n• Both channels go back to 0 at the end",
+   "en_of": "f0798827",
+   "de": "Das Multimeter in Reihe in den AO-Kreis schalten\nFür AO1 und AO2 je einen Strom (0–20 mA) eintragen und „Ausgeben“ drücken\nDen gemessenen Wert unter „Sollwert“ eintragen\n„Diesen Test beenden“ drücken; bewertet wird gegen den Sollwert (±1 % vom Messbereichsendwert); ohne Sollwert nur Anzeige\n• Am Ende gehen beide Kanäle auf 0",
+   "de_of": "f0798827"
   },
   "lib.item.dout.manual.name": {
    "zh": "DO 手动开关",
@@ -5679,12 +5966,19 @@
    "de": "DO manuell schalten",
    "de_of": "3b373af2"
   },
-  "lib.item.dout.manual.what": {
-   "zh": "卡片上有 DO1–DO8 八个开关，点一下就让这一路输出 24 V 或关掉；用表或灯看端子，在「标准值」里选量到有没有 24 V，点「结束这一项」时按它判，没选就只显示。结束时八路全关。",
-   "en": "The card has eight switches, DO1–DO8; one click turns that output's 24 V on or off. Check the terminal with a meter or a lamp and pick under \"Reference\" whether 24 V was there; \"End this item\" judges against it, or only shows if nothing was picked. All eight are switched off at the end.",
-   "en_of": "44b64cab",
-   "de": "Die Karte hat acht Schalter, DO1–DO8; ein Klick schaltet die 24 V dieses Ausgangs ein oder aus. Klemme mit Messgerät oder Lampe prüfen und unter „Sollwert“ wählen, ob 24 V anlagen; „Prüfpunkt beenden“ bewertet danach, ohne Auswahl wird nur angezeigt. Am Ende werden alle acht abgeschaltet.",
-   "de_of": "44b64cab"
+  "lib.item.dout.manual.goal": {
+   "zh": "一路一路手动检查 DO 能不能输出 24 V。",
+   "en": "Check by hand, output by output, whether each DO gives 24 V.",
+   "en_of": "28c90b1b",
+   "de": "Von Hand Ausgang für Ausgang prüfen, ob jeder DO 24 V liefert.",
+   "de_of": "28c90b1b"
+  },
+  "lib.item.dout.manual.how": {
+   "zh": "点 DO1–DO8 的开关，让这一路输出 24 V 或关掉\n用表或灯看端子，在「标准值」里选量到有没有 24 V\n点「结束这一项」，按选的判；没选就只显示\n• 结束时八路全关",
+   "en": "Click the switch of DO1–DO8 to turn that output to 24 V or off\nCheck the terminal with a meter or a lamp and choose under “Reference” whether 24 V was there\nPress “End this item”; it is judged by what you chose; without a choice it is only shown\n• All eight outputs go off at the end",
+   "en_of": "0bbb8072",
+   "de": "Den Schalter von DO1–DO8 anklicken, um diesen Ausgang auf 24 V oder aus zu schalten\nDie Klemme mit Messgerät oder Lampe prüfen und unter „Sollwert“ wählen, ob 24 V anlagen\n„Diesen Test beenden“ drücken; bewertet wird nach der Auswahl; ohne Auswahl nur Anzeige\n• Am Ende gehen alle acht Ausgänge aus",
+   "de_of": "0bbb8072"
   },
   "lib.reason.live_full": {
    "zh": "人工实时项要有人在旁边点「结束」，工装完整测试是无人值守的，所以跳过；请在研发测试或配置里跑。",
@@ -6120,12 +6414,19 @@
    "de": "CAN-Analyse (erweitertes Fenster)",
    "de_of": "ff695e6a"
   },
-  "lib.item.can.bus.what": {
-   "zh": "板子和电脑上的 CAN 转换器（CANable）接在同一条 CAN 总线上。高级窗口里可以让板子发、让分析器发，面板自动比对对方收没收到、内容对不对；还能看总线上的每一帧和两边的错误状态。只记录，不判 CAN 口过不过。",
-   "en": "The board and this PC's CAN adapter (CANable) sit on the same CAN bus. In the advanced window you can have the board send or the analyser send, and the panel checks whether the other side received it and whether the content matches; you also see every frame on the bus and both sides' error state. Recorded only; it does not decide whether the CAN port passes.",
-   "en_of": "fcca8d3b",
-   "de": "Board und der CAN-Adapter dieses PCs (CANable) hängen am selben CAN-Bus. Im erweiterten Fenster lässt du das Board oder den Analysator senden, und das Panel prüft, ob die andere Seite es empfangen hat und ob der Inhalt stimmt; außerdem siehst du jeden Frame auf dem Bus und den Fehlerzustand beider Seiten. Nur aufgezeichnet; entscheidet nicht, ob der CAN-Port besteht.",
-   "de_of": "fcca8d3b"
+  "lib.item.can.bus.goal": {
+   "zh": "在真实的 CAN 总线上让板子和电脑互发，看对方收没收到、哪里出错，帮助查问题。只记录，不判 CAN 口过不过。",
+   "en": "Have the board and the PC send to each other on a real CAN bus and see what arrives and what goes wrong, to help find problems. Recorded only; it does not judge the CAN port.",
+   "en_of": "42aae274",
+   "de": "Platine und PC auf einem echten CAN-Bus gegenseitig senden lassen und sehen, was ankommt und wo es hakt, zur Fehlersuche. Nur Aufzeichnung; der CAN-Anschluss wird nicht bewertet.",
+   "de_of": "42aae274"
+  },
+  "lib.item.can.bus.how": {
+   "zh": "板子和电脑上的 CAN 转换器（CANable）接在同一条 CAN 总线上\n点「打开高级窗口」，这一项随之开始\n在窗口里选发送方向，填 ID 和数据，点「发送」\n表单下面写对方收没收到、内容对不对；记录里能看到总线上的每一帧和两边的错误状态\n测完点窗口底部的「结束 CAN 分析」",
+   "en": "Put the board and the PC's CAN adapter (CANable) on the same CAN bus\nPress “Open the advanced window”; the item starts with it\nIn the window choose the direction, enter ID and data, press “Send”\nBelow the form it says whether the other side received it unchanged; the record shows every frame on the bus and both sides' error states\nWhen done, press “End CAN analysis” at the bottom of the window",
+   "en_of": "42e0bc93",
+   "de": "Platine und den CAN-Adapter des PCs (CANable) an denselben CAN-Bus anschließen\n„Erweitertes Fenster öffnen“ drücken; der Test startet damit\nIm Fenster die Richtung wählen, ID und Daten eintragen, „Senden“ drücken\nUnter dem Formular steht, ob die Gegenseite es unverändert empfangen hat; die Aufzeichnung zeigt jeden Rahmen auf dem Bus und den Fehlerzustand beider Seiten\nZum Schluss unten im Fenster „CAN-Analyse beenden“ drücken",
+   "de_of": "42e0bc93"
   },
   "lib.reason.can_no_adapter": {
    "zh": "电脑这头的 CAN 转换器（CANable）打不开：没插、没找到，或者在连接区被绑着",
@@ -6141,20 +6442,6 @@
    "de": "CAN-Analyse",
    "de_of": "a1a48c9a"
   },
-  "canwin.baud": {
-   "zh": "波特率",
-   "en": "Bit rate",
-   "en_of": "917c91b6",
-   "de": "Bitrate",
-   "de_of": "917c91b6"
-  },
-  "canwin.baud_set": {
-   "zh": "两边一起切换",
-   "en": "Switch both sides",
-   "en_of": "3c3f1481",
-   "de": "Beide Seiten umschalten",
-   "de_of": "3c3f1481"
-  },
   "canwin.close": {
    "zh": "关闭窗口",
    "en": "Close window",
@@ -6168,13 +6455,6 @@
    "en_of": "d2c94ca2",
    "de": "Senden stoppen",
    "de_of": "d2c94ca2"
-  },
-  "canwin.hint": {
-   "zh": "上面是板子和分析器（电脑上的 CANable）两边的状态；中间可以让任一边发帧；下面一张表按电脑收到的时间列出两边发的和收的每一帧。每发一帧，等对方 1 秒。",
-   "en": "Above: the state of both sides, the board and the analyser (the CANable on this PC). Middle: have either side send a frame. Below: every frame both sides sent and received, in the order this PC got them. Each frame sent waits 1 second for the other side.",
-   "en_of": "da97c8ab",
-   "de": "Oben: der Zustand beider Seiten, Board und Analysator (der CANable an diesem PC). Mitte: eine Seite einen Frame senden lassen. Unten: jeder Frame, den beide Seiten gesendet und empfangen haben, in der Reihenfolge, in der dieser PC sie bekam. Jeder gesendete Frame wartet 1 Sekunde auf die andere Seite.",
-   "de_of": "da97c8ab"
   },
   "canwin.card_hint": {
    "zh": "收发和比对在高级窗口里做。关掉窗口不会停，点「结束这一项」才停。",
@@ -6190,26 +6470,117 @@
    "de": "Erweitertes Fenster öffnen",
    "de_of": "f54409fd"
   },
+  "anawin.err.id": {
+   "zh": "ID 要填十六进制数，0 到 7FF，比如 123。",
+   "en": "The ID is a hexadecimal number from 0 to 7FF, for example 123.",
+   "en_of": "bdbc15b3",
+   "de": "Die ID ist eine Hexadezimalzahl von 0 bis 7FF, zum Beispiel 123.",
+   "de_of": "bdbc15b3"
+  },
+  "anawin.err.data": {
+   "zh": "数据要填十六进制，每个字节两位，最多 8 个字节，比如 11 22 33；空格可有可无。",
+   "en": "The data is hexadecimal, two digits per byte, at most 8 bytes, for example 11 22 33; spaces are optional.",
+   "en_of": "1f07fd10",
+   "de": "Die Daten sind hexadezimal, zwei Ziffern pro Byte, höchstens 8 Bytes, zum Beispiel 11 22 33; Leerzeichen sind optional.",
+   "de_of": "1f07fd10"
+  },
+  "anawin.err.every": {
+   "zh": "次数大于 1 时要填间隔，最小 {min} ms。只发一次就把次数填 1。",
+   "en": "When the count is more than 1, fill in an interval of at least {min} ms. To send once, set the count to 1.",
+   "en_of": "81d13f3a",
+   "de": "Bei einer Anzahl über 1 ein Intervall von mindestens {min} ms eintragen. Für einmaliges Senden die Anzahl auf 1 setzen.",
+   "de_of": "81d13f3a"
+  },
+  "anawin.err.count": {
+   "zh": "次数要填 1 到 {max} 之间的整数。",
+   "en": "The count is a whole number from 1 to {max}.",
+   "en_of": "10512046",
+   "de": "Die Anzahl ist eine ganze Zahl von 1 bis {max}.",
+   "de_of": "10512046"
+  },
+  "anawin.err.ga": {
+   "zh": "组地址要写成 主/中/子，主 0–31、中 0–7、子 0–255，比如 31/7/255。",
+   "en": "The group address is main/middle/sub: main 0–31, middle 0–7, sub 0–255, for example 31/7/255.",
+   "en_of": "25ae9bc5",
+   "de": "Die Gruppenadresse ist Haupt/Mitte/Unter: Haupt 0–31, Mitte 0–7, Unter 0–255, zum Beispiel 31/7/255.",
+   "de_of": "25ae9bc5"
+  },
+  "anawin.err.value": {
+   "zh": "值要填 0 到 63 的整数。",
+   "en": "The value is a whole number from 0 to 63.",
+   "en_of": "302c7cba",
+   "de": "Der Wert ist eine ganze Zahl von 0 bis 63.",
+   "de_of": "302c7cba"
+  },
+  "anawin.err.src": {
+   "zh": "源地址要写成 区.线.设备，区 0–15、线 0–15、设备 0–255，比如 15.15.250；不填就用板子当前的。",
+   "en": "The source address is area.line.device: area 0–15, line 0–15, device 0–255, for example 15.15.250; leave it empty to keep the board's current one.",
+   "en_of": "d0b992f5",
+   "de": "Die Quelladresse ist Bereich.Linie.Gerät: Bereich 0–15, Linie 0–15, Gerät 0–255, zum Beispiel 15.15.250; leer lassen, um die aktuelle der Platine zu behalten.",
+   "de_of": "d0b992f5"
+  },
+  "anawin.busy": {
+   "zh": "别的测试正在跑，这里发不了。先在右上角停掉正在跑的测试，再点卡片上的「打开高级窗口」。",
+   "en": "Another test is running, so nothing can be sent here. Stop that test at the top right first, then press Open the advanced window on the card again.",
+   "en_of": "b9591b40",
+   "de": "Ein anderer Test läuft, hier kann nichts gesendet werden. Zuerst diesen Test oben rechts stoppen, dann auf der Karte erneut „Erweitertes Fenster öffnen“ drücken.",
+   "de_of": "b9591b40"
+  },
+  "anawin.not_running": {
+   "zh": "这一项没在跑，发不了。关掉窗口，再点卡片上的「打开高级窗口」就会重新开始。",
+   "en": "This item is not running, so nothing can be sent. Close the window and press Open the advanced window on the card to start it again.",
+   "en_of": "56679c07",
+   "de": "Dieser Test läuft nicht, es kann nichts gesendet werden. Fenster schließen und auf der Karte „Erweitertes Fenster öffnen“ drücken, um ihn neu zu starten.",
+   "de_of": "56679c07"
+  },
+  "anawin.starting": {
+   "zh": "正在开始这一项，稍等……",
+   "en": "Starting this item, one moment…",
+   "en_of": "14977983",
+   "de": "Dieser Test wird gestartet, einen Moment …",
+   "de_of": "14977983"
+  },
+  "anawin.tip.baud_set": {
+   "zh": "改了立刻生效：板子和 CANable 一起换到这个波特率，表格和计数清零。",
+   "en": "Applies at once: the board and the CANable switch to this bit rate together; the table and the counts start from zero.",
+   "en_of": "690e2091",
+   "de": "Gilt sofort: Platine und CANable wechseln gemeinsam auf diese Bitrate; Tabelle und Zähler beginnen bei null.",
+   "de_of": "690e2091"
+  },
+  "anawin.tip.stop_all": {
+   "zh": "停掉两边正在按间隔重复的发送，窗口和这一项还开着。",
+   "en": "Stop the repeated sending on both sides; the window and this item stay open.",
+   "en_of": "a42f0012",
+   "de": "Das wiederholte Senden auf beiden Seiten stoppen; Fenster und Test bleiben offen.",
+   "de_of": "a42f0012"
+  },
+  "anawin.tip.end_can": {
+   "zh": "停掉 CAN 分析、放开 CANable，之后不能再发，要再点卡片上的「打开高级窗口」。",
+   "en": "End the CAN analysis and release the CANable. Nothing can be sent afterwards until you press Open the advanced window on the card again.",
+   "en_of": "d692869b",
+   "de": "CAN-Analyse beenden und den CANable freigeben. Danach kann nichts mehr gesendet werden, bis auf der Karte erneut „Erweitertes Fenster öffnen“ gedrückt wird.",
+   "de_of": "d692869b"
+  },
+  "anawin.tip.end_knx": {
+   "zh": "停掉 KNX 分析、放开电脑上的 KNX USB 接口，之后不能再发，要再点卡片上的「打开高级窗口」。",
+   "en": "End the KNX analysis and release this PC's KNX USB interface. Nothing can be sent afterwards until you press Open the advanced window on the card again.",
+   "en_of": "8b641fb6",
+   "de": "KNX-Analyse beenden und die KNX-USB-Schnittstelle dieses PCs freigeben. Danach kann nichts mehr gesendet werden, bis auf der Karte erneut „Erweitertes Fenster öffnen“ gedrückt wird.",
+   "de_of": "8b641fb6"
+  },
+  "anawin.tip.close": {
+   "zh": "只是收起窗口，这一项继续跑；卡片上的「打开高级窗口」再打开。",
+   "en": "Only hides the window; this item keeps running. Open the advanced window on the card brings it back.",
+   "en_of": "16629c47",
+   "de": "Blendet nur das Fenster aus; der Test läuft weiter. „Erweitertes Fenster öffnen“ auf der Karte holt es zurück.",
+   "de_of": "16629c47"
+  },
   "canwin.summary": {
    "zh": "比对：对上了 {ok} 帧，没收到 {miss} 帧，内容不一致 {bad} 帧",
    "en": "Checked: {ok} frames matched, {miss} not received, {bad} with different content",
    "en_of": "2e58a5e2",
    "de": "Geprüft: {ok} Frames stimmen, {miss} nicht empfangen, {bad} mit anderem Inhalt",
    "de_of": "2e58a5e2"
-  },
-  "canwin.board_status": {
-   "zh": "板子：发了 {tx} 帧，收到 {rx} 帧（其中 {lost} 帧太快没报上来）；发送错误计数 {tec}，接收错误计数 {rec}；状态：{state}；最近一次错误：{lec}",
-   "en": "Board: sent {tx} frames, received {rx} ({lost} too fast to report); transmit error count {tec}, receive error count {rec}; state: {state}; last error: {lec}",
-   "en_of": "0ad563d3",
-   "de": "Board: {tx} Frames gesendet, {rx} empfangen ({lost} zu schnell zum Melden); Sendefehlerzähler {tec}, Empfangsfehlerzähler {rec}; Zustand: {state}; letzter Fehler: {lec}",
-   "de_of": "0ad563d3"
-  },
-  "canwin.pc_status": {
-   "zh": "分析器（CANable）：发了 {tx} 帧，收到 {rx} 帧；转换器报错 {bells} 次",
-   "en": "Analyser (CANable): sent {tx} frames, received {rx}; the adapter reported {bells} errors",
-   "en_of": "0b91abc7",
-   "de": "Analysator (CANable): {tx} Frames gesendet, {rx} empfangen; der Adapter meldete {bells} Fehler",
-   "de_of": "0b91abc7"
   },
   "canwin.state.active": {
    "zh": "正常",
@@ -6302,40 +6673,19 @@
    "de": "kein neuer Fehler",
    "de_of": "c333bc7e"
   },
-  "canwin.send.board": {
-   "zh": "让板子发",
-   "en": "Board sends",
-   "en_of": "8a528787",
-   "de": "Board sendet",
-   "de_of": "8a528787"
-  },
-  "canwin.send.pc": {
-   "zh": "分析器发",
-   "en": "Analyser sends",
-   "en_of": "475896cc",
-   "de": "Analysator sendet",
-   "de_of": "475896cc"
-  },
   "canwin.f.id": {
-   "zh": "ID（十六进制，0–7FF）",
-   "en": "ID (hex, 0–7FF)",
-   "en_of": "9e01bfef",
-   "de": "ID (hex, 0–7FF)",
-   "de_of": "9e01bfef"
+   "zh": "ID",
+   "en": "ID",
+   "en_of": "89f89c02",
+   "de": "ID",
+   "de_of": "89f89c02"
   },
   "canwin.f.data": {
-   "zh": "数据（十六进制，最多 8 字节，如 11 22 33）",
-   "en": "Data (hex, up to 8 bytes, e.g. 11 22 33)",
-   "en_of": "d461d858",
-   "de": "Daten (hex, bis 8 Bytes, z. B. 11 22 33)",
-   "de_of": "d461d858"
-  },
-  "canwin.f.every": {
-   "zh": "间隔 ms（空着只发一次，最少 50）",
-   "en": "Interval ms (empty: once, at least 50)",
-   "en_of": "0de1c4dc",
-   "de": "Abstand ms (leer: einmal, mindestens 50)",
-   "de_of": "0de1c4dc"
+   "zh": "数据",
+   "en": "Data",
+   "en_of": "54b8a90b",
+   "de": "Daten",
+   "de_of": "54b8a90b"
   },
   "canwin.f.count": {
    "zh": "次数",
@@ -6414,13 +6764,6 @@
    "de": "ID",
    "de_of": "89f89c02"
   },
-  "canwin.col.dlc": {
-   "zh": "长度",
-   "en": "Length",
-   "en_of": "a5394989",
-   "de": "Länge",
-   "de_of": "a5394989"
-  },
   "canwin.col.data": {
    "zh": "数据",
    "en": "Data",
@@ -6441,13 +6784,6 @@
    "en_of": "d2d2de15",
    "de": "Board",
    "de_of": "d2d2de15"
-  },
-  "canwin.who.pc": {
-   "zh": "分析器",
-   "en": "Analyser",
-   "en_of": "defccd8e",
-   "de": "Analysator",
-   "de_of": "defccd8e"
   },
   "canwin.dir.tx": {
    "zh": "发",
@@ -6499,11 +6835,11 @@
    "de_of": "8caefaba"
   },
   "canwin.none": {
-   "zh": "还没有帧",
-   "en": "No frames yet",
-   "en_of": "583a5448",
-   "de": "Noch keine Frames",
-   "de_of": "583a5448"
+   "zh": "还没有帧。在上面点「发送」试试。",
+   "en": "No frames yet. Press Send above to try.",
+   "en_of": "6d996da1",
+   "de": "Noch keine Frames. Oben auf „Senden“ drücken, um es zu versuchen.",
+   "de_of": "6d996da1"
   },
   "canwin.dropped": {
    "zh": "更早的 {n} 帧已不显示",
@@ -6512,6 +6848,286 @@
    "de": "{n} ältere Frames werden nicht mehr angezeigt",
    "de_of": "b159c94e"
   },
+  "canwin.live": {
+   "zh": "● 已开始，可以发送",
+   "en": "● Running, ready to send",
+   "en_of": "1ad654fd",
+   "de": "● Läuft, Senden möglich",
+   "de_of": "1ad654fd"
+  },
+  "canwin.sec.nodes": {
+   "zh": "① 总线上的两头",
+   "en": "① The two ends on the bus",
+   "en_of": "fb685b81",
+   "de": "① Die beiden Enden am Bus",
+   "de_of": "fb685b81"
+  },
+  "canwin.sec.send": {
+   "zh": "② 发数据帧",
+   "en": "② Send a data frame",
+   "en_of": "8e831505",
+   "de": "② Datenframe senden",
+   "de_of": "8e831505"
+  },
+  "canwin.sec.log": {
+   "zh": "③ 收发记录",
+   "en": "③ Sent and received",
+   "en_of": "ee587b4e",
+   "de": "③ Gesendet und empfangen",
+   "de_of": "ee587b4e"
+  },
+  "canwin.node.board": {
+   "zh": "被测板",
+   "en": "Board under test",
+   "en_of": "c3c85c6f",
+   "de": "Prüfling",
+   "de_of": "c3c85c6f"
+  },
+  "canwin.node.pc": {
+   "zh": "电脑（CANable）",
+   "en": "PC (CANable)",
+   "en_of": "1d8e386f",
+   "de": "PC (CANable)",
+   "de_of": "1d8e386f"
+  },
+  "canwin.node.counts": {
+   "zh": "发了 {tx} 帧 · 收到 {rx} 帧",
+   "en": "Sent {tx} frames · received {rx}",
+   "en_of": "be699bb6",
+   "de": "{tx} Frames gesendet · {rx} empfangen",
+   "de_of": "be699bb6"
+  },
+  "canwin.node.state": {
+   "zh": "状态：{state}",
+   "en": "State: {state}",
+   "en_of": "9da59a13",
+   "de": "Zustand: {state}",
+   "de_of": "9da59a13"
+  },
+  "canwin.node.lec": {
+   "zh": "最近一次错误：{lec}",
+   "en": "Last error: {lec}",
+   "en_of": "1e05a1a3",
+   "de": "Letzter Fehler: {lec}",
+   "de_of": "1e05a1a3"
+  },
+  "canwin.node.errs": {
+   "zh": "错误计数：发送 {tec}，接收 {rec}；{lost} 帧太快没报上来",
+   "en": "Error counts: transmit {tec}, receive {rec}; {lost} frames too fast to report",
+   "en_of": "a115467c",
+   "de": "Fehlerzähler: Senden {tec}, Empfangen {rec}; {lost} Frames zu schnell zum Melden",
+   "de_of": "a115467c"
+  },
+  "canwin.node.bells": {
+   "zh": "转换器报错 {n} 次",
+   "en": "the adapter reported {n} errors",
+   "en_of": "6593359d",
+   "de": "der Adapter meldete {n} Fehler",
+   "de_of": "6593359d"
+  },
+  "canwin.baud_hint": {
+   "zh": "波特率（两边一起，改了就生效）",
+   "en": "Bit rate (both ends, applies as soon as it changes)",
+   "en_of": "3674f83e",
+   "de": "Bitrate (beide Enden, gilt sofort nach der Änderung)",
+   "de_of": "3674f83e"
+  },
+  "canwin.f.dir": {
+   "zh": "发送方向",
+   "en": "Direction",
+   "en_of": "389c8c2c",
+   "de": "Richtung",
+   "de_of": "389c8c2c"
+  },
+  "canwin.dir.board_to_pc": {
+   "zh": "被测板 → 电脑",
+   "en": "Board → PC",
+   "en_of": "b0cf87bc",
+   "de": "Prüfling → PC",
+   "de_of": "b0cf87bc"
+  },
+  "canwin.dir.pc_to_board": {
+   "zh": "电脑 → 被测板",
+   "en": "PC → board",
+   "en_of": "07fafd04",
+   "de": "PC → Prüfling",
+   "de_of": "07fafd04"
+  },
+  "canwin.row.board_rx": {
+   "zh": "被测板收到",
+   "en": "Board received",
+   "en_of": "602b5685",
+   "de": "Prüfling empfing",
+   "de_of": "602b5685"
+  },
+  "canwin.row.pc_rx": {
+   "zh": "电脑收到",
+   "en": "PC received",
+   "en_of": "151b9e47",
+   "de": "PC empfing",
+   "de_of": "151b9e47"
+  },
+  "canwin.f.id_tip": {
+   "zh": "十六进制，0–7FF",
+   "en": "hexadecimal, 0–7FF",
+   "en_of": "2e336ea4",
+   "de": "hexadezimal, 0–7FF",
+   "de_of": "2e336ea4"
+  },
+  "canwin.f.data_tip": {
+   "zh": "十六进制，最多 8 字节，空格可有可无",
+   "en": "hexadecimal, up to 8 bytes, spaces optional",
+   "en_of": "08f61ea8",
+   "de": "hexadezimal, bis 8 Bytes, Leerzeichen optional",
+   "de_of": "08f61ea8"
+  },
+  "canwin.rep": {
+   "zh": "连续发",
+   "en": "Send repeatedly",
+   "en_of": "32528322",
+   "de": "Wiederholt senden",
+   "de_of": "32528322"
+  },
+  "canwin.rep.every": {
+   "zh": "间隔（ms）",
+   "en": "Interval (ms)",
+   "en_of": "ef12b89c",
+   "de": "Abstand (ms)",
+   "de_of": "ef12b89c"
+  },
+  "canwin.stop_rep": {
+   "zh": "停止",
+   "en": "Stop",
+   "en_of": "a17f70a8",
+   "de": "Stoppen",
+   "de_of": "a17f70a8"
+  },
+  "canwin.end": {
+   "zh": "结束 CAN 分析",
+   "en": "End CAN analysis",
+   "en_of": "2bbb9e43",
+   "de": "CAN-Analyse beenden",
+   "de_of": "2bbb9e43"
+  },
+  "canwin.foot": {
+   "zh": "关窗口不会停；要释放 CANable 给别的测试用，点右边。",
+   "en": "Closing the window does not stop it; to free the CANable for other tests, press the button on the right.",
+   "en_of": "74a09c20",
+   "de": "Das Fenster zu schließen hält nichts an; um den CANable für andere Tests freizugeben, rechts drücken.",
+   "de_of": "74a09c20"
+  },
+  "canwin.pill.ok": {
+   "zh": "对上 {n}",
+   "en": "Matched {n}",
+   "en_of": "a22d1982",
+   "de": "Stimmt {n}",
+   "de_of": "a22d1982"
+  },
+  "canwin.pill.miss": {
+   "zh": "没收到 {n}",
+   "en": "Not received {n}",
+   "en_of": "295da4dd",
+   "de": "Nicht empfangen {n}",
+   "de_of": "295da4dd"
+  },
+  "canwin.pill.bad": {
+   "zh": "内容不一致 {n}",
+   "en": "Different content {n}",
+   "en_of": "761ac226",
+   "de": "Anderer Inhalt {n}",
+   "de_of": "761ac226"
+  },
+  "canwin.col.way": {
+   "zh": "方向",
+   "en": "Direction",
+   "en_of": "a88d531f",
+   "de": "Richtung",
+   "de_of": "a88d531f"
+  },
+  "canwin.col.result": {
+   "zh": "结果",
+   "en": "Result",
+   "en_of": "0a2c91ce",
+   "de": "Ergebnis",
+   "de_of": "0a2c91ce"
+  },
+  "canwin.res.ok_pc": {
+   "zh": "✓ 电脑收到了，内容一致（{id} {data}）",
+   "en": "✓ The PC received it, same content ({id} {data})",
+   "en_of": "996c2b61",
+   "de": "✓ Der PC hat ihn empfangen, gleicher Inhalt ({id} {data})",
+   "de_of": "996c2b61"
+  },
+  "canwin.res.ok_board": {
+   "zh": "✓ 被测板收到了，内容一致（{id} {data}）",
+   "en": "✓ The board received it, same content ({id} {data})",
+   "en_of": "df8874ef",
+   "de": "✓ Der Prüfling hat ihn empfangen, gleicher Inhalt ({id} {data})",
+   "de_of": "df8874ef"
+  },
+  "canwin.res.missing_pc": {
+   "zh": "✗ 电脑没收到这一帧（{id} {data}）",
+   "en": "✗ The PC did not receive this frame ({id} {data})",
+   "en_of": "a51efc19",
+   "de": "✗ Der PC hat diesen Frame nicht empfangen ({id} {data})",
+   "de_of": "a51efc19"
+  },
+  "canwin.res.missing_board": {
+   "zh": "✗ 被测板没收到这一帧（{id} {data}）",
+   "en": "✗ The board did not receive this frame ({id} {data})",
+   "en_of": "767fbb33",
+   "de": "✗ Der Prüfling hat diesen Frame nicht empfangen ({id} {data})",
+   "de_of": "767fbb33"
+  },
+  "canwin.res.bad_pc": {
+   "zh": "✗ 电脑收到的内容不一样：{got}",
+   "en": "✗ The PC received different content: {got}",
+   "en_of": "31ab6122",
+   "de": "✗ Der PC hat einen anderen Inhalt empfangen: {got}",
+   "de_of": "31ab6122"
+  },
+  "canwin.res.bad_board": {
+   "zh": "✗ 被测板收到的内容不一样：{got}",
+   "en": "✗ The board received different content: {got}",
+   "en_of": "3f09b9a0",
+   "de": "✗ Der Prüfling hat einen anderen Inhalt empfangen: {got}",
+   "de_of": "3f09b9a0"
+  },
+  "canwin.res.unsent": {
+   "zh": "✗ 这一帧没发出去（{id} {data}）",
+   "en": "✗ This frame was not sent ({id} {data})",
+   "en_of": "5cbdb5c5",
+   "de": "✗ Dieser Frame wurde nicht gesendet ({id} {data})",
+   "de_of": "5cbdb5c5"
+  },
+  "canwin.why.unsent": {
+   "zh": "被测板的发送队列满了。",
+   "en": "The board's transmit queue is full.",
+   "en_of": "3d7d1411",
+   "de": "Die Sendewarteschlange des Prüflings ist voll.",
+   "de_of": "3d7d1411"
+  },
+  "canwin.why.lec": {
+   "zh": "被测板报：{lec}。",
+   "en": "The board reports: {lec}.",
+   "en_of": "8a818b1c",
+   "de": "Der Prüfling meldet: {lec}.",
+   "de_of": "8a818b1c"
+  },
+  "canwin.why.bells": {
+   "zh": "电脑的 CANable 报错 {n} 次。",
+   "en": "The PC's CANable reported {n} errors.",
+   "en_of": "67163ca2",
+   "de": "Der CANable am PC meldete {n} Fehler.",
+   "de_of": "67163ca2"
+  },
+  "canwin.why.wiring": {
+   "zh": "查 CAN 线有没有接上、H / L 有没有接反、终端电阻。",
+   "en": "Check that the CAN wires are connected, that H and L are not swapped, and the termination resistor.",
+   "en_of": "d807e0bc",
+   "de": "Prüfen, ob die CAN-Leitungen angeschlossen und H und L nicht vertauscht sind, und den Abschlusswiderstand prüfen.",
+   "de_of": "d807e0bc"
+  },
   "lib.item.knx.live.name": {
    "zh": "KNX 分析（高级窗口）",
    "en": "KNX analyser (advanced window)",
@@ -6519,12 +7135,19 @@
    "de": "KNX-Analyse (erweitertes Fenster)",
    "de_of": "d2a6c775"
   },
-  "lib.item.knx.live.what": {
-   "zh": "板子和电脑上的 KNX USB 接口接在同一条 KNX 总线上。高级窗口里可以让板子发、让电脑发组写报文，面板自动比对对方收没收到、内容对不对；还能看总线上每条报文的源地址、组地址和值，以及板子的校验和确认计数。只记录，不判 KNX 口过不过。",
-   "en": "The board and this PC's KNX USB interface sit on the same KNX bus. In the advanced window you can have the board or the PC send a group write, and the panel checks whether the other side received it and whether the content matches; you also see each telegram's source address, group address and value, and the board's check and acknowledge counts. Recorded only; it does not decide whether the KNX port passes.",
-   "en_of": "58cb5f54",
-   "de": "Board und die KNX-USB-Schnittstelle dieses PCs hängen am selben KNX-Bus. Im erweiterten Fenster lässt du das Board oder den PC ein Gruppen-Schreibtelegramm senden, und das Panel prüft, ob die andere Seite es empfangen hat und ob der Inhalt stimmt; außerdem siehst du Quelladresse, Gruppenadresse und Wert jedes Telegramms sowie die Prüf- und Quittungszähler des Boards. Nur aufgezeichnet; entscheidet nicht, ob der KNX-Port besteht.",
-   "de_of": "58cb5f54"
+  "lib.item.knx.live.goal": {
+   "zh": "在真实的 KNX 总线上让板子和电脑互发组写报文，看对方收没收到、哪里出错，帮助查问题。只记录，不判 KNX 口过不过。",
+   "en": "Have the board and the PC send group-write telegrams to each other on a real KNX bus and see what arrives and what goes wrong, to help find problems. Recorded only; it does not judge the KNX port.",
+   "en_of": "6bf5508f",
+   "de": "Platine und PC auf einem echten KNX-Bus gegenseitig Gruppen-Schreibtelegramme senden lassen und sehen, was ankommt und wo es hakt, zur Fehlersuche. Nur Aufzeichnung; der KNX-Anschluss wird nicht bewertet.",
+   "de_of": "6bf5508f"
+  },
+  "lib.item.knx.live.how": {
+   "zh": "板子和电脑上的 KNX USB 接口接在同一条有电的 KNX 总线上，左边「KNX USB 接口」那一行选好它\n点「打开高级窗口」，这一项随之开始\n在「让板子发」或电脑那一栏填组地址和值，点发送\n面板比对对方收没收到、内容对不对；表里列出每条报文的源地址、组地址和值，以及板子的校验和确认计数\n测完点「结束这一项」",
+   "en": "Put the board and the PC's KNX USB interface on the same powered KNX bus and pick the interface in the “KNX USB interface” row on the left\nPress “Open the advanced window”; the item starts with it\nIn “Board sends” or the PC's column enter group address and value, then send\nThe panel checks whether the other side received it unchanged; the table lists each telegram's source, group address and value, plus the board's checksum and acknowledge counts\nWhen done, press “End this item”",
+   "en_of": "06b9d735",
+   "de": "Platine und die KNX-USB-Schnittstelle des PCs an denselben KNX-Bus mit Spannung anschließen und die Schnittstelle in der Zeile „KNX-USB-Schnittstelle“ links wählen\n„Erweitertes Fenster öffnen“ drücken; der Test startet damit\nUnter „Board sendet“ oder in der PC-Spalte Gruppenadresse und Wert eintragen, dann senden\nDas Panel prüft, ob die Gegenseite es unverändert empfangen hat; die Tabelle listet Quelle, Gruppenadresse und Wert jedes Telegramms sowie Prüfsummen- und Bestätigungszähler der Platine\nZum Schluss „Diesen Test beenden“ drücken",
+   "de_of": "06b9d735"
   },
   "knxwin.title": {
    "zh": "KNX 分析",
@@ -6849,11 +7472,11 @@
    "de_of": "d432f017"
   },
   "conn.knxusb_none": {
-   "zh": "没找到 KNX USB 接口，插上后点「再查」",
-   "en": "No KNX USB interface found; plug it in and press Check again",
-   "en_of": "21796a76",
-   "de": "Keine KNX-USB-Schnittstelle gefunden; einstecken und „Erneut prüfen“ drücken",
-   "de_of": "21796a76"
+   "zh": "没找到 KNX USB 接口，插上后点「重试」",
+   "en": "No KNX USB interface found; plug it in and press Retry",
+   "en_of": "f8431268",
+   "de": "Keine KNX-USB-Schnittstelle gefunden; einstecken und „Erneut versuchen“ drücken",
+   "de_of": "f8431268"
   },
   "conn.knxusb_use": {
    "zh": "选用",
@@ -10215,12 +10838,19 @@
    "de": "Trennen und Wiederherstellen",
    "de_of": "9d3b39ec"
   },
-  "lib.item.eth.recover.what": {
-   "zh": "网口收发着的时候拔掉网线、再插回，看多久恢复、断开期间丢了几帧。方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录。",
-   "en": "While the network port exchanges data, pull the network cable and plug it back in: shows how long it takes to recover and how many frames were lost meanwhile. Judged when the criteria plan has limits for it (for now: back within 10 s, no board restart meanwhile), otherwise recorded only.",
-   "en_of": "8c8b1494",
-   "de": "Während der Netzwerkanschluss Daten austauscht, das Netzwerkkabel ziehen und wieder einstecken: zeigt, wie lange die Wiederherstellung dauert und wie viele Rahmen dabei verloren gingen. Bewertet, wenn der Prüfplan Grenzwerte dafür hat (vorläufig: innerhalb von 10 s wieder da, kein Neustart der Platine dazwischen), sonst nur aufgezeichnet.",
-   "de_of": "8c8b1494"
+  "lib.item.eth.recover.goal": {
+   "zh": "确认网线拔掉再插回后，网口能自己恢复收发。",
+   "en": "Check that 网口 recovers by itself after the network cable is unplugged and plugged back in.",
+   "en_of": "2f70f817",
+   "de": "Prüfen, dass der Netzwerkanschluss sich von selbst erholt, nachdem das Netzwerkkabel abgezogen und wieder eingesteckt wurde.",
+   "de_of": "2f70f817"
+  },
+  "lib.item.eth.recover.how": {
+   "zh": "点「开始」，网口开始收发\n收发着的时候拔掉网线，再插回\n面板记下多久恢复、断开期间丢了几帧\n• 方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录",
+   "en": "Press “Start”; the Ethernet port starts exchanging data\nWhile it runs, unplug the network cable and plug it back in\nThe panel records how long recovery took and how many frames were lost meanwhile\n• Judged if the plan has a criterion (provisional: back within 10 s, board does not reset); otherwise only recorded",
+   "en_of": "2d4b567e",
+   "de": "„Start“ drücken; der Netzwerkanschluss beginnt Daten auszutauschen\nWährend es läuft, das Netzwerkkabel abziehen und wieder einstecken\nDas Panel hält fest, wie lange die Erholung dauerte und wie viele Rahmen dabei verloren gingen\n• Bewertet, wenn der Plan ein Kriterium hat (vorläufig: in 10 s zurück, Platine startet nicht neu); sonst nur aufgezeichnet",
+   "de_of": "2d4b567e"
   },
   "lib.item.usb.recover.name": {
    "zh": "断开恢复",
@@ -10229,12 +10859,19 @@
    "de": "Trennen und Wiederherstellen",
    "de_of": "9d3b39ec"
   },
-  "lib.item.usb.recover.what": {
-   "zh": "USB 收发着的时候拔掉板子的 USB 线、再插回，看多久恢复、断开期间丢了几帧。方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录。",
-   "en": "While USB exchanges data, pull the board's USB cable and plug it back in: shows how long it takes to recover and how many frames were lost meanwhile. Judged when the criteria plan has limits for it (for now: back within 10 s, no board restart meanwhile), otherwise recorded only.",
-   "en_of": "4466b982",
-   "de": "Während USB Daten austauscht, das USB-Kabel der Platine ziehen und wieder einstecken: zeigt, wie lange die Wiederherstellung dauert und wie viele Rahmen dabei verloren gingen. Bewertet, wenn der Prüfplan Grenzwerte dafür hat (vorläufig: innerhalb von 10 s wieder da, kein Neustart der Platine dazwischen), sonst nur aufgezeichnet.",
-   "de_of": "4466b982"
+  "lib.item.usb.recover.goal": {
+   "zh": "确认板子的 USB 线拔掉再插回后，USB能自己恢复收发。",
+   "en": "Check that USB recovers by itself after the board's USB cable is unplugged and plugged back in.",
+   "en_of": "7d6cc8b6",
+   "de": "Prüfen, dass USB sich von selbst erholt, nachdem das USB-Kabel der Platine abgezogen und wieder eingesteckt wurde.",
+   "de_of": "7d6cc8b6"
+  },
+  "lib.item.usb.recover.how": {
+   "zh": "点「开始」，USB开始收发\n收发着的时候拔掉板子的 USB 线，再插回\n面板记下多久恢复、断开期间丢了几帧\n• 方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录",
+   "en": "Press “Start”; USB starts exchanging data\nWhile it runs, unplug the board's USB cable and plug it back in\nThe panel records how long recovery took and how many frames were lost meanwhile\n• Judged if the plan has a criterion (provisional: back within 10 s, board does not reset); otherwise only recorded",
+   "en_of": "dbf9bb9f",
+   "de": "„Start“ drücken; USB beginnt Daten auszutauschen\nWährend es läuft, das USB-Kabel der Platine abziehen und wieder einstecken\nDas Panel hält fest, wie lange die Erholung dauerte und wie viele Rahmen dabei verloren gingen\n• Bewertet, wenn der Plan ein Kriterium hat (vorläufig: in 10 s zurück, Platine startet nicht neu); sonst nur aufgezeichnet",
+   "de_of": "dbf9bb9f"
   },
   "lib.item.rs232.recover.name": {
    "zh": "断开恢复",
@@ -10243,12 +10880,19 @@
    "de": "Trennen und Wiederherstellen",
    "de_of": "9d3b39ec"
   },
-  "lib.item.rs232.recover.what": {
-   "zh": "RS232 收发着的时候拔掉 RS232 线、再插回，看多久恢复、断开期间丢了几帧。这根就是面板连板子的线：拔掉期间面板连不上板子，插回后自己接上，再看板子这期间有没有重启。方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录。",
-   "en": "While RS232 exchanges data, pull the RS232 cable and plug it back in: shows how long it takes to recover and how many frames were lost meanwhile. It is the cable this panel talks to the board over: while it is out the panel cannot reach the board, it reconnects by itself, then checks whether the board restarted meanwhile. Judged when the criteria plan has limits for it (for now: back within 10 s, no board restart meanwhile), otherwise recorded only.",
-   "en_of": "996efef6",
-   "de": "Während RS232 Daten austauscht, das RS232-Kabel ziehen und wieder einstecken: zeigt, wie lange die Wiederherstellung dauert und wie viele Rahmen dabei verloren gingen. Über dieses Kabel spricht das Panel mit der Platine: solange es gezogen ist, erreicht das Panel die Platine nicht, danach verbindet es sich selbst wieder und prüft, ob die Platine zwischendurch neu gestartet ist. Bewertet, wenn der Prüfplan Grenzwerte dafür hat (vorläufig: innerhalb von 10 s wieder da, kein Neustart der Platine dazwischen), sonst nur aufgezeichnet.",
-   "de_of": "996efef6"
+  "lib.item.rs232.recover.goal": {
+   "zh": "确认RS232 线拔掉再插回后，RS232能自己恢复收发。",
+   "en": "Check that RS232 recovers by itself after the RS232 cable is unplugged and plugged back in.",
+   "en_of": "09f9eddc",
+   "de": "Prüfen, dass RS232 sich von selbst erholt, nachdem das RS232-Kabel abgezogen und wieder eingesteckt wurde.",
+   "de_of": "09f9eddc"
+  },
+  "lib.item.rs232.recover.how": {
+   "zh": "点「开始」，RS232开始收发\n收发着的时候拔掉RS232 线，再插回\n面板记下多久恢复、断开期间丢了几帧\n• 方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录\n• 这根就是面板连板子的线：拔掉期间面板连不上板子，插回后自己接上，再看板子这期间有没有重启",
+   "en": "Press “Start”; RS232 starts exchanging data\nWhile it runs, unplug the RS232 cable and plug it back in\nThe panel records how long recovery took and how many frames were lost meanwhile\n• Judged if the plan has a criterion (provisional: back within 10 s, board does not reset); otherwise only recorded\n• This is the cable the panel talks to the board over: while it is out the panel loses the board, reconnects by itself, then checks whether the board restarted",
+   "en_of": "d4718c8c",
+   "de": "„Start“ drücken; RS232 beginnt Daten auszutauschen\nWährend es läuft, das RS232-Kabel abziehen und wieder einstecken\nDas Panel hält fest, wie lange die Erholung dauerte und wie viele Rahmen dabei verloren gingen\n• Bewertet, wenn der Plan ein Kriterium hat (vorläufig: in 10 s zurück, Platine startet nicht neu); sonst nur aufgezeichnet\n• Über dieses Kabel spricht das Panel mit der Platine: solange es ab ist, verliert das Panel die Platine, verbindet sich danach selbst neu und prüft, ob die Platine neu gestartet hat",
+   "de_of": "d4718c8c"
   },
   "lib.item.rs485.recover.name": {
    "zh": "断开恢复",
@@ -10257,12 +10901,19 @@
    "de": "Trennen und Wiederherstellen",
    "de_of": "9d3b39ec"
   },
-  "lib.item.rs485.recover.what": {
-   "zh": "RS485 和转换器收发着的时候拔掉 RS485 的线、再插回，看多久恢复、断开期间丢了几帧。方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录。",
-   "en": "While RS485 exchanges data with the adapter, pull the RS485 cable and plug it back in: shows how long it takes to recover and how many frames were lost meanwhile. Judged when the criteria plan has limits for it (for now: back within 10 s, no board restart meanwhile), otherwise recorded only.",
-   "en_of": "e7a1ec63",
-   "de": "Während RS485 Daten mit dem Adapter austauscht, das RS485-Kabel ziehen und wieder einstecken: zeigt, wie lange die Wiederherstellung dauert und wie viele Rahmen dabei verloren gingen. Bewertet, wenn der Prüfplan Grenzwerte dafür hat (vorläufig: innerhalb von 10 s wieder da, kein Neustart der Platine dazwischen), sonst nur aufgezeichnet.",
-   "de_of": "e7a1ec63"
+  "lib.item.rs485.recover.goal": {
+   "zh": "确认RS485 的线拔掉再插回后，RS485能自己恢复收发。",
+   "en": "Check that RS485 recovers by itself after the RS485 cable is unplugged and plugged back in.",
+   "en_of": "6916f912",
+   "de": "Prüfen, dass RS485 sich von selbst erholt, nachdem das RS485-Kabel abgezogen und wieder eingesteckt wurde.",
+   "de_of": "6916f912"
+  },
+  "lib.item.rs485.recover.how": {
+   "zh": "点「开始」，RS485开始收发\n收发着的时候拔掉RS485 的线，再插回\n面板记下多久恢复、断开期间丢了几帧\n• 方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录",
+   "en": "Press “Start”; RS485 starts exchanging data\nWhile it runs, unplug the RS485 cable and plug it back in\nThe panel records how long recovery took and how many frames were lost meanwhile\n• Judged if the plan has a criterion (provisional: back within 10 s, board does not reset); otherwise only recorded",
+   "en_of": "99b8e521",
+   "de": "„Start“ drücken; RS485 beginnt Daten auszutauschen\nWährend es läuft, das RS485-Kabel abziehen und wieder einstecken\nDas Panel hält fest, wie lange die Erholung dauerte und wie viele Rahmen dabei verloren gingen\n• Bewertet, wenn der Plan ein Kriterium hat (vorläufig: in 10 s zurück, Platine startet nicht neu); sonst nur aufgezeichnet",
+   "de_of": "99b8e521"
   },
   "lib.item.can.recover.name": {
    "zh": "断开恢复",
@@ -10271,12 +10922,19 @@
    "de": "Trennen und Wiederherstellen",
    "de_of": "9d3b39ec"
   },
-  "lib.item.can.recover.what": {
-   "zh": "CAN 和电脑收发着的时候拔掉 CAN 的线、再插回，看多久恢复、断开期间丢了几帧。方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录。",
-   "en": "While CAN exchanges data with the PC, pull the CAN cable and plug it back in: shows how long it takes to recover and how many frames were lost meanwhile. Judged when the criteria plan has limits for it (for now: back within 10 s, no board restart meanwhile), otherwise recorded only.",
-   "en_of": "319f3355",
-   "de": "Während CAN Daten mit dem PC austauscht, das CAN-Kabel ziehen und wieder einstecken: zeigt, wie lange die Wiederherstellung dauert und wie viele Rahmen dabei verloren gingen. Bewertet, wenn der Prüfplan Grenzwerte dafür hat (vorläufig: innerhalb von 10 s wieder da, kein Neustart der Platine dazwischen), sonst nur aufgezeichnet.",
-   "de_of": "319f3355"
+  "lib.item.can.recover.goal": {
+   "zh": "确认CAN 的线拔掉再插回后，CAN能自己恢复收发。",
+   "en": "Check that CAN recovers by itself after the CAN cable is unplugged and plugged back in.",
+   "en_of": "67e5a25a",
+   "de": "Prüfen, dass CAN sich von selbst erholt, nachdem das CAN-Kabel abgezogen und wieder eingesteckt wurde.",
+   "de_of": "67e5a25a"
+  },
+  "lib.item.can.recover.how": {
+   "zh": "点「开始」，CAN开始收发\n收发着的时候拔掉CAN 的线，再插回\n面板记下多久恢复、断开期间丢了几帧\n• 方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录",
+   "en": "Press “Start”; CAN starts exchanging data\nWhile it runs, unplug the CAN cable and plug it back in\nThe panel records how long recovery took and how many frames were lost meanwhile\n• Judged if the plan has a criterion (provisional: back within 10 s, board does not reset); otherwise only recorded",
+   "en_of": "a43e47d8",
+   "de": "„Start“ drücken; CAN beginnt Daten auszutauschen\nWährend es läuft, das CAN-Kabel abziehen und wieder einstecken\nDas Panel hält fest, wie lange die Erholung dauerte und wie viele Rahmen dabei verloren gingen\n• Bewertet, wenn der Plan ein Kriterium hat (vorläufig: in 10 s zurück, Platine startet nicht neu); sonst nur aufgezeichnet",
+   "de_of": "a43e47d8"
   },
   "lib.item.knx.recover.name": {
    "zh": "断开恢复",
@@ -10285,12 +10943,19 @@
    "de": "Trennen und Wiederherstellen",
    "de_of": "9d3b39ec"
   },
-  "lib.item.knx.recover.what": {
-   "zh": "板子在 KNX 总线上自发自收的时候拔掉 KNX 总线、再插回，看多久恢复、断开期间丢了几帧。方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录。",
-   "en": "While the board sends and receives on the KNX bus, pull the KNX bus cable and plug it back in: shows how long it takes to recover and how many frames were lost meanwhile. Judged when the criteria plan has limits for it (for now: back within 10 s, no board restart meanwhile), otherwise recorded only.",
-   "en_of": "f3b7e720",
-   "de": "Während die Platine auf dem KNX-Bus sendet und empfängt, das KNX-Buskabel ziehen und wieder einstecken: zeigt, wie lange die Wiederherstellung dauert und wie viele Rahmen dabei verloren gingen. Bewertet, wenn der Prüfplan Grenzwerte dafür hat (vorläufig: innerhalb von 10 s wieder da, kein Neustart der Platine dazwischen), sonst nur aufgezeichnet.",
-   "de_of": "f3b7e720"
+  "lib.item.knx.recover.goal": {
+   "zh": "确认KNX 总线拔掉再插回后，KNX能自己恢复收发。",
+   "en": "Check that KNX recovers by itself after the KNX bus is unplugged and plugged back in.",
+   "en_of": "04d08df2",
+   "de": "Prüfen, dass KNX sich von selbst erholt, nachdem der KNX-Bus abgezogen und wieder eingesteckt wurde.",
+   "de_of": "04d08df2"
+  },
+  "lib.item.knx.recover.how": {
+   "zh": "点「开始」，KNX开始收发\n收发着的时候拔掉KNX 总线，再插回\n面板记下多久恢复、断开期间丢了几帧\n• 方案里有判据就判（暂定：10 秒内恢复、期间板子不复位），没有就只记录",
+   "en": "Press “Start”; KNX starts exchanging data\nWhile it runs, unplug the KNX bus and plug it back in\nThe panel records how long recovery took and how many frames were lost meanwhile\n• Judged if the plan has a criterion (provisional: back within 10 s, board does not reset); otherwise only recorded",
+   "en_of": "d65414af",
+   "de": "„Start“ drücken; KNX beginnt Daten auszutauschen\nWährend es läuft, der KNX-Bus abziehen und wieder einstecken\nDas Panel hält fest, wie lange die Erholung dauerte und wie viele Rahmen dabei verloren gingen\n• Bewertet, wenn der Plan ein Kriterium hat (vorläufig: in 10 s zurück, Platine startet nicht neu); sonst nur aufgezeichnet",
+   "de_of": "d65414af"
   },
   "lib.pending.recover_limit": {
    "zh": "判据方案里没有这一项的判据：只记录",
@@ -10656,12 +11321,19 @@
    "de": "Quarz-Frequenzabweichung",
    "de_of": "e52c33b6"
   },
-  "lib.item.rtc.lsefreq.what": {
-   "zh": "用板上 25 MHz 主晶振的时钟，把板子时钟用的 32.768 kHz 晶振量约 1 秒，算出它的实际频率和偏差（ppm）。",
-   "en": "Measures the 32.768 kHz crystal of the board clock for about 1 s against the clock from the on-board 25 MHz main crystal, and works out its actual frequency and deviation (ppm).",
-   "en_of": "66822e55",
-   "de": "Misst den 32,768-kHz-Quarz der Platinenuhr etwa 1 s lang gegen den Takt vom 25-MHz-Hauptquarz der Platine und berechnet seine tatsächliche Frequenz und Abweichung (ppm).",
-   "de_of": "66822e55"
+  "lib.item.rtc.lsefreq.goal": {
+   "zh": "确认板子时钟用的 32.768 kHz 晶振频率准。",
+   "en": "Check that the 32.768 kHz crystal of the board's clock runs at the right frequency.",
+   "en_of": "23b11e8c",
+   "de": "Prüfen, dass der 32,768-kHz-Quarz der Platinenuhr die richtige Frequenz hat.",
+   "de_of": "23b11e8c"
+  },
+  "lib.item.rtc.lsefreq.how": {
+   "zh": "选测多久，点旁边的「开始」\n板子用 25 MHz 主晶振的时钟把 32.768 kHz 晶振量约 1 秒，算出实际频率和偏差（ppm）",
+   "en": "Choose how long to measure and press “Start” beside it\nThe board measures the 32.768 kHz crystal for about 1 s against its 25 MHz main crystal, giving the actual frequency and deviation (ppm)",
+   "en_of": "041feaaa",
+   "de": "Die Messdauer wählen und daneben „Start“ drücken\nDie Platine misst den 32,768-kHz-Quarz etwa 1 s gegen ihren 25-MHz-Hauptquarz und liefert Istfrequenz und Abweichung (ppm)",
+   "de_of": "041feaaa"
   },
   "lib.item.rtc.lsemargin.name": {
    "zh": "晶振驱动档与起振余量",
@@ -10670,12 +11342,19 @@
    "de": "Quarz-Treiberstufe und Anschwingreserve",
    "de_of": "37116bad"
   },
-  "lib.item.rtc.lsemargin.what": {
-   "zh": "重启 32.768 kHz 晶振，记下起没起来、用了多久，起振后量频率偏差。\n• 全部：每轮低、中低、中高、高各重启一遍并各量一次频率（次数 = 轮数），跑完切回中低档。\n• 选一个档：设到这个档只重启一次，再量「次数」次频率，板子留在这个档，点「恢复出厂档位」回去。\n• 起振那几秒（起不来最长 5 秒），板子的日期时间会停。",
-   "en": "Restarts the 32.768 kHz crystal, records whether it starts and how long it takes, then measures its frequency deviation.\n• All: each round restarts low, medium-low, medium-high and high once and measures the frequency once each (Times = rounds), then goes back to medium-low.\n• One level: set it (one restart), then measure the frequency \"Times\" times; the board stays on it until you click \"Restore factory level\".\n• During start-up (up to 5 s for a failed start) the board’s date and time stop.",
-   "en_of": "3b3bd6f4",
-   "de": "Startet den 32,768-kHz-Quarz neu, hält fest, ob er anschwingt und wie lange es dauert, und misst danach die Frequenzabweichung.\n• Alle: jede Runde startet niedrig, mittel-niedrig, mittel-hoch und hoch je einmal neu und misst je einmal die Frequenz (Anzahl = Runden), am Ende zurück auf mittel-niedrig.\n• Eine Stufe: setzen (ein Neustart), dann „Anzahl“-mal die Frequenz messen; die Platine bleibt darauf, bis Sie „Werksstufe wiederherstellen“ klicken.\n• Beim Anschwingen (bei Misserfolg bis zu 5 s) stehen Datum und Uhrzeit der Platine still.",
-   "de_of": "3b3bd6f4"
+  "lib.item.rtc.lsemargin.goal": {
+   "zh": "确认 32.768 kHz 晶振在各驱动档下都能起振，并看起振用多久。",
+   "en": "Check that the 32.768 kHz crystal starts at every drive level, and how long it takes.",
+   "en_of": "deefd029",
+   "de": "Prüfen, dass der 32,768-kHz-Quarz in jeder Treiberstufe anschwingt und wie lange das dauert.",
+   "de_of": "deefd029"
+  },
+  "lib.item.rtc.lsemargin.how": {
+   "zh": "选「全部」或某一个档，点旁边的「开始」\n板子重启晶振，记下起没起来、用了多久，起振后量频率偏差\n• 全部：每轮低、中低、中高、高各重启一遍并各量一次频率（次数 = 轮数），跑完切回中低档\n• 选一个档：设到这个档只重启一次，再量「次数」次频率，板子留在这个档，点「恢复出厂档位」回去\n• 起振那几秒（起不来最长 5 秒），板子的日期时间会停",
+   "en": "Choose “All” or one level and press “Start” beside it\nThe board restarts the crystal, records whether and how fast it started, then measures the frequency deviation\n• All: each round restarts it at low, medium-low, medium-high and high and measures once each (times = rounds), then goes back to medium-low\n• One level: sets that level, restarts once, measures “Times” times; the board stays at that level until you press “Restore factory level”\n• While it starts (at most 5 s if it fails) the board's date and time stand still",
+   "en_of": "6901fa3b",
+   "de": "„Alle“ oder eine Stufe wählen und daneben „Start“ drücken\nDie Platine startet den Quarz neu, hält fest, ob und wie schnell er anschwingt, und misst danach die Frequenzabweichung\n• Alle: jede Runde startet ihn in niedrig, mittelniedrig, mittelhoch und hoch neu und misst je einmal (Anzahl = Runden), danach zurück auf mittelniedrig\n• Eine Stufe: stellt sie ein, startet einmal neu, misst „Anzahl“-mal; die Platine bleibt in dieser Stufe, bis man „Werksstufe wiederherstellen“ drückt\n• Während des Anschwingens (höchstens 5 s, wenn er nicht anläuft) steht Datum und Uhrzeit der Platine still",
+   "de_of": "6901fa3b"
   },
   "lse.freq.hz": {
    "zh": "频率（Hz）",
@@ -10706,11 +11385,11 @@
    "de_of": "be109050"
   },
   "lse.freq.note": {
-   "zh": "主晶振的固定误差在偏差里，在漂移里互相抵掉。停振、丢了捕获、偏差或漂移超过上限就不过；上限清空就只记录。",
-   "en": "The main crystal's fixed error is in the deviation and cancels out in the drift. A stopped crystal, a missed capture, or a deviation or drift over its limit fails; with a limit left empty it is only recorded.",
-   "en_of": "300caf80",
-   "de": "Der feste Fehler des Hauptquarzes steckt in der Abweichung und hebt sich in der Drift auf. Ein stehender Quarz, eine verpasste Erfassung oder eine Abweichung bzw. Drift über ihrer Grenze gilt als nicht bestanden; mit leerer Grenze wird nur festgehalten.",
-   "de_of": "300caf80"
+   "zh": "偏差是这颗晶振和主晶振的差，不代表时钟准不准；主晶振的固定误差在漂移里互相抵掉。停振、丢了捕获、漂移超过上限就不过；偏差填了上限也判；上限清空的那一项不判。",
+   "en": "The deviation is the difference between this crystal and the main crystal, not how accurate the clock is; the main crystal’s fixed error cancels out in the drift. A stopped crystal, a missed capture or a drift over its limit fails; the deviation is judged too when it has a limit; a limit left empty is not judged.",
+   "en_of": "d212b7de",
+   "de": "Die Abweichung ist der Unterschied zwischen diesem Quarz und dem Hauptquarz, nicht die Genauigkeit der Uhr; der feste Fehler des Hauptquarzes hebt sich in der Drift auf. Ein stehender Quarz, eine verpasste Erfassung oder eine Drift über ihrer Grenze gilt als nicht bestanden; die Abweichung wird ebenfalls bewertet, wenn sie eine Grenze hat; eine leere Grenze wird nicht bewertet.",
+   "de_of": "d212b7de"
   },
   "lse.error": {
    "zh": "板子报错：{e}",
@@ -10753,48 +11432,6 @@
    "en_of": "b096b3f5",
    "de": "Hoch",
    "de_of": "b096b3f5"
-  },
-  "conn.match": {
-   "zh": "自动识别",
-   "en": "Auto-detect",
-   "en_of": "34f7dc93",
-   "de": "Automatisch erkennen",
-   "de_of": "34f7dc93"
-  },
-  "conn.match_d": {
-   "zh": "面板给每个转换器发一个不同的暗号，看板子在哪个端子收到，自动选好 RS485 和 CAN 用哪个口",
-   "en": "The panel sends each converter its own code word and sees at which terminals the board hears it, so RS485 and CAN get the right port by themselves",
-   "en_of": "f38ef000",
-   "de": "Das Panel schickt jedem Wandler ein eigenes Kennwort und sieht, an welchen Klemmen die Platine es hört; so bekommen RS485 und CAN von selbst den richtigen Port",
-   "de_of": "f38ef000"
-  },
-  "conn.match_again": {
-   "zh": "重新识别",
-   "en": "Detect again",
-   "en_of": "5020d33a",
-   "de": "Neu erkennen",
-   "de_of": "5020d33a"
-  },
-  "conn.match_running": {
-   "zh": "正在识别（约 3 秒）…",
-   "en": "Detecting (about 3 s)…",
-   "en_of": "67854baa",
-   "de": "Erkenne (etwa 3 s)…",
-   "de_of": "67854baa"
-  },
-  "conn.match_at": {
-   "zh": "上次识别 {time}",
-   "en": "Last detected {time}",
-   "en_of": "7d10bc4a",
-   "de": "Zuletzt erkannt {time}",
-   "de_of": "7d10bc4a"
-  },
-  "conn.match_never": {
-   "zh": "还没识别",
-   "en": "Not detected yet",
-   "en_of": "c43df9d4",
-   "de": "Noch nicht erkannt",
-   "de_of": "c43df9d4"
   },
   "conn.fresh": {
    "zh": "（刚插上）",
@@ -10860,11 +11497,11 @@
    "de_of": "c42d2bff"
   },
   "go.match.silent": {
-   "zh": "{term} 端子什么都没收到：看看转换器是不是接在 {pins} 上、有没有电，然后手选或点「重新识别」",
-   "en": "The {term} terminals received nothing: check that the converter is wired to {pins} and has power, then choose by hand or press Detect again",
-   "en_of": "8cdfefcf",
-   "de": "An den {term}-Klemmen kam nichts an: prüfen, ob der Wandler an {pins} angeschlossen ist und Strom hat, dann von Hand wählen oder „Neu erkennen“ drücken",
-   "de_of": "8cdfefcf"
+   "zh": "{term} 端子什么都没收到：看看转换器是不是接在 {pins} 上、有没有电，然后手选或点「重试」",
+   "en": "The {term} terminals received nothing: check that the converter is wired to {pins} and has power, then choose by hand or press Retry",
+   "en_of": "c6ab98a1",
+   "de": "An den {term}-Klemmen kam nichts an: prüfen, ob der Wandler an {pins} angeschlossen ist und Strom hat, dann von Hand wählen oder „Erneut versuchen“ drücken",
+   "de_of": "c6ab98a1"
   },
   "go.match.garbage_rs485": {
    "zh": "RS485 端子收到了东西，但不是暗号：转换器的波特率可能不是 115200，或者 A、B 两根线接反了",
@@ -10902,25 +11539,25 @@
    "de_of": "4311449d"
   },
   "go.match.no_serial": {
-   "zh": "电脑上除了控制口没有别的串口转换器：插上后点「重新识别」",
-   "en": "This PC has no serial converter besides the control port: plug one in and press Detect again",
-   "en_of": "350f09be",
-   "de": "An diesem PC gibt es außer dem Steuerport keinen seriellen Wandler: einen einstecken und „Neu erkennen“ drücken",
-   "de_of": "350f09be"
+   "zh": "电脑上除了控制口没有别的串口转换器：插上后点「重试」",
+   "en": "This PC has no serial converter besides the control port: plug one in and press Retry",
+   "en_of": "d7d623ef",
+   "de": "An diesem PC gibt es außer dem Steuerport keinen seriellen Wandler: einen einstecken und „Erneut versuchen“ drücken",
+   "de_of": "d7d623ef"
   },
   "go.match.no_canable": {
-   "zh": "电脑上没找到 CAN 转换器（CANable）：插上后点「重新识别」",
-   "en": "No CAN converter (CANable) on this PC: plug it in and press Detect again",
-   "en_of": "f34d594d",
-   "de": "Kein CAN-Wandler (CANable) an diesem PC: einstecken und „Neu erkennen“ drücken",
-   "de_of": "f34d594d"
+   "zh": "电脑上没找到 CAN 转换器（CANable）：插上后点「重试」",
+   "en": "No CAN converter (CANable) on this PC: plug it in and press Retry",
+   "en_of": "16185e37",
+   "de": "Kein CAN-Wandler (CANable) an diesem PC: einstecken und „Erneut versuchen“ drücken",
+   "de_of": "16185e37"
   },
   "go.match.busy": {
-   "zh": "RS485 或 CAN 的测试正在跑，识别要用这两个端子：先停掉再点「重新识别」",
-   "en": "An RS485 or CAN test is running and detecting needs those terminals: stop it, then press Detect again",
-   "en_of": "4d4ee444",
-   "de": "Ein RS485- oder CAN-Test läuft, und das Erkennen braucht diese Klemmen: erst stoppen, dann „Neu erkennen“ drücken",
-   "de_of": "4d4ee444"
+   "zh": "RS485 或 CAN 的测试正在跑，识别要用这两个端子：先停掉再点「重试」",
+   "en": "An RS485 or CAN test is running and detecting needs those terminals: stop it, then press Retry",
+   "en_of": "d65508a2",
+   "de": "Ein RS485- oder CAN-Test läuft, und das Erkennen braucht diese Klemmen: erst stoppen, dann „Erneut versuchen“ drücken",
+   "de_of": "d65508a2"
   },
   "go.match.old_firmware": {
    "zh": "这块板子上的工装固件不会自动识别（版本太旧），请手选",
@@ -11140,11 +11777,11 @@
    "de_of": "e2c29f08"
   },
   "lse.src.ppm_max": {
-   "zh": "默认 40：32.768 kHz 晶振 ±20 ppm 加主晶振 ±20 ppm（25 °C 的频率容差，出自分销商页面，没对过厂家手册）。清空就只记录不判。",
-   "en": "Default 40: ±20 ppm of the 32.768 kHz crystal plus ±20 ppm of the main crystal (frequency tolerance at 25 °C, from distributor listings, not checked against the maker’s datasheet). Leave empty to only record.",
-   "en_of": "e8ce64eb",
-   "de": "Standard 40: ±20 ppm des 32,768-kHz-Quarzes plus ±20 ppm des Hauptquarzes (Frequenztoleranz bei 25 °C, aus Händlerangaben, nicht mit dem Herstellerdatenblatt abgeglichen). Leer lassen, um nur festzuhalten.",
-   "de_of": "e8ce64eb"
+   "zh": "默认留空、不判：偏差是这颗晶振和主晶振的差，主晶振自己的误差也在里面，所以说明不了这颗晶振准不准。要判就自己填一个上限。",
+   "en": "Empty by default, not judged: the deviation is the difference between this crystal and the main crystal, so the main crystal’s own error is in it and it does not tell whether this crystal is accurate. Type a limit to judge it.",
+   "en_of": "20d6b9ae",
+   "de": "Standardmäßig leer, nicht bewertet: Die Abweichung ist der Unterschied zwischen diesem Quarz und dem Hauptquarz; der Fehler des Hauptquarzes steckt mit darin, sie sagt also nicht, ob dieser Quarz genau ist. Zum Bewerten selbst eine Grenze eintragen.",
+   "de_of": "20d6b9ae"
   },
   "lse.src.drift_max": {
    "zh": "默认 5：室温下 32.768 kHz 晶振自己的温漂不到 1 ppm，主晶振的温漂没查到，留了余量。只在按时长量完时判。清空就只记录不判。",

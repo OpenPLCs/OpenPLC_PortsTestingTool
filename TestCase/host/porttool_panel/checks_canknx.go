@@ -4,11 +4,14 @@ import (
 	"strings"
 )
 
-// checkCanWindow: the CAN analyser window (decision 111, PORTTOOL-FLOW.md C.3.6
-// "CAN 分析"): ticking can.bus and pressing Start opens the window; a frame the
-// board sends is matched on the analyser side and one the analyser sends on the
-// board side; ending it records. On the simulated board the analyser end is the
-// panel-side wire (simboard), not a CANable - no bit rate, no transceiver.
+// checkCanWindow: the CAN analyser window (decisions 111, 172, PORTTOOL-FLOW.md
+// C.3.6 "CAN 分析"): the card's 打开高级窗口 starts can.bus and opens the
+// window without Start (decision 171); a box the page refuses says why under
+// that box; one send form with a direction, each direction's frame is matched
+// on the other side and the line under the form says so; 停止连续发 stops both
+// directions' repeats; the record is a list of fixed height; ending it records.
+// On the simulated board the analyser end is the panel-side wire (simboard),
+// not a CANable - no bit rate, no transceiver.
 func checkCanWindow(p *Page, com string) {
 	Section("CAN: the analyser window")
 	if !isSim(com) {
@@ -21,62 +24,98 @@ func checkCanWindow(p *Page, com string) {
 	if !check(p.L(`#itemcards .item[data-item="can.bus"]`).Count() == 1, "the CAN port has the analyser card") {
 		return
 	}
-	for _, it := range p.Eval("itemsOf('rd', 'can').map(it => it.id)").Strings() {
-		pick(p, it, it == "can.bus")
-	}
-	pressStart(p, "", "can.bus")
-	if try(func() { p.WaitSel("#canwin:not([hidden])", 20000) }) != nil {
-		check(false, "Start opens the analyser window", cut(p.Eval("libData.states['can.bus']").String(), 300))
+	check(p.L(`#itemcards button[data-startitem="can.bus"]`).Count() == 0, "the analyser card has no Start (decision 173)")
+	p.L(`#itemcards button[data-canwin-open="can.bus"]`).Click()
+	if try(func() {
+		p.WaitSel("#canwin:not([hidden])", 20000)
+		p.WaitFunc("() => !!(libData.states['can.bus'] || {}).running", nil, 20000)
+	}) != nil {
+		check(false, "打开高级窗口 starts the item and opens the window without Start", cut(p.Eval("libData.states['can.bus']").String(), 300))
 		return
 	}
-	check(true, "Start opens the analyser window")
-	board := p.L(`#canwin [data-cwside="board"]`)
-	board.L(`input[data-cw="id"]`).Fill("123")
-	board.L(`input[data-cw="data"]`).Fill("11 22 33")
-	board.L(`button[data-cwsend="board"]`).Click()
-	if try(func() { p.WaitSel(`#canwin tr[data-cwrow="pc-rx"][data-match="ok"]`, 10000) }) == nil {
-		check(true, "the board's frame shows as received and matched on the analyser side")
-	} else {
-		check(false, "the board's frame shows as received and matched on the analyser side", cut(p.L("#cwtable").Text(), 300))
+	check(true, "打开高级窗口 starts the item and opens the window without Start")
+	check(p.L("#cwrepf").Hidden(), "the interval and count are hidden until 连续发 is ticked")
+	dir := func(side string) { p.L(`#canwin button[data-cwdir="` + side + `"]`).Click() }
+	fill := func(id, data string) {
+		p.L(`#canwin input[data-cw="id"]`).Fill(id)
+		p.L(`#canwin input[data-cw="data"]`).Fill(data)
 	}
-	pc := p.L(`#canwin [data-cwside="pc"]`)
-	pc.L(`input[data-cw="id"]`).Fill("7FF")
-	pc.L(`input[data-cw="data"]`).Fill("AA")
-	pc.L(`button[data-cwsend="pc"]`).Click()
-	if try(func() { p.WaitSel(`#canwin tr[data-cwrow="board-rx"][data-match="ok"]`, 10000) }) == nil {
-		check(true, "the analyser's frame shows as received and matched on the board side")
+	// Decision 171: more than one send needs an interval of at least 50 ms;
+	// the refusal shows under the interval box, nothing is sent.
+	dir("board")
+	fill("123", "112233")
+	p.L("#cwrep").SetChecked(true)
+	p.L(`#canwin input[data-cw="every"]`).Fill("1")
+	p.L(`#canwin input[data-cw="count"]`).Fill("5")
+	p.L("#cwsend").Click()
+	everyErr := p.L(`#canwin [data-cwerr="every"]`)
+	check(strings.Contains(everyErr.Text(), "50"), "an interval under 50 ms with a count of 5 is refused under the interval box", everyErr.Text())
+	check(p.L("#cwerr").Hidden(), "and not on the window's error line", p.L("#cwerr").Text())
+	check(p.Eval(`document.querySelector("#cwsend").dataset.stop !== "1"`).B(), "and nothing repeats")
+	p.L("#cwrep").SetChecked(false)
+	fill("123", "11 22 33")
+	p.L("#cwsend").Click()
+	if try(func() {
+		p.WaitSel(`#canwin tr[data-cwrow="pc-rx"][data-match="ok"]`, 10000)
+		p.WaitSel("#cwresult.ok", 5000)
+	}) == nil {
+		check(true, "被测板 → 电脑: matched on the PC side, and the line under the form says it arrived")
 	} else {
-		check(false, "the analyser's frame shows as received and matched on the board side", cut(p.L("#cwtable").Text(), 300))
+		check(false, "被测板 → 电脑: matched on the PC side, and the line under the form says it arrived",
+			cut(p.L("#cwresult").Text()+" | "+p.L("#cwtable").Text(), 300))
 	}
-	check(strings.Contains(p.L("#cwsum").Text(), "2"), "the summary counts two matched frames", p.L("#cwsum").Text())
-	// Decision 151 #7: 停止发包 stops both sides' repeats, the session stays up.
+	check(p.L("#cwerr").Hidden() && everyErr.Text() == "", "a good send clears the refusals", p.L("#cwerr").Text()+" | "+everyErr.Text())
+	dir("pc")
+	fill("7FF", "AA")
+	p.L("#cwsend").Click()
+	if try(func() {
+		p.WaitSel(`#canwin tr[data-cwrow="board-rx"][data-match="ok"]`, 10000)
+		p.WaitFunc("() => /7FF/.test(document.querySelector('#cwresult').textContent) &&"+
+			" document.querySelector('#cwresult').classList.contains('ok')", nil, 5000)
+	}) == nil {
+		check(true, "电脑 → 被测板: matched on the board side, and the line under the form follows the new send")
+	} else {
+		check(false, "电脑 → 被测板: matched on the board side, and the line under the form follows the new send",
+			cut(p.L("#cwresult").Text()+" | "+p.L("#cwtable").Text(), 300))
+	}
+	check(strings.Contains(p.L("#cwsum-ok").Text(), "2"), "the matched count says two", p.L("#cwsum-ok").Text())
+	// Decision 151 #7: 停止连续发 stops both directions' repeats, the session stays up.
+	p.L("#cwrep").SetChecked(true)
+	p.L(`#canwin input[data-cw="every"]`).Fill("100")
+	p.L(`#canwin input[data-cw="count"]`).Fill("1000")
 	for _, side := range []string{"board", "pc"} {
-		f := p.L(`#canwin [data-cwside="` + side + `"]`)
-		f.L(`input[data-cw="every"]`).Fill("100")
-		f.L(`input[data-cw="count"]`).Fill("1000")
-		f.L(`button[data-cwsend="` + side + `"]`).Click()
+		dir(side)
+		p.L("#cwsend").Click()
 	}
-	rep := func(s string) string { return p.L(`#canwin [data-cwrepeat="` + s + `"]`).Text() }
+	both := "() => { const c = (libData.states['can.bus'].live || {}).can || {};" +
+		" return !!((c.board || {}).every && (c.pc || {}).every); }"
 	if try(func() {
-		p.WaitFunc("() => ['board', 'pc'].every(s => document.querySelector("+
-			"'#canwin [data-cwrepeat=\"' + s + '\"]').textContent)", nil, 5000)
+		p.WaitFunc(both, nil, 5000)
+		p.WaitSel(`#cwsend[data-stop="1"]`, 5000)
 	}) == nil {
-		check(true, "both sides show they are repeating")
+		check(true, "both directions repeat and 发送 turns into 停止")
 	} else {
-		check(false, "both sides show they are repeating", rep("board")+" | "+rep("pc"))
+		check(false, "both directions repeat and 发送 turns into 停止", cut(p.Eval("libData.states['can.bus'].live").String(), 300))
 	}
-	check(p.L("#canwin [data-cwstop]").Count() == 0, "neither side has its own 停止连发: only 停止发包 at the top")
-	p.L("#cwstopall").Click()
+	p.Wait(1500)
+	check(p.Eval("(() => { const l = document.querySelector('#cwtable'); return l.scrollHeight > l.clientHeight && l.clientHeight <= 260; })()").B(),
+		"the record scrolls inside a list of fixed height")
+	// 停止 stops the chosen direction only; stop both, one after the other.
+	for _, side := range []string{"pc", "board"} {
+		dir(side)
+		p.WaitSel(`#cwsend[data-stop="1"]`, 5000)
+		p.L("#cwsend").Click()
+	}
 	if try(func() {
-		p.WaitFunc("() => ['board', 'pc'].every(s => !document.querySelector("+
-			"'#canwin [data-cwrepeat=\"' + s + '\"]').textContent)", nil, 5000)
+		p.WaitFunc("() => { const c = libData.states['can.bus'].live.can; return !c.board.every && !c.pc.every; }", nil, 5000)
+		p.WaitSel(`#cwsend[data-stop="0"]`, 5000)
 	}) == nil {
-		check(true, "停止发包 stops both sides' repeats")
+		check(true, "停止 stops each direction and the button turns back into 发送")
 	} else {
-		check(false, "停止发包 stops both sides' repeats", rep("board")+" | "+rep("pc"))
+		check(false, "停止 stops each direction and the button turns back into 发送", cut(p.Eval("libData.states['can.bus'].live").String(), 300))
 	}
 	check(p.Eval("!!libData.states['can.bus'].running").B(), "and the session keeps running")
-	// 关闭窗口 / Esc only hide it; the card reopens it.
+	// × / Esc only hide it; the card reopens it.
 	p.Press("Escape", 27)
 	check(p.L("#canwin").Hidden(), "Esc closes the window")
 	check(p.Eval("!!libData.states['can.bus'].running").B(), "closing the window does not end the session")
@@ -84,10 +123,10 @@ func checkCanWindow(p *Page, com string) {
 	check(p.L("#canwin").Visible(), "the card's button reopens it")
 	p.L("#cwend").Click()
 	_ = try(func() { p.WaitFunc("() => !libData.running", nil, 10000) })
-	check(p.Eval("libData.states['can.bus'].outcome").S() == "RECORDED", "ending it records, nothing judged",
+	check(p.Eval("libData.states['can.bus'].outcome").S() == "RECORDED", "结束 CAN 分析 records, nothing judged",
 		cut(p.Eval("libData.states['can.bus']").String(), 200))
 	p.L("#cwclose").Click()
-	check(p.L("#canwin").Hidden(), "关闭窗口 hides the window")
+	check(p.L("#canwin").Hidden(), "× hides the window")
 }
 
 // checkKnxPortVerdict: the KNX port verdict comes from the judged items alone,

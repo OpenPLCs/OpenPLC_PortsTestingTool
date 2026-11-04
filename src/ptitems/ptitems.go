@@ -47,13 +47,15 @@ type Target struct {
 	Run     string            `json:"run,omitempty"`
 }
 
-// Item is one test item. Name and What are strings.json keys.
+// Item is one test item. Name, Goal and How are strings.json keys; How is
+// numbered steps, one per line (decision 174).
 type Item struct {
 	ID      string   `json:"id"`
 	Port    string   `json:"port"`
 	Channel int      `json:"channel,omitempty"` // 0 = the whole port
 	Name    string   `json:"name"`
-	What    string   `json:"what"`
+	Goal    string   `json:"goal"`
+	How     string   `json:"how"`
 	Targets []Target `json:"targets"`
 	// Params are the session parameters a person may change on this item;
 	// everything else is fixed by Targets or left at the board's default.
@@ -334,7 +336,7 @@ func item(port, id string, ch int, t []Target, stages []Stage, peers []Peer, cri
 	}
 	return Item{
 		ID: full, Port: port, Channel: ch,
-		Name: "lib.item." + full + ".name", What: "lib.item." + full + ".what",
+		Name: "lib.item." + full + ".name", Goal: "lib.item." + full + ".goal", How: "lib.item." + full + ".how",
 		Targets: t, Stages: stages, Peers: peers, Criteria: crit,
 	}
 }
@@ -483,9 +485,10 @@ var Catalogue = func() []Item {
 		// The 32.768 kHz crystal (decision 160): its frequency against the HSE-derived
 		// TIM16, repeated for minutes (decision 162), and a restart on every drive
 		// ending back on mlow.
-		// Limits per decision 164: LSE ±20 + HSE ±20 ppm; drift with margin; start-up one step under the 5 s timeout.
+		// Limits per decision 164: the deviation includes the HSE error, so it is not judged by default;
+		// drift with margin; start-up one step under the 5 s timeout.
 		limit(limit(choices(params(once(item("rtc", "lsefreq", 0, []Target{run("lse.freq")}, rdOnly, none)), ParamMinutes), ParamMinutes, LseFreqMinutes...),
-			ParamPpmMax, "40"), ParamDriftMax, "5"),
+			ParamPpmMax, ""), ParamDriftMax, "5"),
 		// The restarts are sent by ptlib/lse.go from the drive and count parameters (decision 166).
 		limit(rng(choices(params(once(item("rtc", "lsemargin", 0, []Target{run("lse")}, rdOnly, none)), ParamDrv), ParamDrv, LseDrives...),
 			ParamCount, 1, 100, 1), ParamStartMSMax, "2000"),

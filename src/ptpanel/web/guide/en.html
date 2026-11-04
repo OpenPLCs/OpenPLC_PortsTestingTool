@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Port test fixture · User guide</title>
+<!-- Text of the user guide (decision 175). The numbers match the boxes the
+     screenshots carry; they come from TestCase/host/porttool_panel/guide.go. -->
+<link rel="stylesheet" href="guide.css">
+</head>
+<body>
+<nav><a href="zh.html">中文</a></nav>
+<h1>Port test fixture · User guide</h1>
+<p class="lead">This guide follows the panel: the orange boxes and numbers on each screenshot are the places to look at or click, and the text below uses the same numbers. The screenshots were taken on the simulated board; a real board looks the same, only the readings differ.</p>
+
+<ol class="toc">
+  <li><a href="#overview">The panel at a glance</a></li>
+  <li><a href="#step1">Step 1: connect the control port</a></li>
+  <li><a href="#step2">Step 2: connect the other ports</a></li>
+  <li><a href="#card">R&amp;D test: run one card</a></li>
+  <li><a href="#timed">Timed runs</a></li>
+  <li><a href="#ask">When the panel asks you</a></li>
+  <li><a href="#can">CAN analysis (advanced window)</a></li>
+  <li><a href="#log">Log and commands</a></li>
+  <li><a href="#full">Full fixture test</a></li>
+  <li><a href="#notes">Things to keep in mind</a></li>
+</ol>
+
+<h2 id="overview">1. The panel at a glance</h2>
+<img src="shots/en/overview.png" alt="The whole panel">
+<ol>
+  <li><b>User guide</b>: this page.</li>
+  <li><b>Step 1</b>: connect the control port; every reading comes over this cable.</li>
+  <li><b>Step 2</b>: connect the other ports; only what the ports you test need.</li>
+  <li><b>Step 3</b>: pick a test type, R&amp;D test or full fixture test.</li>
+  <li><b>Port list</b>: click a port to see its test items on the right.</li>
+  <li><b>Test item cards</b>: each card gives the goal, how to test and the peer; the measured values are on its right.</li>
+  <li><b>Log</b>: every line between the board and the panel.</li>
+</ol>
+
+<h2 id="step1">2. Step 1: connect the control port</h2>
+<img src="shots/en/connect.png" alt="Connecting the control port">
+<ol>
+  <li>Pick the board's RS232 control port: usually the USB-to-serial adapter plugged into the PC, wired to terminals C05/C06. Without a board, pick “sim” to try the panel.</li>
+  <li>Press “Connect”. Steps 2 and 3 open once it is connected.</li>
+  <li>Bluetooth serial ports are hidden; tick “Show Bluetooth ports” to list them.</li>
+</ol>
+
+<h2 id="step2">3. Step 2: connect the other ports</h2>
+<img src="shots/en/rows.png" alt="Connecting the other ports">
+<ol>
+  <li>Each row is one far end: board USB, network, RS485 / CAN adapters, reference board, KNX USB interface, ST-Link. RS485 and CAN are recognised by themselves after the control port connects; pick them by hand only if that fails.</li>
+  <li>The dot at the end: <b>green = connected</b>, <b>grey = not connected</b>. Hover over a grey row to see why.</li>
+  <li>A grey row has “Retry”: press it after fixing the wiring.</li>
+</ol>
+<p class="note">Ports you do not use can stay grey; everything else still runs.</p>
+
+<h2 id="card">4. R&amp;D test: run one card</h2>
+<p>In step 3 pick “R&amp;D test”, then click a port in the middle. The upper cards each have their own “Start”, which runs just that card.</p>
+<img src="shots/en/card.png" alt="One test item card">
+<ol>
+  <li><b>Start</b>: runs this card only; it turns into “Stop” while running.</li>
+  <li><b>Goal, how to test, peer</b>: what the item checks, the steps to follow and what to connect. Follow the steps.</li>
+  <li><b>Measured values</b>: one row per criterion, expected next to result; ✅ passes, ❌ fails.</li>
+  <li><b>Verdict</b>: pass / fail / recorded only.</li>
+  <li><b>Force release ports</b>: when a test says a serial port is busy, this stops running tests and closes every port the panel holds.</li>
+</ol>
+
+<h2 id="timed">5. Timed runs</h2>
+<p>The lower group holds the items that can run for a while (for example the long memory test).</p>
+<img src="shots/en/timed.png" alt="Timed runs">
+<ol>
+  <li>Tick the items to run.</li>
+  <li>Choose the duration: once, some minutes, some hours, or forever.</li>
+  <li>Press “Start (N items)”; the ticked items run together and stop at the first failure.</li>
+</ol>
+
+<h2 id="ask">6. When the panel asks you</h2>
+<p>Items that need a person to look or measure (a lamp, a multimeter, an oscilloscope) show a question marked 🍍 at the bottom.</p>
+<img src="shots/en/ask.png" alt="A question from the panel">
+<ol>
+  <li>Look or measure as asked.</li>
+  <li>Answer “Yes” / “No” or type the number; the panel judges by your answer. “Stop” drops this item.</li>
+</ol>
+
+<h2 id="can">7. CAN analysis (advanced window)</h2>
+<p>Put the board and the PC's CAN adapter (CANable) on the same CAN bus. On the CAN port's “CAN analysis” card press “Open the advanced window”: the item starts with it, no separate Start.</p>
+<img src="shots/en/can.png" alt="The CAN analysis window">
+<ol>
+  <li><b>Direction</b>: board → PC or PC → board. Then enter ID and data.</li>
+  <li><b>Send repeatedly</b>: tick it to show interval and count. While repeating, “Send” turns into “Stop”.</li>
+  <li><b>Send</b>: sends one frame.</li>
+  <li><b>Verdict</b>: whether the other side received it unchanged; if not, why and what to check.</li>
+  <li><b>Sent and received</b>: every frame both sides sent and received.</li>
+  <li><b>End CAN analysis</b>: stops the item and frees the CANable. The × at the top right only hides the window.</li>
+</ol>
+<p class="note">CAN analysis only records; it does not judge the CAN port.</p>
+
+<h2 id="log">8. Log and commands</h2>
+<img src="shots/en/log.png" alt="The log">
+<ol>
+  <li>Tick which kinds to show: replies, errors, samples, board log… Unticked lines are still kept and exported.</li>
+  <li><b>Pause</b>: stops the log scrolling so you can read.</li>
+  <li><b>Export</b>: saves the whole log to a file; attach it when reporting a problem.</li>
+  <li><b>Command box</b>: type a command to the board for anything the panel cannot do.</li>
+  <li><b>Send</b>: sends it; the board's reply appears in the log as it is.</li>
+</ol>
+
+<h2 id="full">9. Full fixture test</h2>
+<p>In step 3 pick “Full fixture test”: functional, burn-in, safety and user-level blocks, configured once and run in one go.</p>
+<img src="shots/en/full.png" alt="Full fixture test">
+<ol>
+  <li><b>Sub-tests</b>: tick the sub-tests to run and choose each one's time.</li>
+  <li><b>Ports</b>: tick the ports this sub-test covers; click one to see its items.</li>
+  <li><b>Test items</b>: tick items, pick peers, change parameters; the criteria are on the right.</li>
+  <li><b>Start</b> (“Configuration done, start test”): runs them in order and stops after the first failure. Each board's record is saved in the records folder next to the exe.</li>
+</ol>
+
+<h2 id="notes">10. Things to keep in mind</h2>
+<ul>
+  <li>Opening the panel also opens a black console window. <b>Do not close it</b>; closing it stops the panel.</li>
+  <li>Do not delete the <code>plans</code> folder next to the exe: it holds what passes for every item.</li>
+  <li>Some limits have no confirmed source; the card shows a default you can change right on the card after your own measurements.</li>
+  <li>In the screenshots the ST-Link and reference board rows show the simulated board; on a real bench they turn green once connected.</li>
+</ul>
+</body>
+</html>

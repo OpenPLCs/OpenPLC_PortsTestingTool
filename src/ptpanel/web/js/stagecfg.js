@@ -237,7 +237,7 @@ function cfgItemNotes(v, it) {
 function cfgItemInfo(v, it) {
   const box = el("div", "cfginfo"); box.dataset.cfginfo = it.id;
   box.appendChild(el("b", null, it.name));
-  box.appendChild(el("div", null, it.what));
+  goalHow(box, it.goal, it.how, false);
   for (const n of cfgItemNotes(v, it)) { box.appendChild(n); }
   box.appendChild(el("h3", null, T("full.crit")));
   const ib = ITEM_BODIES[it.id];

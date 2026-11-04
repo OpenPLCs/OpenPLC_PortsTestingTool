@@ -502,6 +502,13 @@ func TestChosenAdapterIsHeldOnlyWhileASessionRuns(t *testing.T) {
 		t.Fatalf("rs485 held = %v, want %v", held() != nil, want)
 	}
 
+	// The CANable (COM11) is never the RS485 peer.
+	if j := mb.post(t, "/api/link", map[string]any{"port": "rs485", "com": "COM11"}); j["error"] == nil {
+		t.Fatalf("the CANable was taken as the RS485 peer: %v", j)
+	}
+	if com, _, _ := portmap.Peer("rs485"); com == "COM11" {
+		t.Fatal("the CANable was saved as the RS485 peer")
+	}
 	if j := mb.post(t, "/api/link", map[string]any{"port": "rs485", "com": "COM12"}); j["error"] != nil {
 		t.Fatalf("choose: %v", j)
 	}

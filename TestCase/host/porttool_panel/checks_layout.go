@@ -87,7 +87,6 @@ func runChecks(p *Page, com string) {
 	checkLogPane(p)
 	checkWhichLimits(p)
 
-	checkAutoechoToggle(p)
 	checkPeerBinding(p)
 	checkPeerErrorLine(p)
 	checkAbsentField(p)
@@ -667,8 +666,8 @@ func checkConnZone(p *Page) {
 		"the control port chooser and the board time sit in the connection block")
 	p.WaitSel("#connrows .crow", 0)
 	keys := attrs(p.L("#connrows .crow"), "data-conn")
-	check(eqStrings(keys, "usb", "eth", "rs232", "rs485", "can", "match", "ref", "knxusb", "stlink", "instrument"),
-		"USB, network, RS232 / RS485 / CAN, adapter matching, reference board, KNX USB interface, ST-Link, instrument rows", show(keys))
+	check(eqStrings(keys, "usb", "eth", "rs232", "rs485", "can", "ref", "knxusb", "stlink", "instrument"),
+		"USB, network, RS232 / RS485 / CAN, reference board (no adapter matching row, decision 170), KNX USB interface, ST-Link, instrument rows", show(keys))
 	// Decision 163: grouped by machine - the board under test, the reference board, this PC.
 	check(eqStrings(attrs(p.L("#connrows .cgroup"), "data-cgroup"), "dut", "ref", "pc"),
 		"the rows are grouped: board under test, reference board, this PC's devices")

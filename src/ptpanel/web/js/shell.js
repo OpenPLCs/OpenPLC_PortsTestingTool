@@ -330,6 +330,24 @@ function durLabel(d) {
   return T("shell.dur.hours", { n: d });
 }
 
+// An item's 目标 and 测试方法 (decision 174): how is one step per line; a
+// line starting with "• " is a note under the steps. Headings only when asked.
+function goalHow(box, goal, how, headings) {
+  if (headings) { box.appendChild(el("h3", null, T("shell.item.goal"))); }
+  box.appendChild(el("div", null, goal));
+  if (headings) { box.appendChild(el("h3", null, T("shell.item.how"))); }
+  const lines = String(how || "").split(String.fromCharCode(10)).filter(l => l.trim());
+  const steps = lines.filter(l => !l.startsWith("• ")), notes = lines.filter(l => l.startsWith("• "));
+  if (steps.length > 1) {
+    const ol = el("ol", "steps");
+    for (const s of steps) { ol.appendChild(el("li", null, s)); }
+    box.appendChild(ol);
+  } else if (steps.length) {
+    box.appendChild(el("div", null, steps[0]));
+  }
+  for (const n of notes) { box.appendChild(el("div", "hint", n.slice(2))); }
+}
+
 function itemCard(it, solo) {
   const key = view + "|" + it.id;
   const on = solo || itemOnIn(view, it);
@@ -352,7 +370,8 @@ function itemCard(it, solo) {
   };
   if (!solo) { hd.appendChild(c); }
   hd.appendChild(el("b", null, it.name));
-  if (solo && !INLINE_START[it.id]) { hd.appendChild(libItemStart([it.id])); }   // library.js: the crystal cards start beside their parameter
+  // library.js: the crystal cards start beside their parameter; CAN analysis starts from 打开高级窗口 (decision 173).
+  if (solo && !INLINE_START[it.id] && it.id !== "can.bus") { hd.appendChild(libItemStart([it.id])); }
   if (it.pending) { hd.appendChild(el("span", "todo", it.pending)); }
   hd.appendChild(el("span", "sp"));
   if (!isCfgView(view)) { hd.appendChild(libPill(it)); } // a sub-test's card shows no result (decision 125)
@@ -360,9 +379,7 @@ function itemCard(it, solo) {
 
   const body = el("div", "ib");
   const left = el("div");
-  left.appendChild(el("h3", null, T("shell.item.what")));
-  // One line per sentence: a text with line breaks (the crystal margin card) shows each on its own line.
-  for (const ln of String(it.what).split(String.fromCharCode(10))) { left.appendChild(el("div", null, ln)); }
+  goalHow(left, it.goal, it.how, true);
 
   left.appendChild(el("h3", null, T("shell.item.peer")));
   const peers = peersIn(view, it);

@@ -124,11 +124,6 @@ $("#ctlauto").onclick = async () => {
   $("#connect").click();
 };
 
-// Off is a diagnostic: miss climbing while seq stands still proves the counter works.
-$("#autoecho").onchange = async () => {
-  applyState(await api("/api/autoecho", {on: $("#autoecho").checked}));
-};
-
 $("#connect").onclick = async () => {
   if (!chosenPort) { return; }
   $("#connect").disabled = true;
@@ -199,15 +194,9 @@ function applyState(j) {
   } else {
     s.classList.add("bad"); s.textContent = T("ui.applyState.6"); reads = {};
   }
-  $("#echobox").hidden = !st.connected;
   renderCriteria(st);
-  $("#autoecho").checked = st.autoEcho !== false;
-  const es = $("#echostat");
-  if (st.echoNote) { es.textContent = T("ui.applyState.7", {echo_note: st.echoNote}); es.style.color = "var(--err)"; }
-  else if (st.autoEcho === false) { es.textContent = T("ui.applyState.8"); es.style.color = "var(--warn)"; }
-  else { es.textContent = T("ui.applyState.9", {echo_count: (st.echoCount || 0)}); es.style.color = ""; }
 
-  showMessage(st.linkError || st.capsError, true);
+  showMessage(st.linkError || st.capsError || (st.echoNote ? T("ui.applyState.7", {echo_note: st.echoNote}) : ""), true);
   shellOnState(st);
 }
 

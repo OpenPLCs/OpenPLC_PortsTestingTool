@@ -19,7 +19,7 @@ import (
 	"PortTool/src/serialx"
 )
 
-const version = "0.18.11"
+const version = "0.18.13"
 
 var noOpen = flag.Bool("no-browser", false,
 	"print the panel's address instead of opening a browser")

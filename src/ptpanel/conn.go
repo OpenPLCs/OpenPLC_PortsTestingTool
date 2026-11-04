@@ -71,15 +71,20 @@ func (s *Server) connRoutes(mux *http.ServeMux) {
 }
 
 // handleConn answers the page's once-a-second poll. POST {"stlink": true}
-// looks for ST-Links again before answering.
+// looks for ST-Links again before answering; {"ip": true} looks for the
+// board's address again (the 网口 row's 重试, decision 170).
 func (s *Server) handleConn(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		var body struct {
 			Stlink bool `json:"stlink"`
+			IP     bool `json:"ip"`
 		}
 		_ = json.NewDecoder(r.Body).Decode(&body)
 		if body.Stlink {
 			s.probeStlink()
+		}
+		if body.IP {
+			s.retryIPProbe()
 		}
 	} else {
 		s.conn.mu.Lock()

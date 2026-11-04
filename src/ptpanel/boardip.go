@@ -54,6 +54,28 @@ func (s *Server) startIPProbe(b *ptboard.Board, caps ptproto.Caps) {
 	go s.probeIP(b, caps, done, cancel)
 }
 
+// retryIPProbe looks for the address again, for the board connected now;
+// nothing happens while a lookup is still running.
+func (s *Server) retryIPProbe() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	b, caps := s.board, s.caps
+	if b == nil {
+		return
+	}
+	if s.ip.done != nil {
+		select {
+		case <-s.ip.done:
+		default:
+			return
+		}
+	}
+	done, cancel := make(chan struct{}), make(chan struct{})
+	s.ip.state, s.ip.why = "probing", msg{}
+	s.ip.done, s.ip.cancel, s.ip.once = done, cancel, &sync.Once{}
+	go s.probeIP(b, caps, done, cancel)
+}
+
 // watchIP keeps the address current from every eth frame for as long as b is
 // the connected board, so a later Ethernet test updates it too.
 func (s *Server) watchIP(b *ptboard.Board) {

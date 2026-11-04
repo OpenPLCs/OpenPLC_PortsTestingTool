@@ -35,7 +35,7 @@ const ReasonNoCANPeer = "can_no_adapter"
 
 // What the analyser window can do, beside LiveEnd.
 const (
-	LiveCANSend  = "can_send"  // Side sends ID / Data, every Every ms, Count times (Every 0: once)
+	LiveCANSend  = "can_send"  // Side sends ID / Data, Count times every Every ms (Count 1: once, Every ignored)
 	LiveCANStop  = "can_stop"  // stop Side's repeated send
 	LiveCANBaud  = "can_baud"  // both ends to Baud
 	LiveCANClear = "can_clear" // forget the table and the counts
@@ -69,16 +69,19 @@ type CANRow struct {
 
 // CANSide is one side's counts and state.
 type CANSide struct {
-	Tx    int    `json:"tx"`
-	Rx    int    `json:"rx"`
-	Lost  int    `json:"lost,omitempty"`  // board: received but not reported (B.10)
-	TEC   int    `json:"tec,omitempty"`   // board
-	REC   int    `json:"rec,omitempty"`   // board
-	LEC   int    `json:"lec,omitempty"`   // board, FDCAN PSR.LEC
-	State string `json:"state,omitempty"` // board: active | warning | passive | off
-	Bells int    `json:"bells,omitempty"` // pc: commands refused and bus errors the adapter rang for
-	Every int    `json:"every,omitempty"` // repeating every this many ms
-	Left  int    `json:"left,omitempty"`  // repeats still to go
+	Tx   int `json:"tx"`
+	Rx   int `json:"rx"`
+	Lost int `json:"lost,omitempty"` // board: received but not reported (B.10)
+	TEC  int `json:"tec,omitempty"`  // board
+	REC  int `json:"rec,omitempty"`  // board
+	LEC  int `json:"lec,omitempty"`  // board, FDCAN PSR.LEC
+	// LastLEC is the board's last error (1-6) since the last send: the board
+	// clears LEC on each read, so it shows in one frame only.
+	LastLEC int    `json:"last_lec,omitempty"`
+	State   string `json:"state,omitempty"` // board: active | warning | passive | off
+	Bells   int    `json:"bells,omitempty"` // pc: commands refused and bus errors the adapter rang for
+	Every   int    `json:"every,omitempty"` // repeating every this many ms
+	Left    int    `json:"left,omitempty"`  // repeats still to go
 }
 
 // CANView is what the analyser window draws.
@@ -108,18 +111,60 @@ func spaced(d []byte) string {
 	return strings.Join(parts, " ")
 }
 
+// SendFieldError names the analyser send form's field that was refused, so
+// the panel can say which box is wrong (decision 171).
+type SendFieldError struct {
+	Field string // id | data | every | count | ga | value | src
+	Min   int    // every: the floor in ms
+}
+
+func (e SendFieldError) Error() string {
+	switch e.Field {
+	case "id":
+		return "the ID is hexadecimal, 0 to 7FF"
+	case "data":
+		return "the data is 0 to 8 hexadecimal bytes"
+	case "every":
+		return fmt.Sprintf("more than one send needs an interval of at least %d ms", e.Min)
+	case "count":
+		return fmt.Sprintf("the count is 1 to %d", canCountMax)
+	case "ga":
+		return "the group address is main/middle/sub, 0-31 / 0-7 / 0-255"
+	case "value":
+		return "the value is 0 to 63"
+	case "src":
+		return "the individual address is area.line.device, 0-15 . 0-15 . 0-255"
+	}
+	return "the " + e.Field + " is not valid"
+}
+
+// SendCountMax is the most sends one press of the window's 发送 asks for.
+const SendCountMax = canCountMax
+
+// checkRepeat: a count of 1 or less sends once and ignores the interval;
+// more needs at least min ms between sends (decision 171).
+func checkRepeat(every, count, min int) error {
+	if count > canCountMax {
+		return SendFieldError{Field: "count"}
+	}
+	if count > 1 && every < min {
+		return SendFieldError{Field: "every", Min: min}
+	}
+	return nil
+}
+
 // ParseCANFrame reads the window's ID (hex, up to 7FF) and data (hex bytes,
 // spaces allowed, 0-8 bytes).
 func ParseCANFrame(id, data string) (uint32, []byte, error) {
 	s := strings.TrimPrefix(strings.TrimPrefix(strings.TrimSpace(id), "0x"), "0X")
 	v, err := strconv.ParseUint(s, 16, 32)
 	if s == "" || err != nil || v > 0x7FF {
-		return 0, nil, errors.New("the ID is hexadecimal, 0 to 7FF")
+		return 0, nil, SendFieldError{Field: "id"}
 	}
 	d := strings.NewReplacer(" ", "", ",", "", ":", "").Replace(strings.TrimSpace(data))
 	b, err := hex.DecodeString(d)
 	if err != nil || len(b) > 8 {
-		return 0, nil, errors.New("the data is 0 to 8 hexadecimal bytes")
+		return 0, nil, SendFieldError{Field: "data"}
 	}
 	return uint32(v), b, nil
 }
@@ -327,6 +372,9 @@ func (e *Engine) runCANBus(ctx context.Context, j *job) (ptreport.Outcome, strin
 				v.Board.TEC, _ = strconv.Atoi(get(ev.Frame, "tec"))
 				v.Board.REC, _ = strconv.Atoi(get(ev.Frame, "rec"))
 				v.Board.LEC, _ = strconv.Atoi(get(ev.Frame, "lec"))
+				if v.Board.LEC >= 1 && v.Board.LEC <= 6 {
+					v.Board.LastLEC = v.Board.LEC
+				}
 				v.Board.State = get(ev.Frame, "bus")
 			default:
 				continue
@@ -372,8 +420,8 @@ func (e *Engine) runCANBus(ctx context.Context, j *job) (ptreport.Outcome, strin
 				if err == nil && r.Side != CANBoard && r.Side != CANPC {
 					err = errors.New("no such side " + r.Side)
 				}
-				if err == nil && r.Every != 0 && (r.Every < canEveryMin || r.Count < 1 || r.Count > canCountMax) {
-					err = fmt.Errorf("repeating needs an interval of at least %d ms and 1 to %d times", canEveryMin, canCountMax)
+				if err == nil {
+					err = checkRepeat(r.Every, r.Count, canEveryMin)
 				}
 				if err != nil {
 					m.reply <- err
@@ -381,6 +429,7 @@ func (e *Engine) runCANBus(ctx context.Context, j *job) (ptreport.Outcome, strin
 				}
 				f := canFrame{id: id, data: data}
 				delete(rep, r.Side)
+				v.Board.LastLEC = 0
 				err = sendFrom(r.Side, f)
 				if err == nil && r.Every > 0 && r.Count > 1 {
 					every := time.Duration(r.Every) * time.Millisecond

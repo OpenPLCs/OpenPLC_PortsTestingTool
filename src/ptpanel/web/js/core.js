@@ -51,6 +51,8 @@ function applyLeftWidth(w) {
   };
 }
 
+$("#guidelink").href = "guide/" + (LANG === "zh" ? "zh" : "en") + ".html";
+
 // Changing language reloads the page, so first say what a reload would lose:
 // parameters typed on the R&D cards live only in this page.
 {

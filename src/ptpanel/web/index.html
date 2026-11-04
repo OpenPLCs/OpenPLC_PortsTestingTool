@@ -13,10 +13,8 @@
   <!-- This panel's own version, beside the firmware's in #status (decision 112). -->
   <span id="toolver" class="sub"></span>
   <span id="status" data-t="ui.applyState.6"></span>
-  <label id="echobox" hidden style="font-size:12.5px;display:flex;align-items:center;gap:5px">
-    <input type="checkbox" id="autoecho" checked> <span data-t="html.autoecho"></span>
-    <span id="echostat" class="sub"></span>
-  </label>
+  <!-- The user guide in this page's language; German reads the English one (decision 175). -->
+  <a id="guidelink" target="_blank" data-t="html.guide"></a>
   <span class="sp"></span>
   <!-- Which limits produced the verdicts on screen; in the header because it qualifies every one. -->
   <label id="critbox" hidden style="font-size:12.5px;display:flex;align-items:center;gap:5px">
@@ -36,7 +34,7 @@
   <section id="connzone">
     <!-- Step one: every reading on this page arrives over this cable. -->
     <div id="connbox">
-      <div class="step" data-t="html.step1"></div>
+      <div class="step stepn" data-t="html.step1"></div>
       <div class="connrow">
         <select id="ctlport"><option value="" data-t="html.searching"></option></select>
         <button id="connect" class="primary" disabled data-t="html.connect"></button>
@@ -50,14 +48,14 @@
       <div id="connhint" class="hint" data-t="ui.applyState.2"></div>
       <div id="boardclock" class="sub mono"></div>
     </div>
-    <!-- Step two, the other connections: link far ends, reference board,
+    <!-- Step two, the other ports: link far ends, reference board,
          ST-Link, reserved instrument. js/connzone.js -->
-    <div class="step" data-t="conn.title"></div>
+    <div class="step stepn" data-t="conn.title"></div>
     <div class="hint" data-t="conn.title_hint"></div>
     <div id="connrows"></div>
     <!-- Step three, test types, menu only; gated like the rest until connected. -->
     <div id="menus" class="gated">
-      <div class="step" data-t="shell.types"></div>
+      <div class="step stepn" data-t="shell.types"></div>
       <div id="typemenu"></div>
     </div>
   </section>

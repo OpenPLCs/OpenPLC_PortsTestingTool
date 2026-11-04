@@ -29,15 +29,15 @@ Type a number and press Enter. After each job it returns to the menu.
 
 ## 3. Test the ports
 
-Choose 2 (or 3) and a browser page opens by itself.
+Choose 2 (or 3) and a browser page opens by itself. Click "User guide" at the top of the panel for a detailed guide with screenshots marking where to click at each step.
 
 Work down the left column, step 1, 2, 3:
 
 1. **Step 1: connect the control port**: pick the board's **RS232 control port** (usually the USB-serial adapter plugged into this PC, terminals C05/C06) and click Connect. Bluetooth serial ports are not listed; tick "Show Bluetooth ports" to list them, and the panel remembers it
-2. **Step 2: the other connections**: connect only what the ports you test need. This part is grouped by machine: the board under test, the reference board and this PC's own devices, each group named with the last 6 digits of the board's UID. The board USB, RS485 and CAN rows **only choose a port**; there is no Connect button: pick it in the dropdown, a test opens the port when it starts and closes it when it ends. RS485 and CAN are recognised and chosen by themselves after connecting; "Automatic" on USB and CAN finds the port by its USB id
+2. **Step 2: connect the other ports**: connect only what the ports you test need. A green dot on a row means it is connected, a gray one means it is not; hover over a gray row to see why, and click Retry next to it to try again. This part is grouped by machine: the board under test, the reference board and this PC's own devices, each group named with the last 6 digits of the board's UID. The board USB, RS485 and CAN rows **only choose a port**; there is no Connect button: pick it in the dropdown, a test opens the port when it starts and closes it when it ends. RS485 and CAN are recognised and chosen by themselves after connecting; "Automatic" on USB and CAN finds the port by its USB id
    - If a test reports "Serial port busy", click "**Force release ports**" on the right: it stops the running tests and closes the ports the panel has open; a port that still will not close is named, held by another program
 3. **Step 3: pick a test type**: **R&D test** runs items one by one, by hand; in the **full fixture test** you tick functional, aging, safety and user-level, set them up and run them in one go
-4. In the R&D test, pick a port in the middle; its item cards appear on the right, each saying what is tested, what to connect and what counts as a pass
+4. In the R&D test, pick a port in the middle; its item cards appear on the right, each giving the goal, how to test (steps to follow), what to connect and what counts as a pass
 5. Tick the cards to run and click Start. Anything a person has to measure or look at comes up as a question marked 🍍; fill it in
 
 **No commands to remember.**

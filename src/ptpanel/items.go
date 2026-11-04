@@ -55,7 +55,7 @@ func (s *Server) handleItems(w http.ResponseWriter, r *http.Request) {
 		}
 		row := map[string]any{
 			"id": it.ID, "port": it.Port, "channel": it.Channel,
-			"name": m(it.Name), "what": m(it.What),
+			"name": m(it.Name), "goal": m(it.Goal), "how": m(it.How),
 			"targets": it.Targets, "params": it.Params, "once": it.Once, "once_rd": it.OnceRD,
 			"stages": it.Stages, "peers": it.Peers, "rd_peers": it.RDPeers(), "asks": it.Asks(), "default_off": defaultOff(it),
 			"exclusive": it.Exclusive, "criteria": crit,
@@ -68,17 +68,17 @@ func (s *Server) handleItems(w http.ResponseWriter, r *http.Request) {
 		if it.Group != "" {
 			row["group"] = it.Group
 			t := groupText[it.Group]
-			row["group_name"], row["group_what"] = m(t[0]), m(t[1])
+			row["group_name"], row["group_goal"], row["group_how"] = m(t[0]), m(t[1]), m(t[2])
 		}
 		out = append(out, row)
 	}
 	writeJSON(w, 200, map[string]any{"connected": true, "ports": ports, "items": out})
 }
 
-// groupText is each AI / AO group card's name and description (decision 114).
-var groupText = map[string][2]string{
-	"ain.read": {"lib.group.ain.read.name", "lib.group.ain.read.what"},
-	"ain.cal":  {"lib.group.ain.cal.name", "lib.group.ain.cal.what"},
-	"aout.out": {"lib.group.aout.out.name", "lib.group.aout.out.what"},
-	"aout.cal": {"lib.group.aout.cal.name", "lib.group.aout.cal.what"},
+// groupText is each AI / AO group card's name, goal and steps (decisions 114, 174).
+var groupText = map[string][3]string{
+	"ain.read": {"lib.group.ain.read.name", "lib.group.ain.read.goal", "lib.group.ain.read.how"},
+	"ain.cal":  {"lib.group.ain.cal.name", "lib.group.ain.cal.goal", "lib.group.ain.cal.how"},
+	"aout.out": {"lib.group.aout.out.name", "lib.group.aout.out.goal", "lib.group.aout.out.how"},
+	"aout.cal": {"lib.group.aout.cal.name", "lib.group.aout.cal.goal", "lib.group.aout.cal.how"},
 }

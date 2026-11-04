@@ -32,7 +32,7 @@ func TestSimulatorThatExitsIsNamedWithItsCode(t *testing.T) {
 	t.Setenv("PORTTOOL_SIM", exe)
 	t.Setenv(exitEnv, "1")
 
-	s := &Server{autoEcho: true, Open: simboard.OpenPort}
+	s := &Server{Open: simboard.OpenPort}
 	defer s.Close()
 
 	rec := httptest.NewRecorder()

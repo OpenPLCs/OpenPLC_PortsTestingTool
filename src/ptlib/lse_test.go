@@ -37,8 +37,8 @@ func TestLseFreqVerdict(t *testing.T) {
 	if s.Count != 3 {
 		t.Errorf("a failed measurement was counted: %d", s.Count)
 	}
-	if o, _ := s.end(noLimits); o != Recorded {
-		t.Errorf("no limit set: %s, want only recorded", o)
+	if o, _ := s.end(noLimits); o != ptreport.OutcomePass {
+		t.Errorf("no limit set: %s, want PASS (the crystal ran, decision 164)", o)
 	}
 }
 
@@ -72,8 +72,8 @@ func TestLseFreqLimits(t *testing.T) {
 	// A single measurement has no drift to judge.
 	single := LseFreqState{}
 	single.add(lseOK("-10"), lseFreqLimits{ppm: -1, drift: 5})
-	if o, _ := single.end(lseFreqLimits{ppm: -1, drift: 5}); o != Recorded {
-		t.Errorf("once with only drift_max: %s, want only recorded", o)
+	if o, _ := single.end(lseFreqLimits{ppm: -1, drift: 5}); o != ptreport.OutcomePass {
+		t.Errorf("once with only drift_max: %s, want PASS", o)
 	}
 }
 
@@ -85,8 +85,8 @@ func TestLseLimitParams(t *testing.T) {
 			it = x
 		}
 	}
-	if l := lseFreqLimitsOf(it, map[string]string{}); l.ppm != 40 || l.drift != 5 {
-		t.Errorf("defaults = %+v, want 40 and 5", l)
+	if l := lseFreqLimitsOf(it, map[string]string{}); l.ppm >= 0 || l.drift != 5 {
+		t.Errorf("defaults = %+v, want the deviation not judged and drift 5", l)
 	}
 	if l := lseFreqLimitsOf(it, map[string]string{"ppm_max": "", "drift_max": "2"}); l.ppm >= 0 || l.drift != 2 {
 		t.Errorf("cleared ppm_max still judged: %+v", l)

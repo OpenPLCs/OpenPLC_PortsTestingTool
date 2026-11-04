@@ -52,7 +52,7 @@ function groupCard(c, solo) {
   card.appendChild(hd);
 
   const body = el("div", "gb");
-  body.appendChild(el("div", null, first.group_what));
+  goalHow(body, first.group_goal, first.group_how, true);
   const chans = c.items.filter(it => it.channel > 0);
   if (chans.length && ITEM_BODIES[chans[0].id]) { body.appendChild(el("div", "hint", ITEM_BODIES[chans[0].id].crit(chans[0], view))); }
 

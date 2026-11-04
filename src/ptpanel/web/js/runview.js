@@ -151,7 +151,7 @@ function renderRunStat() {
     row("run.now.port", cur.port ? runPortLabel(cur.port) : "—");
     row("run.now.item", item);
     const it = cur.kind === "item" ? runItemOf(cur.item) : null;
-    row("shell.item.what", it ? it.what : "—");   // decision 151
+    row("shell.item.goal", it ? it.goal : "—");   // decisions 151, 174
     row("run.now.peer", cur.peer ? T(PEER_NAME[cur.peer] || "lib.peer.none") : "—");
     row("run.now.step", "#" + cur.no + " / " + r.total);
     row("run.now.data", (cur.round ? T("lib.tm.round", { n: cur.round.no, verdict: libVerdict(cur.round.outcome) }) + T("shell.list_sep") : "") + runValue(cur));

@@ -6,7 +6,8 @@ package ptlib
 // drift over drift_max fails a timed run at its end. rtc.lsemargin restarts
 // the crystal on the chosen drive(s) count times and passes when every mlow
 // restart started, did not fall back and was within start_ms_max. A cleared
-// limit is not judged; with none set the item is only recorded.
+// limit is not judged; rtc.lsefreq still passes a run that measured to its
+// end, as a stopped crystal and a missed capture are always judged.
 
 import (
 	"context"
@@ -135,16 +136,13 @@ func (s *LseFreqState) add(vals [][2]string, l lseFreqLimits) string {
 }
 
 // end is the verdict of a run that measured to its end: a timed run's drift
-// is judged against drift_max; PASS when any limit was judged, else recorded.
+// is judged against drift_max; otherwise PASS, as every measurement had the
+// crystal running and no missed capture (decision 164).
 func (s *LseFreqState) end(l lseFreqLimits) (ptreport.Outcome, string) {
-	timed := s.Minutes > 0
-	if timed && l.drift >= 0 && s.Drift > l.drift {
+	if s.Minutes > 0 && l.drift >= 0 && s.Drift > l.drift {
 		return ptreport.OutcomeFail, fmt.Sprintf("drift %.2f ppm is over drift_max %g", s.Drift, l.drift)
 	}
-	if l.ppm >= 0 || (timed && l.drift >= 0) {
-		return ptreport.OutcomePass, ""
-	}
-	return Recorded, ""
+	return ptreport.OutcomePass, ""
 }
 
 func (e *Engine) runLseFreq(ctx context.Context, j *job) (ptreport.Outcome, string, string) {

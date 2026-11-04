@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os/exec"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -57,12 +58,10 @@ type Server struct {
 	// unplugged adapter, a board that lost power. Shown until disconnect.
 	linkErr msg
 
-	// Answering the board's echo frames is on by default: an unanswered counter
-	// only reports misses. Off proves the counter is real (miss climbs, seq stands still).
-	autoEcho  bool
-	echoStop  func()
-	echoNote  string // the last thing that went wrong, shown once rather than spammed
-	echoCount uint64
+	// The board's echo frames are always answered: RS232's no-miss criterion
+	// and its unplug recovery depend on it (decision 175).
+	echoStop func()
+	echoNote string // the last thing that went wrong, shown once rather than spammed
 
 	// The "持续" run in flight, if any: the PC's own clock for it, and the
 	// goroutine renewing the board's deadman. See hold.go.
@@ -110,8 +109,7 @@ type Server struct {
 // New returns a panel that talks to real serial ports.
 func New() *Server {
 	s := &Server{
-		autoEcho: true,
-		Open:     simboard.OpenPort,
+		Open: simboard.OpenPort,
 	}
 	s.Stages = map[ptstages.Step]ptstages.Func{
 		ptstages.Functional: s.configStep(ptitems.Func),
@@ -156,7 +154,6 @@ func (s *Server) routes() *http.ServeMux {
 	mux.HandleFunc("/api/command", s.handleCommand)
 	mux.HandleFunc("/api/analog/peek", s.handlePeek)
 	mux.HandleFunc("/api/events", s.handleEvents)
-	mux.HandleFunc("/api/autoecho", s.handleAutoEcho)
 	mux.HandleFunc("/api/link", s.handleLink)
 	mux.HandleFunc("/api/release", s.handleRelease)
 	mux.HandleFunc("/api/unlink", s.handleUnlink)
@@ -204,6 +201,8 @@ func (s *Server) handlePorts(w http.ResponseWriter, r *http.Request) {
 			"usb":   p.IsUSB,
 			// The connection area leaves these out unless asked (decision 162).
 			"bt": ptmatch.Classify(p) == ptmatch.SkipBluetooth,
+			// Only the CAN row takes it, and a fresh one is picked only there.
+			"canable": ptmatch.Classify(p) == ptmatch.SkipCANable,
 			// Matched against a board's USB serial to find its own port (decision 163).
 			"serial": p.Serial,
 		})
@@ -287,8 +286,6 @@ func (s *Server) stateJSON() map[string]any {
 		"port":      s.portNam,
 		"capsError": s.capsErr,
 		"linkError": s.linkErr,
-		"autoEcho":  s.autoEcho,
-		"echoCount": s.echoCount,
 		"echoNote":  s.echoNote,
 		"tool":      s.Version,
 	}
@@ -351,12 +348,34 @@ func (s *Server) handleLink(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if body.Port == ptmatch.TermRS485 && s.isCANable(body.COM) {
+		writeJSON(w, 200, map[string]any{"error": m("go.link.canable_not_rs485", "com", body.COM)})
+		return
+	}
 	baud := body.Baud
 	if baud == 0 {
 		baud = serialx.DefaultBaud
 	}
 	portmap.SetPeer(body.Port, body.COM, baud)
 	writeJSON(w, 200, s.stateJSON())
+}
+
+// isCANable says com is a CANable on this PC's port list; false when the list
+// cannot be read.
+func (s *Server) isCANable(com string) bool {
+	if s.MatchPorts == nil {
+		return false
+	}
+	ports, err := s.MatchPorts()
+	if err != nil {
+		return false
+	}
+	for _, p := range ports {
+		if strings.EqualFold(p.Name, com) {
+			return ptmatch.Classify(p) == ptmatch.SkipCANable
+		}
+	}
+	return false
 }
 
 func (s *Server) handleUnlink(w http.ResponseWriter, r *http.Request) {
@@ -541,10 +560,9 @@ func (s *Server) runEchoResponder(b *ptboard.Board) func() {
 				continue
 			}
 			s.mu.Lock()
-			on := s.autoEcho
 			cmd, answer := s.caps.EchoCommand(ev.Frame)
 			s.mu.Unlock()
-			if !on || !answer {
+			if !answer {
 				continue
 			}
 
@@ -556,7 +574,6 @@ func (s *Server) runEchoResponder(b *ptboard.Board) func() {
 				s.echoNote = err.Error()
 			} else {
 				s.echoNote = ""
-				s.echoCount++
 			}
 			s.mu.Unlock()
 		}
@@ -590,7 +607,6 @@ func (s *Server) disconnect() {
 	s.capsErr = msg{}
 	s.linkErr = msg{}
 	s.echoNote = ""
-	s.echoCount = 0
 	s.ip = boardIP{}
 	s.mu.Unlock()
 
@@ -654,24 +670,6 @@ func (s *Server) handleCommand(w http.ResponseWriter, r *http.Request) {
 	}
 	resp["state"] = s.stateJSON()
 	writeJSON(w, 200, resp)
-}
-
-// handleAutoEcho turns the automatic echo reply on or off (see Server.autoEcho).
-func (s *Server) handleAutoEcho(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		On bool `json:"on"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		writeErr(w, 400, m("go.echo.bad_request"))
-		return
-	}
-	s.mu.Lock()
-	s.autoEcho = body.On
-	if !body.On {
-		s.echoNote = ""
-	}
-	s.mu.Unlock()
-	writeJSON(w, 200, s.stateJSON())
 }
 
 // handleEvents streams every line from the board as Server-Sent Events.

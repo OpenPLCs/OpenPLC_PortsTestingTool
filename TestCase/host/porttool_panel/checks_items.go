@@ -248,26 +248,6 @@ var bannedOnCards = []string{
 	"temp1", "temperature",
 }
 
-// checkAutoechoToggle: the 自动回环应答 box in the header. A bench turns it off
-// when a second tool wants the control port; a box that silently does nothing
-// looks like a board that stopped answering.
-func checkAutoechoToggle(p *Page) {
-	Section("the auto-echo box")
-	box := p.L("#autoecho")
-	if !check(box.Count() == 1, "the box is there once connected") {
-		return
-	}
-	was := box.Checked()
-	box.SetChecked(!was)
-	p.Wait(600)
-	check(box.Checked() != was, "it toggles")
-	stat := strings.TrimSpace(p.L("#echostat").Text())
-	check(stat != "", "and says what state it is in now", stat)
-	box.SetChecked(was)
-	p.Wait(600)
-	check(box.Checked() == was, "and toggles back")
-}
-
 var (
 	rawTenthsRe = regexp.MustCompile(`第 \d+ 个数`)
 	fieldNameRe = regexp.MustCompile(`^[a-z_][a-z0-9_]*$`)
@@ -343,7 +323,7 @@ func sortedKeys[V any](m map[string]V) []string {
 func checkPeerBinding(p *Page) {
 	Section("choosing a peer serial port")
 	row := p.L(`#connrows .crow[data-conn="rs485"]`)
-	check(row.L("button").Count() == 0, "the RS485 row has no connect / disconnect button", row.Text())
+	check(row.L("button:not([data-retry])").Count() == 0, "the RS485 row has no connect / disconnect button", row.Text())
 	rel := p.L(`#itemcards [data-release]`)
 	if check(rel.Count() == 1, "R&D shows 强制释放端口") {
 		rel.First().Click()
@@ -381,20 +361,20 @@ func checkPeerBinding(p *Page) {
 	check(ok, "不用 forgets the choice", saved())
 }
 
-// checkPeerErrorLine: a bound peer that failed shows its error in words on its
-// row. Drawn from an injected state: this covers the drawing, not how the
-// server notices the failure.
+// checkPeerErrorLine: a bound peer that failed turns its row's dot gray with
+// the error in words on hover (decision 170). Drawn from an injected state:
+// this covers the drawing, not how the server notices the failure.
 func checkPeerErrorLine(p *Page) {
 	Section("a failed peer says why")
 	text := p.Eval(`() => {
         const was = state.links;
         state.links = Object.assign({}, was, { rs485: { com: "COM99", error: "port vanished" } });
         refreshConnRows(true);
-        const e = document.querySelector('#connrows .crow[data-conn="rs485"] .cerr');
-        const t = e ? e.textContent : "";
+        const d = document.querySelector('#connrows .crow[data-conn="rs485"] .dot');
+        const t = d && !d.classList.contains("ok") ? d.title : "";
         state.links = was; refreshConnRows(true);
         return t; }`).S()
-	check(strings.Contains(text, "port vanished") && strings.Contains(text, "出问题了"), "the RS485 row shows the peer's error in words", text)
+	check(strings.Contains(text, "port vanished") && strings.Contains(text, "出问题了"), "the RS485 row turns gray with the peer's error on hover", text)
 }
 
 // checkAbsentField: a criterion judged only when reported (RS485 overrun on the

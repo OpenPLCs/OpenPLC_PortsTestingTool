@@ -98,6 +98,7 @@ async function libStart(kind) {
 }
 
 // R&D 「只测一次」: one card's own Start runs just its items (decision 116).
+// Returns the server's reply, undefined when nothing was sent.
 async function libStartOnly(ids) {
   if (memoBlocked()) { return; }
   await rdLeaving;
@@ -117,6 +118,7 @@ async function libStartOnly(ids) {
   const j = await api("/api/lib/start", { stage: view, duration: "once", items: picks });
   showMessage(j.error || "", !!j.error);
   libRefresh();
+  return j;
 }
 
 // The Start beside an R&D 「只测一次」 card's name: Stop while this card runs.
@@ -198,7 +200,7 @@ function libTimedNow(it, st) {
   if (!running && !st.round) { return null; }
   const box = el("div", "timednow"); box.dataset.timednow = it.id;
   if (running) {
-    box.appendChild(el("div", null, T("lib.tm.what", { item: it.name, what: it.what })));
+    box.appendChild(el("div", null, T("lib.tm.what", { item: it.name, what: it.goal })));
     const t = fmtSecs(libData.elapsed_s || 0);
     box.appendChild(el("div", null, libData.total_s ? T("lib.tm.time", { t, total: fmtSecs(libData.total_s) }) : T("lib.tm.time_open", { t })));
   }
@@ -399,7 +401,11 @@ function libResult(it) {
   if (now) { box.appendChild(now); }
   // Only the picked peer's criteria, as on a configuration card.
   box.appendChild(LSE_CARDS[it.id] ? LSE_CARDS[it.id](it, st) : libCritTable(it, st, false, itemPeer["rd|" + it.id] || defaultPeer(it)));
-  if (!st) { box.appendChild(el("div", "hint", T("shell.item.empty"))); return box; }
+  // An analyser opens its window from the card before any run (decision 171).
+  if (!st) {
+    box.appendChild(ANAWIN_CARDS[it.id] ? ANAWIN_CARDS[it.id](it, null) : el("div", "hint", T("shell.item.empty")));
+    return box;
+  }
   if (st.running) { box.appendChild(el("div", "hint", T("lib.res.running"))); }
   if (st.answer) {
     const a = st.answer === "yes" ? T("lib.res.yes") : st.answer === "no" ? T("lib.res.no") : st.answer;

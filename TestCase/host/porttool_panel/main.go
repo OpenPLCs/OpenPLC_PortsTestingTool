@@ -373,7 +373,12 @@ func run() int {
 	port := flag.String("port", "", "the board's RS232 control port, or sim")
 	show := flag.Bool("show", false, "visible browser window")
 	flag.StringVar(&wsl, "wsl", "", "run the Linux build in this WSL distribution (T4-03)")
+	guide := flag.Bool("guide", false, "take the user guide's screenshots instead of checking (needs --port sim)")
 	flag.Parse()
+	if *guide && !isSim(*port) {
+		fmt.Fprintln(os.Stderr, "--guide needs --port sim")
+		return 2
+	}
 	if *port == "" {
 		fmt.Fprintln(os.Stderr, "usage: go run ./TestCase/host/porttool_panel --port COMx|sim [--show] [--wsl DISTRO]")
 		return 2
@@ -394,6 +399,21 @@ func run() int {
 	exe := panelExe()
 	page, stopBrowser := newBrowser(*show)
 	defer stopBrowser()
+
+	if *guide {
+		dir := filepath.Dir(exe)
+		restore := keepAside(filepath.Join(dir, "porttool_settings.json"), filepath.Join(dir, "porttool_pagememo.json"))
+		proc, base, _ := startPanel(exe)
+		err = try(func() { runGuide(page, base); page.Goto("about:blank") })
+		stopPanel(proc)
+		restore()
+		if err != nil || len(failures) > 0 {
+			Fail(fmt.Sprintf("guide screenshots incomplete: %v %v", err, failures))
+			return 1
+		}
+		Ok("guide screenshots written")
+		return 0
+	}
 
 	Section("the page itself")
 	checkPageParses(page)
