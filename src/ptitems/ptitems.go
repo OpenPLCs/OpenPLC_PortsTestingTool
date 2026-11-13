@@ -425,9 +425,9 @@ var Catalogue = func() []Item {
 	items := []Item{
 		once(item("eth", "link", 0, []Target{run("eth.link")}, all3, pc, "eth-link")),
 		// Download, upload, then the mirror run: each direction's rate on its own (decision 151).
-		pend(params(item("eth", "xfer", 0, []Target{session("eth", "mode", "mirror")}, all3, pc, "eth-down", "eth-up", "eth-throughput"), "port", "ip"), "lib.pending.speed_limit"),
+		params(item("eth", "xfer", 0, []Target{session("eth", "mode", "mirror")}, all3, pc, "eth-down", "eth-up", "eth-throughput"), "port", "ip"),
 		excl(once(item("usb", "info", 0, []Target{session("usb", "mode", "info")}, all3, pc, "usb-enum")), "usb.mode"),
-		pend(excl(item("usb", "xfer", 0, []Target{session("usb", "mode", "mirror")}, all3, pc, "usb-down", "usb-up", "usb-link"), "usb.mode"), "lib.pending.speed_limit"),
+		excl(item("usb", "xfer", 0, []Target{session("usb", "mode", "mirror")}, all3, pc, "usb-down", "usb-up", "usb-link"), "usb.mode"),
 		once(item("sd", "probe", 0, []Target{run("sd.probe")}, all3, none, "sd-card")),
 		item("sd", "rw", 0, []Target{run("sd.integrity"), run("sd.speed")}, all3, none, "sd-integrity", "sd-speed"),
 		once(item("sdram", "probe", 0, []Target{run("sdram.probe")}, all3, none, "sdram-buses")),

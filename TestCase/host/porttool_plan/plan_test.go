@@ -781,7 +781,7 @@ func TestBenchSmokePlanRuns(t *testing.T) {
 	// One caps reply carrying every port the plan names, with the loop types
 	// the firmware really reports.
 	caps := []string{
-		"OK porttool=0.12.0 ports=2 lines=5",
+		"OK porttool=0.18.9 ports=2 lines=5",
 		"OK port=temp board=lower kind=session blk=- term=- channels=2 loop=ctrl params=ch,period running=0",
 		"OK vals=temp ch=1,2 period=1000",
 		"OK terms=temp SC-protect,HS-switch",
@@ -795,7 +795,7 @@ func TestBenchSmokePlanRuns(t *testing.T) {
 		case cmd == "pt.caps":
 			return caps, nil
 		case cmd == "pt.id":
-			return []string{"OK uid=003400413135511439303538 porttool=0.12.0"}, nil
+			return []string{"OK uid=003400413135511439303538 porttool=0.18.9"}, nil
 		case cmd == "pt.run sdram.probe":
 			return []string{
 				"SDRAM_TEST: controller not up yet, running MX_FMC_Init()",
@@ -1047,7 +1047,7 @@ func TestStation6PlanRuns(t *testing.T) {
 		case cmd == "pt.caps":
 			return caps, nil
 		case cmd == "pt.id":
-			return []string{"OK uid=003400413135511439303538 porttool=0.12.0"}, nil
+			return []string{"OK uid=003400413135511439303538 porttool=0.18.9"}, nil
 
 		case cmd == "pt.run sdram.probe":
 			return []string{"OK sdram.probe base=0xC0000000 size=67108864 ready=1 databus=1 addrbus=1"}, nil

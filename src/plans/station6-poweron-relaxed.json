@@ -28,7 +28,7 @@
         {
           "field": "porttool",
           "op": "eq",
-          "value": "0.12.0"
+          "value": "0.18.9"
         },
         {
           "field": "uid",
@@ -276,7 +276,7 @@
     {
       "id": "eth-down",
       "type": "PtSession",
-      "_note": "Download, PC to board (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged (limit still to be measured). rx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Download, PC to board (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). rx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "eth",
       "params": {
         "mode": "sink",
@@ -300,7 +300,7 @@
     {
       "id": "eth-up",
       "type": "PtSession",
-      "_note": "Upload, board to PC (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged (limit still to be measured). tx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Upload, board to PC (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). tx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "eth",
       "params": {
         "mode": "source",
@@ -324,7 +324,7 @@
     {
       "id": "eth-throughput",
       "type": "PtSession",
-      "_note": "The other half of 'Ethernet communication': carrying frames, not just negotiating a link. mode=mirror: the board sends back every byte unchanged while the station PC floods numbered packets at it, so one run gives rate, loss and latency (DECISIONS.md 98, PORTTOOL-FLOW.md B.9). Loss is judged zero (peer_lost, peer_bad). Latency (peer_rtt_*) is recorded, not judged (DECISIONS.md 92). peer_kbps is recorded, not judged: the lower limit is the lowest of several good boards x 0.8, still to be measured. peer_sent at least 1 is what stops a flood that never ran from passing on zero losses. Needs the station PC on the board's subnet; the address comes from the frame's ip= (tcp auto).",
+      "_note": "The other half of 'Ethernet communication': carrying frames, not just negotiating a link. mode=mirror: the board sends back every byte unchanged while the station PC floods numbered packets at it, so one run gives rate, loss and latency (DECISIONS.md 98, PORTTOOL-FLOW.md B.9). Loss is judged zero (peer_lost, peer_bad). Latency (peer_rtt_*) is recorded, not judged (DECISIONS.md 92). peer_kbps is recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). peer_sent at least 1 is what stops a flood that never ran from passing on zero losses. Needs the station PC on the board's subnet; the address comes from the frame's ip= (tcp auto).",
       "port": "eth",
       "params": {
         "mode": "mirror",
@@ -395,7 +395,7 @@
       "id": "usb-down",
       "type": "PtSession",
       "execute_condition": "ALWAYS",
-      "_note": "Download, PC to board (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged (limit still to be measured). rx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Download, PC to board (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). rx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "usb",
       "params": {
         "mode": "sink",
@@ -417,7 +417,7 @@
     {
       "id": "usb-up",
       "type": "PtSession",
-      "_note": "Upload, board to PC (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged (limit still to be measured). tx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Upload, board to PC (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). tx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "usb",
       "params": {
         "mode": "source",
@@ -440,7 +440,7 @@
       "id": "usb-link",
       "type": "PtSession",
       "execute_condition": "ALWAYS",
-      "_note": "'USB communication', in the tool image (the bootloader does not exist as far as the tool image is concerned - user, 2026-09-08). mode=mirror: the board sends back every byte unchanged while the station PC floods numbered packets through the virtual COM port, so one run gives rate, loss and latency (DECISIONS.md 98, PORTTOOL-FLOW.md B.9). Loss is judged zero (peer_lost, peer_bad, and the board's own drop=). Latency (peer_rtt_*) and peer_kbps are recorded, not judged (DECISIONS.md 92; rate limit still to be measured). state=cfg means enumerated AND opened; enum= counts how many times that changed, which is how a cable or a host that keeps re-enumerating shows up.",
+      "_note": "'USB communication', in the tool image (the bootloader does not exist as far as the tool image is concerned - user, 2026-09-08). mode=mirror: the board sends back every byte unchanged while the station PC floods numbered packets through the virtual COM port, so one run gives rate, loss and latency (DECISIONS.md 98, PORTTOOL-FLOW.md B.9). Loss is judged zero (peer_lost, peer_bad, and the board's own drop=). Latency (peer_rtt_*) and peer_kbps are recorded, not judged (DECISIONS.md 92, 178: no rate limit, full speed). state=cfg means enumerated AND opened; enum= counts how many times that changed, which is how a cable or a host that keeps re-enumerating shows up.",
       "port": "usb",
       "params": {
         "mode": "mirror",

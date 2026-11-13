@@ -3341,13 +3341,6 @@
    "de": "KNX",
    "de_of": "afa53a77"
   },
-  "lib.pending.speed_limit": {
-   "zh": "速率下限还没定：要等满速率回送在良品上实测",
-   "en": "Minimum speed not decided yet: waits for full-speed echo measurements on good boards",
-   "en_of": "e30b5edf",
-   "de": "Mindestgeschwindigkeit noch offen: wartet auf Messungen mit Vollgeschwindigkeits-Echo an guten Platinen",
-   "de_of": "e30b5edf"
-  },
   "lib.peer.none": {
    "zh": "不用对端",
    "en": "No peer",

@@ -321,9 +321,12 @@ func checkFiveBlocks(p *Page) {
 		"R&D shows every CAN item as a card, the analyser window and disconnect-and-recover in the once group", show(ids))
 	check(p.L(`#itemcards button[data-start="repeat"]`).Count() == 1 && p.L(`#itemcards button[data-start="once"]`).Count() == 0,
 		"R&D: the repeatable group has its Start, the once group none (decisions 115, 116)")
-	check(p.L(`#itemcards .item[data-item="can.bus"] .ih button[data-startitem="can.bus"]`).Count() == 1 &&
-		p.L(`#itemcards input[data-pick="can.bus"]`).Count() == 0,
+	check(p.L(`#itemcards .item[data-item="can.recover"] .ih button[data-startitem="can.recover"]`).Count() == 1 &&
+		p.L(`#itemcards input[data-pick="can.recover"]`).Count() == 0,
 		"a once card has its own Start beside its name and no tick (decision 116)")
+	check(p.L(`#itemcards button[data-startitem="can.bus"]`).Count() == 0 &&
+		p.L(`#itemcards input[data-pick="can.bus"]`).Count() == 0,
+		"the CAN analysis card has no Start and no tick: it starts from its window (decision 173)")
 	var ticked []string
 	for _, i := range ids {
 		b := p.L(`#itemcards input[data-pick="` + i + `"]`)
