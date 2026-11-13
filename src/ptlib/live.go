@@ -32,6 +32,7 @@ const (
 	LiveReset = "reset" // restart the DI count from zero
 	LiveRef   = "ref"   // the reference value a person typed for one channel
 	LiveSet   = "set"   // change the session's parameters (decision 137)
+	LiveLimit = "limit" // a table's limit from the card: DO under load's drop_max, "" records only (decision 164)
 )
 
 // The tables of an R&D card other than the session item's own, and the
@@ -49,9 +50,9 @@ type LiveReq struct {
 	Op    string  `json:"op"`
 	Ch    int     `json:"ch"`
 	On    bool    `json:"on"`
-	MA    float64 `json:"ma"`    // LiveAO: the value in the channel's range unit, mA or mV
-	Value string  `json:"value"` // LiveRef: as typed, "" clears it
-	Block string  `json:"block,omitempty"` // LiveRef: which table; "" is the session item's own
+	MA    float64 `json:"ma"`              // LiveAO: the value in the channel's range unit, mA or mV
+	Value string  `json:"value"`           // LiveRef: as typed, "" clears it; LiveLimit: the limit
+	Block string  `json:"block,omitempty"` // LiveRef, LiveLimit: which table; "" is the session item's own
 
 	Args map[string]string `json:"args,omitempty"` // LiveSet
 	// LiveEnd: the rows ticked per table; nil judges every row of the item's own table.
@@ -276,6 +277,7 @@ func (e *Engine) runLive(ctx context.Context, j *job) (ptreport.Outcome, string,
 	do := make([]int, 8)
 	aoSet := map[int]float64{}
 	refs := map[string]map[int]string{}
+	dropMax := DropDefault(e.Plan) // until the card sends its drop_max
 	blinking := false
 	show := func() { c := st; e.change(j.item.ID, func(s *State) { s.Live = &c }) }
 	show()
@@ -307,7 +309,7 @@ func (e *Engine) runLive(ctx context.Context, j *job) (ptreport.Outcome, string,
 					_ = send("pt.set dout mode=hold duty=" + dutyList(make([]int, 8)))
 				}
 			}
-			e.liveAllRefs(j, &st, refs, cals)
+			e.liveAllRefs(j, &st, refs, cals, dropMax)
 			st.Frames++
 			vals := valuesOf(ptreport.Attempt{Raw: []string{ev.Line}})
 			c := st
@@ -389,7 +391,18 @@ func (e *Engine) runLive(ctx context.Context, j *job) (ptreport.Outcome, string,
 					refs[b][m.req.Ch] = v
 				}
 				att.SetExtra(fmt.Sprintf("ref%s%d", b, m.req.Ch), v)
-				e.liveAllRefs(j, &st, refs, cals)
+				e.liveAllRefs(j, &st, refs, cals, dropMax)
+				show()
+				m.reply <- nil
+			case LiveLimit:
+				v := strings.TrimSpace(m.req.Value)
+				if m.req.Block != "drop" || !LimitOK(v) {
+					m.reply <- errors.New("a limit is a number of 0 or more, or empty to only record")
+					continue
+				}
+				dropMax = v
+				att.SetExtra("drop_max", v)
+				e.liveAllRefs(j, &st, refs, cals, dropMax)
 				show()
 				m.reply <- nil
 			case LiveSet:
@@ -541,7 +554,8 @@ func bitsOf(v int) []int {
 }
 
 // liveAllRefs sets every table's typed values beside the board's side.
-func (e *Engine) liveAllRefs(j *job, st *LiveState, refs map[string]map[int]string, cals map[int]liveCal) {
+// dropMax is DO under load's limit in force, "" records only.
+func (e *Engine) liveAllRefs(j *job, st *LiveState, refs map[string]map[int]string, cals map[int]liveCal, dropMax string) {
 	st.Ref = e.liveRefs(j, st, refs[""], cals)
 	st.Blocks = nil
 	for b := range liveBlockItem {
@@ -551,13 +565,13 @@ func (e *Engine) liveAllRefs(j *job, st *LiveState, refs map[string]map[int]stri
 		if st.Blocks == nil {
 			st.Blocks = map[string][]LiveRefRow{}
 		}
-		st.Blocks[b] = e.blockRefs(b, st, refs[b])
+		st.Blocks[b] = e.blockRefs(b, st, refs[b], dropMax)
 	}
 }
 
 // blockRefs judges one of a card's other tables (decision 137): DI levels
-// match the board's, the DO ones by the plan's step for what a person typed.
-func (e *Engine) blockRefs(block string, st *LiveState, refs map[int]string) []LiveRefRow {
+// match the board's, a DO drop against dropMax, a blink count by the plan's step.
+func (e *Engine) blockRefs(block string, st *LiveState, refs map[int]string, dropMax string) []LiveRefRow {
 	var out []LiveRefRow
 	for ch := 1; ch <= 8; ch++ {
 		v, ok := refs[ch]
@@ -575,7 +589,7 @@ func (e *Engine) blockRefs(block string, st *LiveState, refs map[int]string) []L
 				row.Pass = &p
 			}
 		case "drop":
-			row.Pass = e.planJudge("high-side-drop", want)
+			row.Pass = judgeDrop(dropMax, want)
 		case "blink":
 			b := float64(st.Blink)
 			row.Board = &b
@@ -749,6 +763,8 @@ func (e *Engine) liveTicked(j *job, st LiveState, ticked map[string][]int) ptrep
 			}
 			o, why := ptreport.OutcomePass, ""
 			switch {
+			case b == "drop" && p == nil: // drop_max cleared (decision 164)
+				o = Recorded
 			case !typed || p == nil:
 				o, why = ptreport.OutcomeStopped, ReasonStopped
 			case !*p || (b == "" && st.Kind == "quad" && st.Err > 0):

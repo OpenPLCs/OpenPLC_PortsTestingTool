@@ -230,6 +230,16 @@ func checkLiveCards(p *Page, com string) {
 	v.Fill("0.5")
 	v.Dispatch("change")
 	waitJS(p, "() => ("+cmp+")(['drop', 3]) === '1'", nil, "a 0.5 V drop is within the criterion", "() => (rdLive('dout') || {}).blocks")
+	// 压降上限 is a parameter on the card (decision 164): default 1 V from the plan; changed during 输出, DO3 is judged again.
+	lim := func() *Loc { return p.L(`#itemcards input[data-libparam="dout.load.drop_max"]`) }
+	check(lim().Count() == 1 && lim().Value() == "1" && strings.Contains(heads("drop"), "≤ 1 V"),
+		"带负载 shows 压降上限 with the plan's 1 V, and the result column says ≤ 1 V", heads("drop"))
+	lim().Fill("0.4")
+	lim().Dispatch("change")
+	waitJS(p, "() => ("+cmp+")(['drop', 3]) === '0'", nil, "with 压降上限 0.4 V the 0.5 V drop is judged again and fails", "() => (rdLive('dout') || {}).blocks")
+	lim().Fill("1")
+	lim().Dispatch("change")
+	waitJS(p, "() => ("+cmp+")(['drop', 3]) === '1'", nil, "back to 1 V it passes again", "() => (rdLive('dout') || {}).blocks")
 	// Ticking DO4 while it outputs turns DO4 on at once; left blank, it is not judged.
 	p.L(`#itemcards input[data-rdtick="drop|4"]`).SetChecked(true)
 	waitJS(p, "() => { const lv = rdLive('dout'); return !!lv && !!lv.duty && lv.duty[3] > 0 && lv.duty[4] === 0; }", nil,

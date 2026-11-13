@@ -309,6 +309,7 @@ function lseChosenDrv() {
 const LIMIT_SOURCE = {
   "rtc.lsefreq": { ppm_max: "lse.src.ppm_max", drift_max: "lse.src.drift_max" },
   "rtc.lsemargin": { start_ms_max: "lse.src.start_ms_max" },
+  "dout.load": { drop_max: "dio.src.drop_max" },
 };
 
 // A parameter kept on the PC with a fixed list of values (ptitems Choices).

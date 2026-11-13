@@ -236,6 +236,7 @@ async function dioOut(block) {
     rdDoBlock = block;
     const why = await rdStart("dout", [RD_DO_ITEM[block]]);
     if (why) { rdDoBlock = ""; showMessage(why, true); return; }
+    if (block === "drop") { await dioSendDropMax(true); }
     // Refused by the board: nothing was output, so no row is judged.
     if (!await rdSet("dout", args)) { rdDoBlock = ""; await rdEnd("dout"); }
   } finally {
@@ -253,11 +254,19 @@ function dioDoState(lv, block, ch) {
 
 /* ---------------- DO 带负载输出 ---------------- */
 
+// The card's drop limit (decision 164); undefined when cleared: record only.
 function dioDropMax() {
-  const it = dioItem("dout.load");
-  const cr = ((it && it.criteria) || []).find(c => c.step === "high-side-drop");
-  const c = cr && (cr.checks || [])[0];
-  return c && typeof c.max === "number" ? c.max : undefined;
+  const v = dioParamOf("dout.load", "drop_max");
+  return v === undefined || v === "" ? undefined : v;
+}
+
+// A changed limit goes to the running output at once, so typed rows are judged again.
+async function dioSendDropMax(quiet) {
+  if (!rdLive("dout") || rdDoBlock !== "drop") { renderRight(); return; }
+  const j = await api("/api/lib/live", { id: RD_SESSION.dout.id, op: "limit", block: "drop",
+    value: String(dioParamOf("dout.load", "drop_max") ?? "") });
+  if (j.error && !quiet) { showMessage(j.error, true); }
+  libRefresh();
 }
 
 function dioDoLoad(lv) {
@@ -266,6 +275,7 @@ function dioDoLoad(lv) {
   sec.dataset.dioblk = "drop";
   sec.appendChild(el("div", "hint", T("dio.load_hint_live")));
   sec.appendChild(dioParam("dout.load", "period"));
+  sec.appendChild(dioParam("dout.load", "drop_max", () => dioSendDropMax(false)));
   const rows = rdDoBlock === "drop" && lv ? (lv.blocks || {}).drop : null;
   const tbl = dioTable(["", T("lib.live.col.ch"), T("dio.col.board_out"), T("dio.col.std_drop"),
     max === undefined ? T("dio.col.result") : T("dio.col.result_max", { max })]);

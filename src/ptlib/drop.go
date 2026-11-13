@@ -2,8 +2,8 @@ package ptlib
 
 // DO under load with a person as the peer (PORTTOOL-FLOW.md C.3.6
 // "DO 带负载（研发）"): one channel on at a time, deadman held, the person
-// measures the drop between 24 V and the terminal while it is on, judged by
-// the plan's high-side-drop step; then off and the next channel.
+// measures the drop between 24 V and the terminal while it is on, judged
+// against the card's drop_max; then off and the next channel.
 
 import (
 	"context"
@@ -22,8 +22,54 @@ import (
 // dropWalk are items a person measures channel by channel while the output is on.
 var dropWalk = map[string]bool{"dout.load": true}
 
-// dropStep is the plan step that judges a typed drop.
+// dropStep is the plan step that asks for a typed drop and holds drop_max's default.
 const dropStep = "high-side-drop"
+
+// DropDefault is drop_max's default: the plan's high-side-drop value max, so
+// the limit has one source (decision 164); "" when the plan has none.
+func DropDefault(plan ptplan.Plan) string {
+	for _, st := range plan.Steps {
+		if st.ID != dropStep {
+			continue
+		}
+		for _, c := range st.Checks {
+			if c.Field == "value" && c.Max != nil {
+				return strconv.FormatFloat(*c.Max, 'f', -1, 64)
+			}
+		}
+	}
+	return ""
+}
+
+// dropLimit is the drop limit in force: the pick's drop_max when it has one,
+// even cleared, else the plan's default.
+func dropLimit(plan ptplan.Plan, params map[string]string) string {
+	if v, ok := params[ptitems.ParamDropMax]; ok {
+		return strings.TrimSpace(v)
+	}
+	return DropDefault(plan)
+}
+
+// dropChecks judges a typed drop against limit; nil when it is cleared (record only).
+func dropChecks(limit string) []ptcheck.Check {
+	max, err := strconv.ParseFloat(limit, 64)
+	if err != nil {
+		return nil
+	}
+	return []ptcheck.Check{{Field: "value", Op: ptcheck.OpRange, Max: &max, Unit: "V"}}
+}
+
+// judgeDrop is a typed drop against limit; nil when the limit is cleared.
+func judgeDrop(limit string, v float64) *bool {
+	checks := dropChecks(limit)
+	if checks == nil {
+		return nil
+	}
+	_, pass := ptcheck.EvalAll(checks, func(f string) (string, bool) {
+		return strconv.FormatFloat(v, 'f', 4, 64), f == "value"
+	})
+	return &pass
+}
 
 // DropRow is one channel of the walk, for the card.
 type DropRow struct {
@@ -35,7 +81,7 @@ type DropRow struct {
 
 // DropResult is what the card draws.
 type DropResult struct {
-	Max  string    `json:"max"` // the criterion's limit, V
+	Max  string    `json:"max"` // drop_max in force, V; "" records only
 	On   int       `json:"on"`  // the channel switched on right now, 0 between
 	Rows []DropRow `json:"rows"`
 }
@@ -65,12 +111,8 @@ func fillDrop(j *job) {
 
 func (e *Engine) runDrop(ctx context.Context, j *job) (ptreport.Outcome, string, string) {
 	step := j.steps[0]
-	res := DropResult{}
-	for _, c := range step.Checks {
-		if c.Field == "value" && c.Max != nil {
-			res.Max = strconv.FormatFloat(*c.Max, 'f', -1, 64)
-		}
-	}
+	res := DropResult{Max: dropLimit(e.Plan, j.params)}
+	checks := dropChecks(res.Max)
 	show := func() {
 		c := res
 		c.Rows = append([]DropRow(nil), res.Rows...)
@@ -125,14 +167,16 @@ func (e *Engine) runDrop(ctx context.Context, j *job) (ptreport.Outcome, string,
 		row := DropRow{Ch: ch, Duty: 255}
 		typed := strings.TrimSpace(a.Value)
 		att.SetExtra("drop"+n, typed)
-		if v, perr := strconv.ParseFloat(typed, 64); perr == nil && typed != "" {
-			checks, pass := ptcheck.EvalAll(step.Checks, func(f string) (string, bool) {
+		if v, perr := strconv.ParseFloat(typed, 64); perr == nil && typed != "" && checks == nil {
+			row.Drop = &v // drop_max cleared: recorded, not judged (decision 164)
+		} else if perr == nil && typed != "" {
+			got, pass := ptcheck.EvalAll(checks, func(f string) (string, bool) {
 				if f == "value" {
 					return typed, true
 				}
 				return "", false
 			})
-			att.Checks = append(att.Checks, checks...)
+			att.Checks = append(att.Checks, got...)
 			row.Drop, row.Pass = &v, &pass
 			failed = failed || !pass
 			judged++
@@ -145,6 +189,8 @@ func (e *Engine) runDrop(ctx context.Context, j *job) (ptreport.Outcome, string,
 			e.setChan(j, ch, ptreport.OutcomePass, "")
 		case row.Pass != nil:
 			e.setChan(j, ch, ptreport.OutcomeFail, "")
+		case row.Drop != nil:
+			e.setChan(j, ch, Recorded, "")
 		case e.RD:
 			e.setChan(j, ch, ptreport.OutcomeStopped, ReasonStopped) // not measured to the end (decision 129)
 		}

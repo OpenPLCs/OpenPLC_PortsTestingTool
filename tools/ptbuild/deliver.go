@@ -19,6 +19,9 @@ import (
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"golang.org/x/text/encoding/simplifiedchinese"
+
+	"PortTool/src/ptcheck"
+	"PortTool/src/ptplan"
 )
 
 // deliver packs what the hardware engineer needs into Output/delivery/: the
@@ -102,6 +105,27 @@ func toolHash() (string, error) {
 		h.Write(bytes.ReplaceAll(b, []byte("\r\n"), []byte("\n")))
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+// planVersions refuses a plan whose porttool version check expects another
+// fixture version than the one packed: porttool run would stop at that step
+// (PORTTOOL-FLOW.md C.4 「方案和固件版本」). Plans without such a check pass.
+func planVersions(plans []string, fwVer string) error {
+	for _, p := range plans {
+		plan, err := ptplan.Load(p)
+		if err != nil {
+			return fmt.Errorf("%s: %v", p, err)
+		}
+		for _, st := range plan.Steps {
+			for _, c := range st.Checks {
+				if c.Field == "porttool" && c.Op == ptcheck.OpEq && c.Value != fwVer {
+					return fmt.Errorf("%s: step %q expects fixture firmware %s, but the fixture being packed is %s.\n"+
+						"  Set the step's porttool value to %s, then pack again.", p, st.ID, c.Value, fwVer, fwVer)
+				}
+			}
+		}
+	}
+	return nil
 }
 
 // sameSet: panel and firmware are one set when major.minor agree (decision 120).
@@ -295,6 +319,9 @@ func deliver(open, internal bool) error {
 	if !sameSet(tVer, fwVer) {
 		return fmt.Errorf("PortTool %s and the fixture firmware %s differ in the first two numbers, so they are not one set.\n"+
 			"  Make the version in src/cmd/porttool/main.go and PORTTOOL_VERSION in porttool.c agree there, rebuild, pack again.", tVer, fwVer)
+	}
+	if err := planVersions(plans, fwVer); err != nil {
+		return err
 	}
 	var last *shipped
 	if b, err := os.ReadFile(shippedPath()); err == nil {

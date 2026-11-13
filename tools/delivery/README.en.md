@@ -54,7 +54,7 @@ Work down the left column, step 1, 2, 3:
 
 ## 4. Where a multimeter is needed
 
-Values the board cannot read back itself, such as analog output current or a loaded digital output, make the panel stop and ask what the multimeter reads; it judges what you type. Only in the R&D test; the full fixture test reads them on the reference board and asks nobody.
+Values the board cannot read back itself, such as analog output current or a loaded digital output, make the panel stop and ask what the multimeter reads; it judges what you type. A loaded digital output is judged against "Drop limit" on its card (the default comes from the test plan; you can change it, or leave it empty to only record). Only in the R&D test; the full fixture test reads them on the reference board and asks nobody.
 
 Analog calibration is in the **R&D test** only: type the multimeter reading at each point, the panel fits each channel's k and b, keeps them on this PC, and burns them into the board with the ST-Link.
 

@@ -618,7 +618,7 @@
       "type": "UserReading",
       "enabled": false,
       "execute_condition": "ALWAYS",
-      "_note": "The person as the peer: output >= supply - 1 V, asked as the drop across the switch so one reading carries it. Proposed value with no measurement behind it yet. Off here because a plan run cannot keep DO driven while it waits for the answer; the panel asks it per channel while the output is on.",
+      "_note": "The person as the peer: output >= supply - 1 V, asked as the drop across the switch so one reading carries it. Proposed value with no measurement behind it yet; it is the default of the DO card's editable drop_max, which the panel judges by (decision 164). Off here because a plan run cannot keep DO driven while it waits for the answer; the panel asks it per channel while the output is on.",
       "prompt": "With the output driven full on under load, measure the volts between the 24 V supply and the output's terminal",
       "unit": "V",
       "checks": [

@@ -469,3 +469,34 @@ func TestDOLoadAsksTheDropWhileThatChannelIsOn(t *testing.T) {
 		t.Errorf("each channel is switched off after its reading; sent %q", sent)
 	}
 }
+
+// The card's drop_max judges the walk (decision 164): raised, 1.5 V passes;
+// cleared, the readings are only recorded.
+func TestDOLoadJudgesByTheCardsDropMax(t *testing.T) {
+	plan, err := ptplan.Load(filepath.Join("..", "..", "..", "src", "plans", "station6-poweron.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range []struct {
+		max  string
+		want ptreport.Outcome
+	}{{"2", ptreport.OutcomePass}, {"", ptlib.Recorded}} {
+		b := openSim(t)
+		e := &ptlib.Engine{
+			Board: b, Plan: plan, Items: []ptitems.Item{catItem(t, "dout.load")}, Hold: &fakeHold{b: b},
+			Runner: func() *ptseq.Runner { return &ptseq.Runner{Board: b, OpenPeer: refusePeer, FindCDC: noCDC} },
+			Ask:    func(context.Context, ptlib.Question) (ptlib.Answer, error) { return ptlib.Answer{Value: "1.5"}, nil },
+		}
+		rep, err := e.Run(context.Background(), []ptlib.Pick{{ID: "dout.load", On: true, Peer: ptitems.PeerHuman,
+			Params: map[string]string{"ch": "1", ptitems.ParamDropMax: c.max}}}, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if o := outcomes(rep)["dout.load"]; o != c.want {
+			t.Errorf("drop_max %q, 1.5 V: %s, want %s", c.max, o, c.want)
+		}
+		if d := stateOf(e, "dout.load").Drop; d == nil || d.Max != c.max {
+			t.Errorf("drop_max %q: card shows %+v", c.max, d)
+		}
+	}
+}

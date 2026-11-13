@@ -10776,11 +10776,11 @@
    "de_of": "2018de86"
   },
   "dio.load_hint_live": {
-   "zh": "勾要测的路，点「输出」：只有勾了的路满占空比开着。量 24 V 电源和端子之间的压降填进「测量值」，按判据标对错，没填的路不判。点「停止输出」或离开这一页时八路全关，按勾了且填了的路记结果。",
-   "en": "Tick the channels and press 'Output': only the ticked ones are on at full duty. Measure the drop between the 24 V supply and the terminal and type it under 'Measured'; it is marked against the criterion, a blank channel is not judged. 'Stop output' or leaving the page turns all eight off and keeps the results of the ticked channels that have a value.",
-   "en_of": "0aa34b87",
-   "de": "Kanäle anhaken und „Ausgeben“ drücken: nur die angehakten sind voll eingeschaltet. Den Abfall zwischen 24-V-Versorgung und Klemme messen und unter „Messwert“ eintragen; er wird gegen das Kriterium markiert, ein leerer Kanal wird nicht bewertet. „Ausgabe stoppen“ oder Verlassen der Seite schaltet alle acht aus und hält die Ergebnisse der angehakten Kanäle mit Wert fest.",
-   "de_of": "0aa34b87"
+   "zh": "勾要测的路，点「输出」：只有勾了的路满占空比开着。量 24 V 电源和端子之间的压降填进「测量值」，按「压降上限」标对错（清空就只记录），没填的路不判。点「停止输出」或离开这一页时八路全关，按勾了且填了的路记结果。",
+   "en": "Tick the channels and press 'Output': only the ticked ones are on at full duty. Measure the drop between the 24 V supply and the terminal and type it under 'Measured'; it is marked against 'Drop limit' (empty: only recorded), a blank channel is not judged. 'Stop output' or leaving the page turns all eight off and keeps the results of the ticked channels that have a value.",
+   "en_of": "e1257eb4",
+   "de": "Kanäle anhaken und „Ausgeben“ drücken: nur die angehakten sind voll eingeschaltet. Den Abfall zwischen 24-V-Versorgung und Klemme messen und unter „Messwert“ eintragen; er wird gegen „Grenze Spannungsabfall“ markiert (leer: nur festgehalten), ein leerer Kanal wird nicht bewertet. „Ausgabe stoppen“ oder Verlassen der Seite schaltet alle acht aus und hält die Ergebnisse der angehakten Kanäle mit Wert fest.",
+   "de_of": "e1257eb4"
   },
   "dio.blink_hint_live": {
    "zh": "勾要测的路，点「输出」：勾了的路翻够次数后自己停。把每路数到几次填进来，按判据标对错。点「停止输出」或离开这一页时按勾了的路记结果。",
@@ -11769,6 +11769,13 @@
    "de": "Grenze Anschwingzeit (ms)",
    "de_of": "e2c29f08"
   },
+  "param.drop_max": {
+   "zh": "压降上限（V）",
+   "en": "Drop limit (V)",
+   "en_of": "0977c21a",
+   "de": "Grenze Spannungsabfall (V)",
+   "de_of": "0977c21a"
+  },
   "lse.src.ppm_max": {
    "zh": "默认留空、不判：偏差是这颗晶振和主晶振的差，主晶振自己的误差也在里面，所以说明不了这颗晶振准不准。要判就自己填一个上限。",
    "en": "Empty by default, not judged: the deviation is the difference between this crystal and the main crystal, so the main crystal’s own error is in it and it does not tell whether this crystal is accurate. Type a limit to judge it.",
@@ -11789,6 +11796,13 @@
    "en_of": "7c8cf31c",
    "de": "Standard 2000: nicht überprüft, nur eine Stufe strenger als das Anschwing-Timeout der Firmware von 5 s. Leer lassen, um nur festzuhalten.",
    "de_of": "7c8cf31c"
+  },
+  "dio.src.drop_max": {
+   "zh": "默认值取自测试方案，还没在良品上量过，是暂定值。清空就只记录不判。",
+   "en": "The default comes from the test plan; it has not been measured on a good board yet, so it is provisional. Leave empty to only record.",
+   "en_of": "0b465e01",
+   "de": "Der Standardwert stammt aus dem Prüfplan; er wurde noch nicht an einer guten Platine gemessen und ist daher vorläufig. Leer lassen, um nur festzuhalten.",
+   "de_of": "0b465e01"
   },
   "conn.board.uid": {
    "zh": "UID 末 6 位 {uid}",

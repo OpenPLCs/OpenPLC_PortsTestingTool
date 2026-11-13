@@ -147,6 +147,9 @@ func Defaults(it ptitems.Item, plan ptplan.Plan, caps ptproto.Caps) map[string]s
 		if v, ok := it.Limits[k]; ok {
 			out[k] = v
 		}
+		if k == ptitems.ParamDropMax {
+			out[k] = DropDefault(plan)
+		}
 		if r, ok := it.Ranges[k]; ok {
 			out[k] = strconv.Itoa(r.Def)
 		}

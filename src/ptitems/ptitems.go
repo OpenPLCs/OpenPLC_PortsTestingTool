@@ -139,6 +139,9 @@ const (
 	ParamPpmMax     = "ppm_max"
 	ParamDriftMax   = "drift_max"
 	ParamStartMSMax = "start_ms_max"
+	// DO under load (decision 164): the most volts a person may measure between
+	// 24 V and the terminal. Its default is the plan's high-side-drop limit (ptlib.DropDefault).
+	ParamDropMax = "drop_max"
 	// rtc.lsemargin (decision 166): which drive to restart, and how many times each.
 	ParamDrv   = "drv"
 	ParamCount = "count"
@@ -237,7 +240,7 @@ func LoadChannel(k string) string {
 // HostParam says a parameter is kept on the PC rather than taken by the firmware.
 func HostParam(k string) bool {
 	switch k {
-	case ParamOut1, ParamOut2, ParamOrder, ParamBy, ParamMinutes, ParamPpmMax, ParamDriftMax, ParamStartMSMax:
+	case ParamOut1, ParamOut2, ParamOrder, ParamBy, ParamMinutes, ParamPpmMax, ParamDriftMax, ParamStartMSMax, ParamDropMax:
 		return true
 	}
 	return false
@@ -470,7 +473,8 @@ var Catalogue = func() []Item {
 		live(excl(item("knx", "live", 0, []Target{session("knx", "mode", "frames", "ga", "none")}, rdOnly, pc), "knx.mode")),
 		// The reference DI the registration wires to each DO, direct or through a
 		// relay (decisions 133, 135, ptlib/chain.go), or a person's multimeter in R&D.
-		human(onRef(excl(params(item("dout", "load", 0, []Target{session("dout", "mode", "hold", "duty", "255")}, all3, []Peer{PeerRef, PeerHuman}, "high-side-drop"), "ch", "period"), "dout.mode"),
+		// drop_max's default is left to the plan so the limit has one source (ptlib.DropDefault).
+		human(onRef(excl(limit(params(item("dout", "load", 0, []Target{session("dout", "mode", "hold", "duty", "255")}, all3, []Peer{PeerRef, PeerHuman}, "high-side-drop"), "ch", "period"), ParamDropMax, ""), "dout.mode"),
 			session("din", "mode", "level")), AnswerNumber),
 		// Toggles are counted by a person; PWM is checked on a scope.
 		human(excl(params(item("dout", "blink", 0, []Target{session("dout", "mode", "blink", "duty", "255")}, rdOnly, hum, "dout-blink", "dout-blink-seen"), "period"), "dout.mode"), AnswerNumber),
