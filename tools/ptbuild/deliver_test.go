@@ -36,3 +36,23 @@ func TestPlanVersions(t *testing.T) {
 		}
 	}
 }
+
+func TestBoardFQBNReadsBothForms(t *testing.T) {
+	const want = "OpenPLC_Alpha:stm32:OPEN-PLC:pnum=PLC_H743,usb=CDCgen"
+	for name, src := range map[string]string{
+		"one string": "x = 1\nFQBN = \"" + want + "\"\n",
+		"split":      "x = 1\nFQBN = (\"OpenPLC_Alpha:stm32:OPEN-PLC:\"\n        \"pnum=PLC_H743,usb=CDCgen\")\n",
+	} {
+		core := t.TempDir()
+		if err := os.MkdirAll(filepath.Join(core, "tests"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(core, "tests", "_common.py"), []byte(src), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		got, err := boardFQBN(core)
+		if err != nil || got != want {
+			t.Errorf("%s: got %q, %v; want %q", name, got, err, want)
+		}
+	}
+}

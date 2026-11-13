@@ -142,7 +142,8 @@ func staleVersion(last *verHash, version, sha string) bool {
 	return last != nil && last.SHA256 != sha && last.Version == version
 }
 
-var fqbnRe = regexp.MustCompile(`(?s)\nFQBN\s*=\s*\((.*?)\)`)
+// FQBN = "..." or FQBN = ("..." "...") split over lines.
+var fqbnRe = regexp.MustCompile(`\nFQBN\s*=\s*(\((?s:.*?)\)|"[^"\n]*")`)
 var pyStrRe = regexp.MustCompile(`"([^"]*)"`)
 
 // boardFQBN reads FQBN from $CORE_REPO/tests/_common.py, the board package's
@@ -155,7 +156,7 @@ func boardFQBN(core string) (string, error) {
 	}
 	m := fqbnRe.FindSubmatch(b)
 	if m == nil {
-		return "", fmt.Errorf("no FQBN = (...) in %s", p)
+		return "", fmt.Errorf("no FQBN = \"...\" in %s", p)
 	}
 	var s strings.Builder
 	for _, part := range pyStrRe.FindAllSubmatch(m[1], -1) {
