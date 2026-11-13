@@ -752,6 +752,7 @@ func (s *Server) runItems(ctx context.Context, picks []ItemPick, timed bool) ptr
 	for _, st := range rep.Steps {
 		for _, a := range st.Attempts {
 			a.N = len(res.Attempts) + 1
+			a.SetExtra("item", st.ID) // the full test flattens attempts; T3-27 pairs readings by item
 			res.Attempts = append(res.Attempts, a)
 		}
 		// A multi-channel item has no result of its own: its channels count (decision 129).
