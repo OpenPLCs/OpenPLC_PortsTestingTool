@@ -326,7 +326,7 @@
     {
       "id": "eth-down",
       "type": "PtSession",
-      "_note": "Download, PC to board (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). rx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Download, PC to board (DECISIONS.md 151, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). rx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "eth",
       "params": {
         "mode": "sink",
@@ -350,7 +350,7 @@
     {
       "id": "eth-up",
       "type": "PtSession",
-      "_note": "Upload, board to PC (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). tx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Upload, board to PC (DECISIONS.md 151, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). tx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "eth",
       "params": {
         "mode": "source",
@@ -445,7 +445,7 @@
       "id": "usb-down",
       "type": "PtSession",
       "execute_condition": "ALWAYS",
-      "_note": "Download, PC to board (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). rx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Download, PC to board (DECISIONS.md 151, PORTTOOL-FLOW.md B.9). mode=sink: the PC pushes, the board counts; down_kbps is worked out by the executor from the board's rx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). rx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "usb",
       "params": {
         "mode": "sink",
@@ -467,7 +467,7 @@
     {
       "id": "usb-up",
       "type": "PtSession",
-      "_note": "Upload, board to PC (DECISIONS.md 138, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). tx_bytes at least 1 is what stops a push that never ran from passing.",
+      "_note": "Upload, board to PC (DECISIONS.md 151, PORTTOOL-FLOW.md B.9). mode=source: the board pushes, the PC only reads; up_kbps is worked out by the executor from the board's tx_bytes over t, recorded, not judged: no rate limit, the link runs at full speed (DECISIONS.md 178). tx_bytes at least 1 is what stops a push that never ran from passing.",
       "port": "usb",
       "params": {
         "mode": "source",
