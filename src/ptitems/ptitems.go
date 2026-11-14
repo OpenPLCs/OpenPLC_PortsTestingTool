@@ -314,9 +314,9 @@ var NotItems = map[string]string{
 }
 
 var (
-	all3   = []Stage{RD, Func, Aging, User}
-	rdOnly = []Stage{RD}
-	rdFunc = []Stage{RD, Func} // SDRAM read/write: the demo has no retention session (decision 139)
+	all3       = []Stage{RD, Func, Aging, User}
+	rdOnly     = []Stage{RD}
+	rdFuncUser = []Stage{RD, Func, User} // SDRAM retention: the board package sets its own refresh (decision 184)
 )
 
 func session(port string, kv ...string) Target {
@@ -437,7 +437,7 @@ var Catalogue = func() []Item {
 		onceRD(item("sdram", "sweep", 0, []Target{run("sdram.sweep")}, all3, none, "sdram-stress")),
 		// The retention session, write / sit / read back (decision 151); the functional
 		// test runs one whole cycle (decision 139, ptlib holdFrames).
-		params(item("sdram", "hold", 0, []Target{session("sdram")}, rdFunc, none, "sdram-refresh"), "wait", "period"),
+		params(item("sdram", "hold", 0, []Target{session("sdram")}, rdFuncUser, none, "sdram-refresh"), "wait", "period"),
 		human(once(item("reset", "cause", 0, []Target{run("reset.cause")}, rdOnly, hum, "reset-cause")), AnswerYesNo),
 		human(item("led", "blink", 0, []Target{run("led.blink")}, rdOnly, hum, "indicator-drive"), AnswerYesNo),
 		// A person walks it in R&D (decision 133); the fixture tests walk the

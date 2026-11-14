@@ -43,6 +43,7 @@ var startArgs = map[string]string{
 	"eth":   "mode=echo port=%d period=200",
 	"usb":   "mode=echo period=200",
 	"sd":    "period=200",
+	"sdram": "wait=1000 period=200",
 }
 
 // Frame fields the demo adds or lacks, per port (PORTTOOL-FLOW.md "A.9").
@@ -67,9 +68,9 @@ var runMissing = map[string][]string{
 	"sd.probe": {"err"},
 }
 
-// demoKind: hardware the demo reports with a different kind (A.9: sdram has
-// pt.run targets only).
-var demoKind = map[string]ptproto.Kind{"sdram": ptproto.KindRun}
+// demoKind: hardware the demo reports with a different kind (A.9); none since
+// the demo has the sdram retention session (decision 184).
+var demoKind = map[string]ptproto.Kind{}
 
 // Commands whose replies must be word for word the same on both.
 var sameReply = []string{
@@ -89,6 +90,7 @@ var sameReply = []string{
 	"pt.run nosuch",
 	"pt.start rs232 baud=1234",
 	"pt.start eth ip=abc",
+	"pt.start sdram wait=abc",
 }
 
 type board struct {

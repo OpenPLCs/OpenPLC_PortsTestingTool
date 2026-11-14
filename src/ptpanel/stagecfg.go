@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"PortTool/src/calstore"
+	"PortTool/src/ptboard"
 	"PortTool/src/ptitems"
 	"PortTool/src/ptlib"
 	"PortTool/src/ptproto"
@@ -550,7 +551,7 @@ func (s *Server) configStep(st ptitems.Stage) ptstages.Func {
 		// Step 6 asks afresh: the board runs the demo by now, not the fixture
 		// firmware the panel connected to (PORTTOOL-FLOW.md C.3.6).
 		if st == ptitems.User {
-			c, err := b.Caps()
+			c, err := demoCaps(ctx, b)
 			if err != nil {
 				return fail("pt.caps: " + err.Error())
 			}
@@ -665,4 +666,20 @@ func itemReason(id, reason string) string {
 		return id
 	}
 	return id + ": " + reason
+}
+
+// demoCapsWait is how long step 6 keeps asking: the demo starts about 2 s
+// after IAPTool returns, and a pt.caps sent before that is lost
+// (PORTTOOL-FLOW.md C.3.6 「第 6 步」).
+const demoCapsWait = 10 * time.Second
+
+// demoCaps asks pt.caps until the demo answers or demoCapsWait passes.
+func demoCaps(ctx context.Context, b *ptboard.Board) (ptproto.Caps, error) {
+	deadline := time.Now().Add(demoCapsWait)
+	for {
+		c, err := b.Caps()
+		if err == nil || !time.Now().Before(deadline) || ctx.Err() != nil {
+			return c, err
+		}
+	}
 }

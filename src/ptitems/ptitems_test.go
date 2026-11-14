@@ -293,9 +293,9 @@ func TestDecision138Items(t *testing.T) {
 	if _, ok := byID["sdram.crc"]; ok || !RetiredItem("sdram.crc") {
 		t.Errorf("sdram.crc: still in the catalogue or not retired")
 	}
-	// Decision 139: also in the functional test, not in aging or user-level.
-	if it := byID["sdram.hold"]; !it.In(RD) || !it.In(Func) || it.In(Aging) || it.In(User) {
-		t.Errorf("sdram.hold: stages %v, want R&D and functional only", it.Stages)
+	// Decision 139: also in the functional test; decision 184: and user-level, not aging.
+	if it := byID["sdram.hold"]; !it.In(RD) || !it.In(Func) || it.In(Aging) || !it.In(User) {
+		t.Errorf("sdram.hold: stages %v, want R&D, functional and user-level", it.Stages)
 	}
 	if it := byID["sdram.hold"]; it.Once || it.OnceRD {
 		t.Errorf("sdram.hold: want a repeatable item, got %+v", it)
