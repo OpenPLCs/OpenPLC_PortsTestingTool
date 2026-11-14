@@ -224,7 +224,7 @@ func coreLive() string {
 	return filepath.Join(root, vs[len(vs)-1])
 }
 
-// buildDemo compiles FixtureDemo from the installed board package.
+// buildDemo compiles FixtureDemo against the installed board package.
 func buildDemo(cfg map[string]string) (string, error) {
 	fqbn, err := boardFQBN(cfg["CORE_REPO"])
 	if err != nil {
@@ -234,9 +234,9 @@ func buildDemo(cfg map[string]string) (string, error) {
 	if live == "" {
 		return "", fmt.Errorf("no installed OpenPLC board package under %s", arduino15())
 	}
-	sketch := filepath.Join(live, "libraries", "OpenPLC_Ports", "examples", "FixtureDemo")
+	sketch := filepath.Join(repo, demoDir)
 	if !exists(filepath.Join(sketch, "FixtureDemo.ino")) {
-		return "", fmt.Errorf("no FixtureDemo in the installed board package %s", live)
+		return "", fmt.Errorf("no FixtureDemo at %s", sketch)
 	}
 	work := filepath.Join(repo, "Output", "build", "demo")
 	_ = os.RemoveAll(work)
@@ -342,11 +342,9 @@ func deliver(open, internal bool) error {
 			"  change) in every place below, then start.sh fixture and pack again.\n%s", fwVer,
 			versionSpots(fwVer,
 				filepath.Join(cfg["BOOT_REPO"], "TestCase", "porttool", "porttool.c"),
-				filepath.Join(coreLive(), demoDir),
-				filepath.Join(cfg["CORE_REPO"], demoDir),
+				filepath.Join(repo, demoDir),
 				filepath.Join(repo, "TestCase", "host"))+
-				"\n  Change the installed board package first, then copy to OpenPLC_Arduino_PKG; TestCase/test.sh t4-01\n"+
-				"  rewrites caps_golden.txt with the new version."))
+				"\n  TestCase/test.sh t4-01 rewrites caps_golden.txt with the new version."))
 	}
 	tsha, err := toolHash()
 	if err != nil {
@@ -467,8 +465,8 @@ func deliver(open, internal bool) error {
 	return nil
 }
 
-// demoDir is FixtureDemo inside a board package; it states the protocol version too.
-var demoDir = filepath.Join("libraries", "OpenPLC_Ports", "examples", "FixtureDemo")
+// demoDir is FixtureDemo in this repository; it states the protocol version too.
+var demoDir = filepath.Join("src", "fixturedemo", "FixtureDemo")
 
 // versionSpots lists every file:line under roots that holds ver, so a version
 // raise finds the copies by search instead of by a list that would drift.

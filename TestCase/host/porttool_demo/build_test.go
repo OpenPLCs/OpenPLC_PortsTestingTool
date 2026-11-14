@@ -77,17 +77,13 @@ func build() error {
 	if runtime.GOOS == "windows" {
 		exe = ".exe"
 	}
-	core := os.Getenv("CORE_REPO")
-	if core == "" {
-		core = cfg["CORE_REPO"]
-	}
-	demoDir := filepath.Join(core, "libraries", "OpenPLC_Ports", "examples", "FixtureDemo")
+	demoDir := filepath.Join(repo, "src", "fixturedemo", "FixtureDemo")
 	cc, boot := cfg["HOST_CC"], cfg["BOOT_REPO"]
 	cxx := resolveCXX(cfg, exe)
 	fmt.Println("===== T4-05 build")
 	fmt.Printf("  demo       %s\n  firmware   %s\n  compilers  %s, %s\n", demoDir, boot, cc, cxx)
-	if _, err := os.Stat(filepath.Join(demoDir, "fixture_proto.cpp")); err != nil || core == "" {
-		return fmt.Errorf("no FixtureDemo at %s (set CORE_REPO)", demoDir)
+	if _, err := os.Stat(filepath.Join(demoDir, "fixture_proto.cpp")); err != nil {
+		return fmt.Errorf("no FixtureDemo at %s", demoDir)
 	}
 	if boot == "" || cc == "" {
 		return fmt.Errorf("BOOT_REPO and HOST_CC must be set in %s (start.sh find-tools)", localcfg.Path(repo))

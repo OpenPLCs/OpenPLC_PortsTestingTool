@@ -25,7 +25,7 @@ const Stage6Dir = "stage6"
 const BootloaderName = "bootloader.hex"
 
 // DemoName is the demo inside Stage6Dir: Arduino's own output name for the
-// FixtureDemo example, so the delivery copies it unrenamed (PORTTOOL-FLOW.md C.3.5 「第 6 步的输入」).
+// FixtureDemo sketch (src/fixturedemo), so the delivery copies it unrenamed (PORTTOOL-FLOW.md C.3.5 「第 6 步的输入」).
 const DemoName = "FixtureDemo.ino.bin"
 
 // IAPToolName is the IAPTool binary inside Stage6Dir.
