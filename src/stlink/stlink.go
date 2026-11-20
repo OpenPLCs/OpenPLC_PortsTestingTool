@@ -323,3 +323,33 @@ func (p Programmer) FactoryReset(keep func([]byte) error) error {
 	}
 	return p.call("-rst")
 }
+
+// FlashFixture writes the fixture image the way `start.sh flash` does: -d
+// erases only the sectors the image covers, so sector 15 keeps its
+// calibration values (PORTTOOL-FLOW.md C.3.5, C.3.10).
+func (p Programmer) FlashFixture(image string) error {
+	return p.call("-d", image, "-v", "-rst")
+}
+
+// Blank says whether the chip behind this probe has nothing in sector 0. It
+// connects with mode=HOTPLUG, which reads without resetting a running board.
+func (p Programmer) Blank() (bool, error) {
+	path, done, err := p.tempFile("head.bin")
+	if err != nil {
+		return false, err
+	}
+	defer done()
+	argv := []string{"-c", "port=SWD", "mode=HOTPLUG"}
+	if p.sn != "" {
+		argv = append(argv, "sn="+p.sn)
+	}
+	out, err := Run(p.cli, append(argv, "-u", hex32(FlashBase), "0x4", path)...)
+	if err != nil || strings.Contains(out, "Error") {
+		return false, fmt.Errorf("STM32_Programmer_CLI read at %s: %v\n%s", hex32(FlashBase), err, lastLines(out, 6))
+	}
+	b, err := os.ReadFile(path)
+	if err != nil || len(b) != 4 {
+		return false, fmt.Errorf("read %d bytes at %s, wanted 4", len(b), hex32(FlashBase))
+	}
+	return bytes.Equal(b, []byte{0xFF, 0xFF, 0xFF, 0xFF}), nil
+}

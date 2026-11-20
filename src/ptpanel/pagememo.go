@@ -174,6 +174,10 @@ func memoCellBad(section, key, v string, all map[string]string, caps ptproto.Cap
 			if v == "0" || v == "1" {
 				return nil
 			}
+		case "type": // the big screen or R&D, whichever was chosen last (decision 190)
+			if v == "line" || v == "rd" {
+				return nil
+			}
 		}
 		return ref(m("go.memo.unknown", "cell", fmt.Sprintf("%s=%s", key, v)))
 	}

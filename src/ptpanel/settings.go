@@ -82,7 +82,12 @@ func (s *Server) handleSettings(w http.ResponseWriter, r *http.Request) {
 // handleIndex serves the page with the dictionary and the chosen language
 // written into it, so every table on the page is worded before it is read.
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
-	page, err := webFS.ReadFile("web/index.html")
+	servePage(w, "web/index.html")
+}
+
+// servePage is an embedded page with the dictionary and language written in.
+func servePage(w http.ResponseWriter, name string) {
+	page, err := webFS.ReadFile(name)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return

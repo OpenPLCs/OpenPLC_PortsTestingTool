@@ -29,7 +29,9 @@ Type a number and press Enter. After each job it returns to the menu.
 
 ## 3. Test the ports
 
-Choose 2 (or 3) and a browser page opens by itself. Click "User guide" at the top of the panel for a detailed guide with screenshots marking where to click at each step.
+Choose 2 (or 3) and the browser opens the **fixture test big screen**: one tile per station. Use ⋯ → "Station settings" on a tile to choose that station's RS232 control port and ST-Link, and "+ Add station" to add one. Once a board is plugged in the tile moves on by itself: click "Flash" when the board has no fixture firmware or an old one; when the wiring is recognised, ① function test runs by itself. On a failure LED3 on the board lights; click "Continue" to redo that step or "Restart" to start from ①. ② Aging needs the fixture firmware's aging mode and stops there for now.
+
+Choose "R&D test" at the top left to open the test panel described below; "Fixture test" at the top of the panel goes back to the big screen. Whichever you chose opens next time. Click "User guide" at the top of the panel for a detailed guide with screenshots marking where to click at each step.
 
 Work down the left column, step 1, 2, 3:
 

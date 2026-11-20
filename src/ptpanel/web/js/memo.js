@@ -14,7 +14,10 @@
 let memoDraft = {};     // "<test type>#<cell key>" -> what was typed, while it is not acceptable
 let memoTimer = null;
 let memoLoaded = false;
-let uiMemo = { leftw: "", bt: "0" };   // the "ui" section: connection column width, Bluetooth ports listed
+let uiMemo = { leftw: "", bt: "0", type: "" };   // the "ui" section: connection column width, Bluetooth ports listed, big screen or R&D
+
+// Going back to the big screen remembers that the fixture test was chosen last.
+$("#tolinelink").onclick = async e => { e.preventDefault(); uiMemo.type = "line"; await api("/api/memo", { section: "ui", cells: memoCollect().ui }); location.href = "/"; };
 
 /* ---------------- checks (the server repeats them) ---------------- */
 
@@ -164,6 +167,7 @@ function memoCollect() {
   for (const [st, on] of Object.entries(fullPick)) { full["step|" + st] = on ? "1" : "0"; }
   const ui = { bt: uiMemo.bt === "1" ? "1" : "0" };
   if (uiMemo.leftw) { ui.leftw = uiMemo.leftw; }
+  if (uiMemo.type) { ui.type = uiMemo.type; }
   return { rd, full, ui };
 }
 
@@ -199,7 +203,7 @@ function memoApply(f) {
   }
   for (const [k, v] of Object.entries(full)) { const p = k.split("|"); if (p[0] === "step") { fullPick[p[1]] = v === "1"; } }
   const ui = f.ui || {};
-  uiMemo = { leftw: ui.leftw || "", bt: ui.bt === "1" ? "1" : "0" };
+  uiMemo = { leftw: ui.leftw || "", bt: ui.bt === "1" ? "1" : "0", type: ui.type || "" };
   applyLeftWidth(Number(uiMemo.leftw));   // core.js
   $("#showbt").checked = uiMemo.bt === "1";
 }

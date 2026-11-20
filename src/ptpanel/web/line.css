@@ -1,0 +1,30 @@
+/* The fixture line's big screen (PORTTOOL-FLOW.md C.3.10). */
+#lnwall{padding:12px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.tile{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--off);border-radius:6px;
+  padding:8px 10px;display:flex;flex-direction:column;gap:3px;cursor:pointer;min-height:132px}
+.tile.empty{cursor:default;color:var(--ink3);border-left-color:var(--line)}
+.tile.wait{border-left-color:var(--warn)} .tile.run{border-left-color:#1f5fbf}
+.tile.fail{border-left-color:var(--err);background:var(--err-bg)} .tile.done{border-left-color:var(--ok);background:var(--ok-bg)}
+.tile.paused{border-left-color:var(--off)}
+.th{display:flex;align-items:center;gap:6px}
+.th .sp{flex:1}
+.uid{font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.uid.warn{color:var(--err)}
+.stepname{font-weight:600}
+.st{font-size:13px} .why,.miss{font-size:12px;color:var(--ink2)}
+.time{font-size:12px;color:var(--ink3)}
+.led{width:10px;height:10px;border-radius:50%;background:var(--line)} .led.on{background:var(--err)}
+.chain{display:flex;gap:3px;margin-top:auto}
+.chain span{font-size:11px;padding:0 5px;border-radius:3px;background:var(--off-bg);color:var(--ink3)}
+.chain .ok{background:var(--ok);color:#fff} .chain .bad{background:var(--err);color:#fff} .chain .cur{background:#1f5fbf;color:#fff}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.tmenu{padding:0 8px}
+.addtile{display:flex;align-items:center;justify-content:center;border:1px dashed var(--line);border-radius:6px;min-height:132px}
+.lnmodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);align-items:center;justify-content:center;z-index:9}
+.lnmodal.open{display:flex}
+.lnbox{background:#fff;border-radius:6px;padding:14px 16px;min-width:320px;max-width:min(860px,94vw);max-height:88vh;overflow:auto}
+.lnbox table{border-collapse:collapse;width:100%;font-size:13px}
+.lnbox td,.lnbox th{border-bottom:1px solid var(--line2);padding:2px 6px;text-align:left}
+.lnform{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;margin:8px 0}
+.popmenu{position:absolute;background:#fff;border:1px solid var(--line);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:8}
+.popmenu div{padding:4px 14px;cursor:pointer} .popmenu div:hover{background:var(--accent-bg)}

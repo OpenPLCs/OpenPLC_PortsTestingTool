@@ -13,7 +13,7 @@ func newTestStations(t *testing.T) *Stations {
 	t.Helper()
 	StationsFile = filepath.Join(t.TempDir(), "stations.json")
 	t.Cleanup(func() { StationsFile = "" })
-	st := &Stations{New: func(int) *Server { return New() }}
+	st := &Stations{New: func(int) *Server { return New() }, NoLine: true}
 	st.Load()
 	t.Cleanup(st.Close)
 	return st
@@ -76,10 +76,10 @@ func TestStationsSTLinkPersists(t *testing.T) {
 	st := newTestStations(t)
 	h := st.Handler()
 	stCall(t, h, "POST", "/api/stations/add", nil)
-	if code, _ := stCall(t, h, "POST", "/api/stations/stlink", stationBody{N: 2, SN: " 0670FF48 "}); code != 200 {
+	if code, _ := stCall(t, h, "POST", "/api/stations/set", map[string]any{"n": 2, "sn": " 0670FF48 "}); code != 200 {
 		t.Fatalf("stlink: %d", code)
 	}
-	again := &Stations{New: func(int) *Server { return New() }}
+	again := &Stations{New: func(int) *Server { return New() }, NoLine: true}
 	again.Load()
 	defer again.Close()
 	if got := again.list[2]; got == nil || got.srv.STLinkSN != "0670FF48" {

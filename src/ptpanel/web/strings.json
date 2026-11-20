@@ -1696,6 +1696,468 @@
    "de": "Unter Last",
    "de_of": "1c518092"
   },
+  "line.add": {
+   "zh": "＋ 增加工位",
+   "en": "+ Add station",
+   "en_of": "f16fd6a7",
+   "de": "+ Arbeitsplatz hinzufügen",
+   "de_of": "f16fd6a7"
+  },
+  "line.btn.continue": {
+   "zh": "继续：重做这一步",
+   "en": "Continue: redo this step",
+   "en_of": "7b51491b",
+   "de": "Weiter: diesen Schritt wiederholen",
+   "de_of": "7b51491b"
+  },
+  "line.btn.delete": {
+   "zh": "删除这个工位",
+   "en": "Remove this station",
+   "en_of": "258187a1",
+   "de": "Diesen Arbeitsplatz entfernen",
+   "de_of": "258187a1"
+  },
+  "line.btn.flash": {
+   "zh": "烧写工装固件 {v}",
+   "en": "Flash fixture firmware {v}",
+   "en_of": "1823b7ad",
+   "de": "Fixture-Firmware {v} flashen",
+   "de_of": "1823b7ad"
+  },
+  "line.btn.open_panel": {
+   "zh": "打开这个工位的面板",
+   "en": "Open this station's panel",
+   "en_of": "7afba7df",
+   "de": "Panel dieses Arbeitsplatzes öffnen",
+   "de_of": "7afba7df"
+  },
+  "line.btn.pause": {
+   "zh": "暂停",
+   "en": "Pause",
+   "en_of": "130448bc",
+   "de": "Pausieren",
+   "de_of": "130448bc"
+  },
+  "line.btn.remove_board": {
+   "zh": "摘下板子",
+   "en": "Take the board off",
+   "en_of": "d084c1c1",
+   "de": "Platine abnehmen",
+   "de_of": "d084c1c1"
+  },
+  "line.btn.restart": {
+   "zh": "重新：从 ① 开始",
+   "en": "Restart: from ①",
+   "en_of": "4350c4f3",
+   "de": "Neu: ab ① beginnen",
+   "de_of": "4350c4f3"
+  },
+  "line.btn.resume": {
+   "zh": "继续",
+   "en": "Resume",
+   "en_of": "1fc1afc5",
+   "de": "Fortsetzen",
+   "de_of": "1fc1afc5"
+  },
+  "line.btn.settings": {
+   "zh": "设置工位",
+   "en": "Station settings",
+   "en_of": "3e3965c1",
+   "de": "Arbeitsplatz einstellen",
+   "de_of": "3e3965c1"
+  },
+  "line.btn.upgrade": {
+   "zh": "升级到 {v}",
+   "en": "Upgrade to {v}",
+   "en_of": "dca67166",
+   "de": "Auf {v} aktualisieren",
+   "de_of": "dca67166"
+  },
+  "line.confirm.remove_board": {
+   "zh": "把工位 {n} 的板子摘下来？做到哪一步记着。",
+   "en": "Take the board off station {n}? Its progress is kept.",
+   "en_of": "a72afaa6",
+   "de": "Platine von Arbeitsplatz {n} abnehmen? Der Fortschritt bleibt gespeichert.",
+   "de_of": "a72afaa6"
+  },
+  "line.detail.close": {
+   "zh": "关闭",
+   "en": "Close",
+   "en_of": "6c14bd7f",
+   "de": "Schließen",
+   "de_of": "6c14bd7f"
+  },
+  "line.detail.none": {
+   "zh": "这一步还没跑",
+   "en": "This step has not run yet",
+   "en_of": "bfaeb705",
+   "de": "Dieser Schritt ist noch nicht gelaufen",
+   "de_of": "bfaeb705"
+  },
+  "line.detail.outcome": {
+   "zh": "结果",
+   "en": "Result",
+   "en_of": "0a2c91ce",
+   "de": "Ergebnis",
+   "de_of": "0a2c91ce"
+  },
+  "line.detail.record": {
+   "zh": "记录：{file}",
+   "en": "Record: {file}",
+   "en_of": "7066a533",
+   "de": "Protokoll: {file}",
+   "de_of": "7066a533"
+  },
+  "line.detail.title": {
+   "zh": "工位 {n} · 板子 {uid}",
+   "en": "Station {n} · board {uid}",
+   "en_of": "d3d959dc",
+   "de": "Arbeitsplatz {n} · Platine {uid}",
+   "de_of": "d3d959dc"
+  },
+  "line.detail.value": {
+   "zh": "读数",
+   "en": "Reading",
+   "en_of": "ea4965c2",
+   "de": "Messwert",
+   "de_of": "ea4965c2"
+  },
+  "line.detail.where": {
+   "zh": "位置",
+   "en": "Where",
+   "en_of": "88c34452",
+   "de": "Ort",
+   "de_of": "88c34452"
+  },
+  "line.fw.blank": {
+   "zh": "空片",
+   "en": "Blank chip",
+   "en_of": "dad786db",
+   "de": "Leerer Chip",
+   "de_of": "dad786db"
+  },
+  "line.fw.none": {
+   "zh": "没有工装固件",
+   "en": "No fixture firmware",
+   "en_of": "0420c472",
+   "de": "Keine Fixture-Firmware",
+   "de_of": "0420c472"
+  },
+  "line.fw.old": {
+   "zh": "{v}（旧）",
+   "en": "{v} (old)",
+   "en_of": "700c6c19",
+   "de": "{v} (alt)",
+   "de_of": "700c6c19"
+  },
+  "line.fw_none_shipped": {
+   "zh": "没找到工装固件镜像，烧不了",
+   "en": "No fixture firmware image found, nothing to flash",
+   "en_of": "16d5671a",
+   "de": "Kein Fixture-Firmware-Image gefunden, Flashen nicht möglich",
+   "de_of": "16d5671a"
+  },
+  "line.fw_shipped": {
+   "zh": "本机带的工装固件：{v}",
+   "en": "Fixture firmware shipped here: {v}",
+   "en_of": "664f95be",
+   "de": "Hier mitgelieferte Fixture-Firmware: {v}",
+   "de_of": "664f95be"
+  },
+  "line.missing": {
+   "zh": "还没认出：{list}",
+   "en": "Not recognised yet: {list}",
+   "en_of": "619943ef",
+   "de": "Noch nicht erkannt: {list}",
+   "de_of": "619943ef"
+  },
+  "line.prep": {
+   "zh": "准备",
+   "en": "Prep",
+   "en_of": "cc3ce6df",
+   "de": "Vorbereitung",
+   "de_of": "cc3ce6df"
+  },
+  "line.prep.flash": {
+   "zh": "准备：烧工装固件",
+   "en": "Prep: flash fixture firmware",
+   "en_of": "1fc3538e",
+   "de": "Vorbereitung: Fixture-Firmware flashen",
+   "de_of": "1fc3538e"
+  },
+  "line.prep.wire": {
+   "zh": "准备：接线",
+   "en": "Prep: wiring",
+   "en_of": "e5ba3274",
+   "de": "Vorbereitung: Verkabelung",
+   "de_of": "e5ba3274"
+  },
+  "line.res.fail": {
+   "zh": "不合格",
+   "en": "Fail",
+   "en_of": "0efa0f59",
+   "de": "Nicht bestanden",
+   "de_of": "0efa0f59"
+  },
+  "line.res.pass": {
+   "zh": "合格",
+   "en": "Pass",
+   "en_of": "4fd078e9",
+   "de": "Bestanden",
+   "de_of": "4fd078e9"
+  },
+  "line.set.cancel": {
+   "zh": "取消",
+   "en": "Cancel",
+   "en_of": "4d0b4688",
+   "de": "Abbrechen",
+   "de_of": "4d0b4688"
+  },
+  "line.set.control": {
+   "zh": "控制口（RS232）",
+   "en": "Control port (RS232)",
+   "en_of": "e1c944b2",
+   "de": "Steueranschluss (RS232)",
+   "de_of": "e1c944b2"
+  },
+  "line.set.none": {
+   "zh": "（不用）",
+   "en": "(none)",
+   "en_of": "5a5d0a34",
+   "de": "(keiner)",
+   "de_of": "5a5d0a34"
+  },
+  "line.set.save": {
+   "zh": "保存",
+   "en": "Save",
+   "en_of": "fadf24db",
+   "de": "Speichern",
+   "de_of": "fadf24db"
+  },
+  "line.set.sim": {
+   "zh": "模拟板",
+   "en": "Simulated board",
+   "en_of": "674ea2c8",
+   "de": "Simulierte Platine",
+   "de_of": "674ea2c8"
+  },
+  "line.set.stlink": {
+   "zh": "ST-Link",
+   "en": "ST-Link",
+   "en_of": "47b9c89d",
+   "de": "ST-Link",
+   "de_of": "47b9c89d"
+  },
+  "line.set.title": {
+   "zh": "设置工位 {n}",
+   "en": "Station {n} settings",
+   "en_of": "d579edfc",
+   "de": "Arbeitsplatz {n} einstellen",
+   "de_of": "d579edfc"
+  },
+  "line.st.blocked": {
+   "zh": "停在这一步",
+   "en": "Stopped at this step",
+   "en_of": "c291c445",
+   "de": "An diesem Schritt angehalten",
+   "de_of": "c291c445"
+  },
+  "line.st.done": {
+   "zh": "✅ 可出厂",
+   "en": "✅ Ready to ship",
+   "en_of": "72d24b40",
+   "de": "✅ Versandbereit",
+   "de_of": "72d24b40"
+  },
+  "line.st.empty": {
+   "zh": "等板子插上",
+   "en": "Waiting for a board",
+   "en_of": "3768e667",
+   "de": "Wartet auf eine Platine",
+   "de_of": "3768e667"
+  },
+  "line.st.fail": {
+   "zh": "不合格：等人处理",
+   "en": "Failed: waiting for someone",
+   "en_of": "8d0205c5",
+   "de": "Nicht bestanden: wartet auf Bedienung",
+   "de_of": "8d0205c5"
+  },
+  "line.st.flashing": {
+   "zh": "正在烧写工装固件",
+   "en": "Flashing the fixture firmware",
+   "en_of": "c69a2a3e",
+   "de": "Fixture-Firmware wird geflasht",
+   "de_of": "c69a2a3e"
+  },
+  "line.st.needflash": {
+   "zh": "等烧写工装固件",
+   "en": "Waiting to flash the fixture firmware",
+   "en_of": "03e33134",
+   "de": "Wartet auf das Flashen der Fixture-Firmware",
+   "de_of": "03e33134"
+  },
+  "line.st.paused": {
+   "zh": "已暂停：点 ⋯ 继续",
+   "en": "Paused: use ⋯ to resume",
+   "en_of": "e37fa68d",
+   "de": "Pausiert: über ⋯ fortsetzen",
+   "de_of": "e37fa68d"
+  },
+  "line.st.run": {
+   "zh": "自动在跑",
+   "en": "Running by itself",
+   "en_of": "3680ae54",
+   "de": "Läuft automatisch",
+   "de_of": "3680ae54"
+  },
+  "line.st.wire": {
+   "zh": "等接线：软件逐根认",
+   "en": "Waiting for wiring: recognised one by one",
+   "en_of": "49d4e67e",
+   "de": "Wartet auf Verkabelung: wird einzeln erkannt",
+   "de_of": "49d4e67e"
+  },
+  "line.station": {
+   "zh": "工位 {n}",
+   "en": "Station {n}",
+   "en_of": "845b314b",
+   "de": "Arbeitsplatz {n}",
+   "de_of": "845b314b"
+  },
+  "line.step.1": {
+   "zh": "① 功能测试",
+   "en": "① Function test",
+   "en_of": "b5bf93f6",
+   "de": "① Funktionstest",
+   "de_of": "b5bf93f6"
+  },
+  "line.step.2": {
+   "zh": "② 老化",
+   "en": "② Aging",
+   "en_of": "236776c1",
+   "de": "② Alterung",
+   "de_of": "236776c1"
+  },
+  "line.step.3": {
+   "zh": "③ 验收老化结果",
+   "en": "③ Check the aging result",
+   "en_of": "1fa4cc04",
+   "de": "③ Alterungsergebnis prüfen",
+   "de_of": "1fa4cc04"
+  },
+  "line.step.4": {
+   "zh": "④ 安规",
+   "en": "④ Safety",
+   "en_of": "fd8808e2",
+   "de": "④ Sicherheitsprüfung",
+   "de_of": "fd8808e2"
+  },
+  "line.step.5": {
+   "zh": "⑤ 用户功能测试",
+   "en": "⑤ User function test",
+   "en_of": "194775dd",
+   "de": "⑤ Benutzer-Funktionstest",
+   "de_of": "194775dd"
+  },
+  "line.time": {
+   "zh": "这一步 {a}　总计 {b}",
+   "en": "This step {a}   total {b}",
+   "en_of": "2a746496",
+   "de": "Dieser Schritt {a}   gesamt {b}",
+   "de_of": "2a746496"
+  },
+  "line.title": {
+   "zh": "工装测试",
+   "en": "Fixture test",
+   "en_of": "903b24d4",
+   "de": "Fixture-Test",
+   "de_of": "903b24d4"
+  },
+  "line.type.line": {
+   "zh": "工装测试",
+   "en": "Fixture test",
+   "en_of": "903b24d4",
+   "de": "Fixture-Test",
+   "de_of": "903b24d4"
+  },
+  "line.type.rd": {
+   "zh": "研发测试",
+   "en": "R&D test",
+   "en_of": "6bca7e15",
+   "de": "Entwicklungstest",
+   "de_of": "6bca7e15"
+  },
+  "line.uid_unknown": {
+   "zh": "UID 未知",
+   "en": "UID unknown",
+   "en_of": "583c6d61",
+   "de": "UID unbekannt",
+   "de_of": "583c6d61"
+  },
+  "line.why.aging_mode": {
+   "zh": "工装固件还没有老化模式，停在这一步",
+   "en": "The fixture firmware has no aging mode yet; stopped at this step",
+   "en_of": "a98bd456",
+   "de": "Die Fixture-Firmware hat noch keinen Alterungsmodus; an diesem Schritt angehalten",
+   "de_of": "a98bd456"
+  },
+  "line.why.connect_failed": {
+   "zh": "控制口连不上",
+   "en": "Could not connect to the control port",
+   "en_of": "f2a31ee5",
+   "de": "Verbindung zum Steueranschluss nicht möglich",
+   "de_of": "f2a31ee5"
+  },
+  "line.why.flash_failed": {
+   "zh": "烧写失败：{detail}",
+   "en": "Flashing failed: {detail}",
+   "en_of": "7fedb576",
+   "de": "Flashen fehlgeschlagen: {detail}",
+   "de_of": "7fedb576"
+  },
+  "line.why.no_control": {
+   "zh": "没设控制口：点 ⋯ 里的「设置工位」",
+   "en": "No control port set: use ⋯ → Station settings",
+   "en_of": "f7c4ebcb",
+   "de": "Kein Steueranschluss gesetzt: ⋯ → Arbeitsplatz einstellen",
+   "de_of": "f7c4ebcb"
+  },
+  "line.why.no_fw": {
+   "zh": "控制口没回答：板上没有工装固件",
+   "en": "The control port does not answer: no fixture firmware on the board",
+   "en_of": "5fd22527",
+   "de": "Der Steueranschluss antwortet nicht: keine Fixture-Firmware auf der Platine",
+   "de_of": "5fd22527"
+  },
+  "line.why.no_image": {
+   "zh": "没找到工装固件镜像，烧不了",
+   "en": "No fixture firmware image found, nothing to flash",
+   "en_of": "16d5671a",
+   "de": "Kein Fixture-Firmware-Image gefunden, Flashen nicht möglich",
+   "de_of": "16d5671a"
+  },
+  "line.why.old_fw": {
+   "zh": "板上工装固件是 {have}，本机带的是 {want}",
+   "en": "The board has fixture firmware {have}; this PC ships {want}",
+   "en_of": "2e6e0073",
+   "de": "Auf der Platine ist Fixture-Firmware {have}, hier mitgeliefert ist {want}",
+   "de_of": "2e6e0073"
+  },
+  "line.why.removed": {
+   "zh": "板子已摘下，做到哪一步记着",
+   "en": "Board taken off; its progress is kept",
+   "en_of": "0d24e2a4",
+   "de": "Platine abgenommen; der Fortschritt bleibt gespeichert",
+   "de_of": "0d24e2a4"
+  },
+  "line.why.step_failed": {
+   "zh": "第 {step} 步结果：{outcome}",
+   "en": "Step {step} result: {outcome}",
+   "en_of": "a737f0cc",
+   "de": "Ergebnis von Schritt {step}: {outcome}",
+   "de_of": "a737f0cc"
+  },
   "shell.kind.repeat": {
    "zh": "按时长跑（时长在右边选）",
    "en": "Run for a duration (pick it on the right)",

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"PortTool/src/portmap"
 )
@@ -20,20 +21,25 @@ type Stations struct {
 	// New builds station n's panel; Serve sets it so every station talks to
 	// real ports, tests give fakes.
 	New func(n int) *Server
+	// NoLine keeps the stations' line loops from starting (tests that only
+	// look at the list).
+	NoLine bool
 
 	mu   sync.Mutex
 	list map[int]*station
 }
 
 type station struct {
-	srv *Server
-	h   http.Handler
+	srv  *Server
+	h    http.Handler
+	line *lineStation
 }
 
 // stationRec is one row of stations.json.
 type stationRec struct {
-	N      int    `json:"n"`
-	STLink string `json:"stlink,omitempty"`
+	N       int    `json:"n"`
+	STLink  string `json:"stlink,omitempty"`
+	Control string `json:"control,omitempty"` // the control port; "sim" is the simulated board
 }
 
 // StationsFile overrides where the station list is kept; tests set it.
@@ -61,26 +67,35 @@ func (st *Stations) Load() {
 	st.list = map[int]*station{}
 	for _, r := range recs {
 		if r.N >= 1 && st.list[r.N] == nil {
-			st.open(r.N, r.STLink)
+			st.open(r.N, r.STLink, r.Control)
 		}
 	}
 	if st.list[1] == nil {
-		st.open(1, "")
+		st.open(1, "", "")
 	}
 }
 
-func (st *Stations) open(n int, sn string) {
+func (st *Stations) open(n int, sn, control string) {
 	s := st.New(n)
 	s.Ports = portmap.ForStation(n)
 	s.STLinkSN = sn
-	st.list[n] = &station{srv: s, h: s.Handler()}
+	h := s.Handler()
+	ln := &lineStation{n: n, srv: s, h: h, control: control, act: make(chan string, 4), stop: make(chan struct{})}
+	ln.tile = lineTile{N: n, State: lnEmpty}
+	st.list[n] = &station{srv: s, h: h, line: ln}
+	if !st.NoLine {
+		go ln.run()
+	}
 }
 
 // save writes the list; a failed write costs only the memory of it.
 func (st *Stations) save() {
 	recs := make([]stationRec, 0, len(st.list))
 	for n, x := range st.list {
-		recs = append(recs, stationRec{N: n, STLink: x.srv.STLinkSN})
+		x.line.mu.Lock()
+		ctl := x.line.control
+		x.line.mu.Unlock()
+		recs = append(recs, stationRec{N: n, STLink: x.srv.STLinkSN, Control: ctl})
 	}
 	sort.Slice(recs, func(i, j int) bool { return recs[i].N < recs[j].N })
 	b, err := json.MarshalIndent(recs, "", "  ")
@@ -95,7 +110,7 @@ func (st *Stations) Close() {
 	st.mu.Lock()
 	defer st.mu.Unlock()
 	for _, x := range st.list {
-		x.srv.Close()
+		x.close()
 	}
 }
 
@@ -106,9 +121,15 @@ func (st *Stations) Handler() http.Handler {
 	mux.HandleFunc("/api/stations", st.handleList)
 	mux.HandleFunc("/api/stations/add", st.handleAdd)
 	mux.HandleFunc("/api/stations/remove", st.handleRemove)
-	mux.HandleFunc("/api/stations/stlink", st.handleSTLink)
+	mux.HandleFunc("/api/stations/set", st.handleSet)
+	mux.HandleFunc("/api/line", st.handleLine)
+	mux.HandleFunc("/api/line/act", st.handleLineAct)
 	mux.HandleFunc("/st/", st.handleStation)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" || r.URL.Path == "/line.html" {
+			servePage(w, "web/line.html")
+			return
+		}
 		st.mu.Lock()
 		h := st.list[1].h
 		st.mu.Unlock()
@@ -170,15 +191,17 @@ func (st *Stations) handleAdd(w http.ResponseWriter, r *http.Request) {
 	for st.list[n] != nil {
 		n++
 	}
-	st.open(n, "")
+	st.open(n, "", "")
 	st.save()
 	st.mu.Unlock()
 	writeJSON(w, 200, map[string]any{"n": n})
 }
 
 type stationBody struct {
-	N  int    `json:"n"`
-	SN string `json:"sn"`
+	N       int     `json:"n"`
+	SN      *string `json:"sn"`
+	Control *string `json:"control"`
+	Act     string  `json:"act"`
 }
 
 func readStationBody(w http.ResponseWriter, r *http.Request) (stationBody, bool) {
@@ -214,14 +237,15 @@ func (st *Stations) handleRemove(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 409, m("go.station.busy", "n", b.N))
 		return
 	}
-	x.srv.Close()
+	x.close()
 	delete(st.list, b.N)
 	st.save()
 	writeJSON(w, 200, map[string]any{"ok": true})
 }
 
-// handleSTLink records which ST-Link belongs to a station; "" forgets it.
-func (st *Stations) handleSTLink(w http.ResponseWriter, r *http.Request) {
+// handleSet records a station's ST-Link serial and control port; a field left
+// out keeps its value, "" forgets it.
+func (st *Stations) handleSet(w http.ResponseWriter, r *http.Request) {
 	b, ok := readStationBody(w, r)
 	if !ok {
 		return
@@ -233,7 +257,66 @@ func (st *Stations) handleSTLink(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 404, m("go.station.none", "n", b.N))
 		return
 	}
-	x.srv.STLinkSN = strings.TrimSpace(b.SN)
+	if b.SN != nil {
+		x.srv.STLinkSN = strings.TrimSpace(*b.SN)
+	}
+	if b.Control != nil {
+		x.line.mu.Lock()
+		x.line.control = strings.TrimSpace(*b.Control)
+		x.line.mu.Unlock()
+	}
 	st.save()
 	writeJSON(w, 200, map[string]any{"ok": true})
 }
+
+// close stops the station's line loop and drops its board.
+func (x *station) close() {
+	select {
+	case <-x.line.stop:
+	default:
+		close(x.line.stop)
+	}
+	x.srv.Close()
+}
+
+// handleLine is every tile of the big screen.
+func (st *Stations) handleLine(w http.ResponseWriter, r *http.Request) {
+	st.mu.Lock()
+	ns := make([]int, 0, len(st.list))
+	for n := range st.list {
+		ns = append(ns, n)
+	}
+	sort.Ints(ns)
+	tiles := make([]lineTile, 0, len(ns))
+	for _, n := range ns {
+		tiles = append(tiles, st.list[n].line.view())
+	}
+	st.mu.Unlock()
+	writeJSON(w, 200, map[string]any{"tiles": tiles, "now": time.Now()})
+}
+
+// handleLineAct is a button on a tile: flash, continue, restart, pause, resume, remove.
+func (st *Stations) handleLineAct(w http.ResponseWriter, r *http.Request) {
+	b, ok := readStationBody(w, r)
+	if !ok {
+		return
+	}
+	st.mu.Lock()
+	x := st.list[b.N]
+	st.mu.Unlock()
+	switch {
+	case x == nil:
+		writeErr(w, 404, m("go.station.none", "n", b.N))
+	case !lineActs[b.Act]:
+		writeErr(w, 400, m("go.station.bad_request"))
+	default:
+		select {
+		case x.line.act <- b.Act:
+			writeJSON(w, 200, map[string]any{"ok": true})
+		default:
+			writeErr(w, 409, m("go.station.busy", "n", b.N))
+		}
+	}
+}
+
+var lineActs = map[string]bool{"flash": true, "continue": true, "restart": true, "pause": true, "resume": true, "remove": true}
