@@ -124,6 +124,8 @@ func (st *Stations) Handler() http.Handler {
 	mux.HandleFunc("/api/stations/set", st.handleSet)
 	mux.HandleFunc("/api/line", st.handleLine)
 	mux.HandleFunc("/api/line/act", st.handleLineAct)
+	mux.HandleFunc("/api/line/history", st.handleLineHistory)
+	mux.HandleFunc("/api/line/record", st.handleLineRecord)
 	mux.HandleFunc("/st/", st.handleStation)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" || r.URL.Path == "/line.html" {

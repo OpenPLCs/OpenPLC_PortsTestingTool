@@ -1,5 +1,7 @@
 /* The fixture line's big screen (PORTTOOL-FLOW.md C.3.10). */
-#lnwall{padding:12px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.lnmain{display:grid;grid-template-columns:1fr 340px;gap:12px;padding:12px 16px;align-items:start}
+@media (max-width:900px){.lnmain{grid-template-columns:1fr}}
+#lnwall{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
 .tile{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--off);border-radius:6px;
   padding:8px 10px;display:flex;flex-direction:column;gap:3px;cursor:pointer;min-height:132px}
 .tile.empty{cursor:default;color:var(--ink3);border-left-color:var(--line)}
@@ -28,3 +30,11 @@
 .lnform{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;margin:8px 0}
 .popmenu{position:absolute;background:#fff;border:1px solid var(--line);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:8}
 .popmenu div{padding:4px 14px;cursor:pointer} .popmenu div:hover{background:var(--accent-bg)}
+#lnside{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.card h3{font-size:13px;margin:0 0 6px}
+.card table{border-collapse:collapse;width:100%;font-size:12px}
+.card td,.card th{padding:1px 4px;text-align:left;border-bottom:1px solid var(--line2)}
+.agerow{display:flex;gap:6px;align-items:flex-start;font-size:12.5px;margin:2px 0}
+.pill{font-size:11px;padding:0 5px;border-radius:3px}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.bad{background:var(--err-bg);color:var(--err)}

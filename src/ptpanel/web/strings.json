@@ -1703,6 +1703,97 @@
    "de": "+ Arbeitsplatz hinzufügen",
    "de_of": "f16fd6a7"
   },
+  "line.age.hours": {
+   "zh": "老化时长",
+   "en": "Aging time",
+   "en_of": "1de9b0fc",
+   "de": "Alterungsdauer",
+   "de_of": "1de9b0fc"
+  },
+  "line.age.hours_n": {
+   "zh": "{n} 小时",
+   "en": "{n} h",
+   "en_of": "42f45429",
+   "de": "{n} h",
+   "de_of": "42f45429"
+  },
+  "line.age.item.aout": {
+   "zh": "AO → AI：两个点读回比对（要线束）",
+   "en": "AO → AI: two points read back (needs the harness)",
+   "en_of": "859f625f",
+   "de": "AO → AI: zwei Punkte zurückgelesen (Kabelbaum nötig)",
+   "de_of": "859f625f"
+  },
+  "line.age.item.can": {
+   "zh": "CAN：控制器内部回环",
+   "en": "CAN: controller-internal loopback",
+   "en_of": "07ecc580",
+   "de": "CAN: interne Schleife des Controllers",
+   "de_of": "07ecc580"
+  },
+  "line.age.item.dout": {
+   "zh": "DO / 继电器 → DI：逐路通断（要线束）",
+   "en": "DO / relays → DI: each channel on and off (needs the harness)",
+   "en_of": "3f216175",
+   "de": "DO / Relais → DI: jeder Kanal ein und aus (Kabelbaum nötig)",
+   "de_of": "3f216175"
+  },
+  "line.age.item.rs232": {
+   "zh": "RS232：C05、C06 短接自发自收（要短接线）",
+   "en": "RS232: C05 and C06 shorted, sent and received back (needs the link)",
+   "en_of": "7f0aa18e",
+   "de": "RS232: C05 und C06 gebrückt, senden und zurückempfangen (Brücke nötig)",
+   "de_of": "7f0aa18e"
+  },
+  "line.age.item.rtc": {
+   "zh": "RTC：32.768 kHz 晶振在跑，偏差在研发卡片的上限内",
+   "en": "RTC: the 32.768 kHz crystal runs, deviation within the R&D card's limit",
+   "en_of": "4487ee23",
+   "de": "RTC: 32,768-kHz-Quarz läuft, Abweichung innerhalb der Grenze der Entwicklungskarte",
+   "de_of": "4487ee23"
+  },
+  "line.age.item.sd": {
+   "zh": "SD：写读比对",
+   "en": "SD: write, read back, compare",
+   "en_of": "c14bc4e6",
+   "de": "SD: schreiben, zurücklesen, vergleichen",
+   "de_of": "c14bc4e6"
+  },
+  "line.age.item.sdram": {
+   "zh": "SDRAM：整片写读比对",
+   "en": "SDRAM: whole chip written and compared",
+   "en_of": "85891c8b",
+   "de": "SDRAM: ganzer Chip geschrieben und verglichen",
+   "de_of": "85891c8b"
+  },
+  "line.age.item.temp": {
+   "zh": "温度：两路板载温度在范围内",
+   "en": "Temperature: both on-board sensors in range",
+   "en_of": "d4a10f51",
+   "de": "Temperatur: beide Sensoren im Bereich",
+   "de_of": "d4a10f51"
+  },
+  "line.age.save": {
+   "zh": "保存",
+   "en": "Save",
+   "en_of": "fadf24db",
+   "de": "Speichern",
+   "de_of": "fadf24db"
+  },
+  "line.age.saved": {
+   "zh": "已保存，下一块板写任务时生效",
+   "en": "Saved; applies to the next task written",
+   "en_of": "6b4c6699",
+   "de": "Gespeichert; gilt für den nächsten Auftrag",
+   "de_of": "6b4c6699"
+  },
+  "line.age.title": {
+   "zh": "老化项（写进板子的任务）",
+   "en": "Aging items (the task written to the board)",
+   "en_of": "279fcdd7",
+   "de": "Alterungspunkte (der Auftrag auf der Platine)",
+   "de_of": "279fcdd7"
+  },
   "line.btn.cancelage": {
    "zh": "取消老化",
    "en": "Cancel aging",
@@ -1794,6 +1885,27 @@
    "de": "Auf {v} aktualisieren",
    "de_of": "dca67166"
   },
+  "line.col.board": {
+   "zh": "板子",
+   "en": "Board",
+   "en_of": "d2d2de15",
+   "de": "Platine",
+   "de_of": "d2d2de15"
+  },
+  "line.col.step": {
+   "zh": "步骤",
+   "en": "Step",
+   "en_of": "d13bfa13",
+   "de": "Schritt",
+   "de_of": "d13bfa13"
+  },
+  "line.col.time": {
+   "zh": "时间",
+   "en": "Time",
+   "en_of": "89b4aa63",
+   "de": "Zeit",
+   "de_of": "89b4aa63"
+  },
   "line.confirm.cancelage": {
    "zh": "取消这块板的老化？这块板这次不能出厂。",
    "en": "Cancel this board's aging? It cannot ship this time.",
@@ -1829,12 +1941,40 @@
    "de": "Ergebnis",
    "de_of": "0a2c91ce"
   },
+  "line.detail.reason": {
+   "zh": "说明：{r}",
+   "en": "Note: {r}",
+   "en_of": "75a8edea",
+   "de": "Hinweis: {r}",
+   "de_of": "75a8edea"
+  },
   "line.detail.record": {
    "zh": "记录：{file}",
    "en": "Record: {file}",
    "en_of": "7066a533",
    "de": "Protokoll: {file}",
    "de_of": "7066a533"
+  },
+  "line.detail.ship": {
+   "zh": "出厂单",
+   "en": "Shipping sheet",
+   "en_of": "5bd2b75f",
+   "de": "Versandblatt",
+   "de_of": "5bd2b75f"
+  },
+  "line.detail.ship_ok": {
+   "zh": "五步全过，可以出厂",
+   "en": "All five steps passed: ready to ship",
+   "en_of": "836ee148",
+   "de": "Alle fünf Schritte bestanden: versandbereit",
+   "de_of": "836ee148"
+  },
+  "line.detail.show": {
+   "zh": "看这份记录",
+   "en": "Show this record",
+   "en_of": "9344df4b",
+   "de": "Protokoll anzeigen",
+   "de_of": "9344df4b"
   },
   "line.detail.title": {
    "zh": "工位 {n} · 板子 {uid}",
@@ -1982,6 +2122,41 @@
    "en_of": "d579edfc",
    "de": "Arbeitsplatz {n} einstellen",
    "de_of": "d579edfc"
+  },
+  "line.side.oven": {
+   "zh": "在高温柜里",
+   "en": "In the oven",
+   "en_of": "c36812c5",
+   "de": "Im Wärmeschrank",
+   "de_of": "c36812c5"
+  },
+  "line.side.oven_away": {
+   "zh": "拔走 {t}",
+   "en": "Away {t}",
+   "en_of": "45a316ed",
+   "de": "Weg seit {t}",
+   "de_of": "45a316ed"
+  },
+  "line.side.oven_none": {
+   "zh": "没有",
+   "en": "None",
+   "en_of": "8dcff1eb",
+   "de": "Keine",
+   "de_of": "8dcff1eb"
+  },
+  "line.side.subs": {
+   "zh": "提交记录（所有工位）",
+   "en": "Submitted results (all stations)",
+   "en_of": "4e00a21f",
+   "de": "Abgegebene Ergebnisse (alle Arbeitsplätze)",
+   "de_of": "4e00a21f"
+  },
+  "line.side.subs_none": {
+   "zh": "还没有",
+   "en": "None yet",
+   "en_of": "9647b856",
+   "de": "Noch keine",
+   "de_of": "9647b856"
   },
   "line.st.agego": {
    "zh": "已进入老化模式：拔线拿去高温柜",
@@ -12967,11 +13142,11 @@
    "de_of": "94394e2c"
   },
   "cfg.src_both": {
-   "zh": "测试方式：每一项写着用标准机还是外部仪器（工装测试不问人）",
-   "en": "Test method: each item says whether it uses the reference board or an outside instrument (the fixture tests ask nobody)",
-   "en_of": "8b4a99cc",
-   "de": "Prüfmethode: Bei jeder Prüfung steht, ob sie das Referenzgerät oder ein externes Messgerät nutzt (die Vorrichtungstests fragen niemanden)",
-   "de_of": "8b4a99cc"
+   "zh": "对端：每一项写着用标准机、上位机还是外部仪器（工装测试不问人）",
+   "en": "Peer: each item says whether it uses the reference board, this PC or an outside instrument (the fixture tests ask nobody)",
+   "en_of": "943a3d3e",
+   "de": "Gegenstelle: Bei jeder Prüfung steht, ob sie das Referenzgerät, diesen PC oder ein externes Messgerät nutzt (die Vorrichtungstests fragen niemanden)",
+   "de_of": "943a3d3e"
   },
   "cfg.run.expect_once": {
    "zh": "采样 3 秒，每一帧都按设定值判，第一次不符就判不过。",
@@ -12988,11 +13163,11 @@
    "de_of": "756ba737"
   },
   "cfg.method": {
-   "zh": "测试方式",
-   "en": "Test method",
-   "en_of": "8ed016b1",
-   "de": "Prüfmethode",
-   "de_of": "8ed016b1"
+   "zh": "对端",
+   "en": "Peer",
+   "en_of": "58e5dbe7",
+   "de": "Gegenstelle",
+   "de_of": "58e5dbe7"
   }
  }
 }

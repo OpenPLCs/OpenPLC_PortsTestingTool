@@ -615,13 +615,28 @@ func (x *lineStation) writeAging(i int) {
 		if path, err = safePlanPath(name); err == nil {
 			var plan ptplan.Plan
 			if plan, err = ptplan.Load(path); err == nil {
-				lines, err = agingTask(&plan, loadStageCfgs().Aging.PortsOff)
+				off := loadStageCfgs().Aging.PortsOff
+				lines, err = agingTask(&plan, off, cardPpmMax())
+				// The simulated board has no harness to loop AO into AI.
+				if err == nil && !off["aout"] && !x.view().Sim {
+					var an []string
+					cal := x.srv.readBoardCal(x.view().UID)
+					if cal.State != calOK {
+						err = fmt.Errorf("the board's calibration area is %s", cal.State)
+					} else if an, err = agingAnalog(cal.Ch, effectiveRanges()); err == nil {
+						lines = append(lines, an...)
+					}
+				}
 			}
 		}
 	}
 	secs := agingSecs()
 	cmds := append([]string{fmt.Sprintf("pt.age begin secs=%d", secs)}, prefixed("pt.age add ", lines)...)
 	cmds = append(cmds, "pt.age commit")
+	if x.view().Sim {
+		// The simulated board never goes to the oven: start it here.
+		cmds = append(cmds, "pt.age run")
+	}
 	for _, c := range cmds {
 		if err != nil {
 			break
@@ -682,12 +697,14 @@ func (x *lineStation) readAging() (ageState, error) {
 
 // watchAging waits, on the bench, for the board's task to end; then ③.
 func (x *lineStation) watchAging() {
-	if time.Since(x.lastAge) < 2*time.Second {
+	// A real board starts aging at its next power-up, in the oven; ③ waits for
+	// it to come back. Only the simulated one ages on the bench.
+	if !x.view().Sim || time.Since(x.lastAge) < 2*time.Second {
 		return
 	}
 	x.lastAge = time.Now()
 	a, err := x.readAging()
-	if err == nil && a.State != "run" {
+	if err == nil && a.State != "run" && a.State != "paused" {
 		x.checkAging(3)
 	}
 }
@@ -709,7 +726,7 @@ func (x *lineStation) checkAging(i int) {
 		}
 		x.writeOwn(i, ptreport.OutcomeFail, fmt.Sprintf("aging failed %d times in %d rounds; first: %s", a.Fails, a.Rounds, got))
 		x.fail(i, ptreport.OutcomeFail, m("line.why.age_failed", "fails", a.Fails, "first", got))
-	case a.State == "run":
+	case a.State == "run" || a.State == "paused":
 		x.enter(lnShort, m("line.why.age_short", "elapsed", fmtSecs(a.Elapsed), "secs", fmtSecs(a.Secs)))
 	default:
 		_, _ = x.send("pt.age clear")

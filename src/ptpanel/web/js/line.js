@@ -32,6 +32,13 @@ const STATE_KEY = { empty: "line.st.empty", needflash: "line.st.needflash", flas
   run: "line.st.run", fail: "line.st.fail", blocked: "line.st.blocked", done: "line.st.done", agego: "line.st.agego", short: "line.st.short" };
 const STATE_CLS = { empty: "empty", needflash: "wait", flashing: "run", wire: "wait", run: "run", fail: "fail", blocked: "wait", done: "done", agego: "wait", short: "wait" };
 const NUMS = "①②③④⑤";
+// A record's first step id, as the line writes it, and the step it is.
+const STEP_OF_ID = { functional: 1, aging: 2, aging_check: 3, safety: 4, user: 5 };
+// The aging items, in the order the task lists them (PORTTOOL-FLOW.md C.3.9).
+const AGE_ITEMS = [["temp", "line.age.item.temp"], ["sd", "line.age.item.sd"], ["sdram", "line.age.item.sdram"],
+  ["rtc", "line.age.item.rtc"], ["dout", "line.age.item.dout"], ["aout", "line.age.item.aout"],
+  ["rs232", "line.age.item.rs232"], ["can", "line.age.item.can"]];
+const AGE_HOURS = ["1", "2", "4", "8"];
 
 let tiles = [], now = Date.now();
 
@@ -149,6 +156,97 @@ async function refresh() {
   render();
 }
 
+let history = { oven: [], subs: [] }, histNow = Date.now(), ageCfg = null, ageNote = "";
+
+async function refreshSide() {
+  const h = await api("/api/line/history");
+  if (h.oven) { history = h; histNow = Date.parse(h.now) || Date.now(); }
+  if (!ageCfg) { const c = await api("/api/stagecfg"); ageCfg = c.aging || { duration: "4" }; }
+  renderSide();
+}
+
+function pill(o) { return el("span", "pill " + (o === "PASS" ? "ok" : "bad"), o === "PASS" ? T("line.res.pass") : T("line.res.fail")); }
+function stepName(id) { return STEP_OF_ID[id] ? T(STEP_KEY[STEP_OF_ID[id]]) : id; }
+
+function renderSide() {
+  const side = $("#lnside"); side.textContent = "";
+  // Aging items: the template's aging part, saved to the "aging" configuration.
+  const ac = el("div", "card"); add(ac, el("h3", null, T("line.age.title")));
+  const off = (ageCfg && ageCfg.ports_off) || {};
+  for (const [port, key] of AGE_ITEMS) {
+    const r = el("label", "agerow"), cb = el("input"); cb.type = "checkbox"; cb.checked = !off[port];
+    cb.onchange = () => {
+      ageCfg.ports_off = Object.assign({}, ageCfg.ports_off || {});
+      if (cb.checked) { delete ageCfg.ports_off[port]; } else { ageCfg.ports_off[port] = true; }
+      ageNote = "";
+    };
+    add(ac, add(r, cb, el("span", null, T(key))));
+  }
+  const hr = el("div", "agerow"), sel = el("select");
+  for (const h of AGE_HOURS) { const o = el("option", null, T("line.age.hours_n", { n: h })); o.value = h; sel.appendChild(o); }
+  sel.value = (ageCfg && ageCfg.duration) || "4";
+  sel.onchange = () => { ageCfg.duration = sel.value; ageNote = ""; };
+  const save = el("button", "act", T("line.age.save"));
+  save.onclick = async () => {
+    const r = await api("/api/stagecfg", { stage: "aging", cfg: ageCfg });
+    if (r.error) { alert(r.error); return; }
+    ageCfg = r.aging; ageNote = T("line.age.saved"); renderSide();
+  };
+  add(ac, add(hr, el("span", null, T("line.age.hours")), sel, save));
+  if (ageNote) { add(ac, el("div", "hint", ageNote)); }
+  // Boards away in the oven.
+  const ov = el("div", "card"); add(ov, el("h3", null, T("line.side.oven")));
+  if (!history.oven.length) { add(ov, el("div", "hint", T("line.side.oven_none"))); }
+  for (const o of history.oven) {
+    add(ov, add(el("div", "agerow"), el("span", "mono", "…" + o.uid.slice(-8)),
+      el("span", "time", T("line.side.oven_away", { t: fmt(histNow - Date.parse(o.since)) }))));
+  }
+  // The latest records across every station.
+  const sc = el("div", "card"); add(sc, el("h3", null, T("line.side.subs")));
+  if (!history.subs.length) { add(sc, el("div", "hint", T("line.side.subs_none"))); }
+  else {
+    const tb = el("table");
+    add(tb, add(el("tr"), el("th", null, T("line.col.time")), el("th", null, T("line.col.board")),
+      el("th", null, T("line.col.step")), el("th", null, T("line.detail.outcome"))));
+    for (const x of history.subs) {
+      const tr = el("tr"), at = new Date(x.at);
+      add(tr, el("td", "mono", String(at.getHours()).padStart(2, "0") + ":" + String(at.getMinutes()).padStart(2, "0")),
+        el("td", "mono", "…" + x.uid.slice(-8)), el("td", null, stepName(x.step)), add(el("td"), pill(x.outcome)));
+      tr.style.cursor = "pointer"; tr.onclick = () => showRecord(x.uid, x.file);
+      tb.appendChild(tr);
+    }
+    sc.appendChild(tb);
+  }
+  add(side, ac, ov, sc);
+}
+
+// One record's numbered items, or its reason when it has none.
+async function recordTable(uid, file) {
+  const box = el("div");
+  const j = await api("/api/line/record?uid=" + encodeURIComponent(uid) + "&file=" + encodeURIComponent(file));
+  const rep = j.record || {};
+  add(box, el("div", "hint mono", T("line.detail.record", { file })));
+  for (const st of rep.steps || []) {
+    if (st.reason) { add(box, el("div", "hint", T("line.detail.reason", { r: st.reason }))); }
+    if (!(st.items || []).length) { continue; }
+    const tb = el("table"), hr = el("tr");
+    add(hr, el("th", null, T("line.detail.where")), el("th", null, T("line.detail.outcome")), el("th", null, T("line.detail.value")));
+    tb.appendChild(hr);
+    for (const it of st.items) { add(tb, add(el("tr"), el("td", null, it.where || ""), add(el("td"), pill(it.outcome)), el("td", "mono", it.value || ""))); }
+    box.appendChild(tb);
+  }
+  return box;
+}
+
+async function showRecord(uid, file) {
+  const tbl = await recordTable(uid, file);
+  modal(b => {
+    add(b, el("h2", null, "…" + uid.slice(-8)), tbl);
+    const close = el("button", null, T("line.detail.close")); close.onclick = closeModal;
+    add(b, add(el("div", "acts"), close));
+  });
+}
+
 function modal(build) {
   const m = $("#lnmodal"), b = $("#lnbox");
   b.textContent = ""; build(b); m.classList.add("open");
@@ -184,10 +282,19 @@ async function detail(t) {
   const f = await api("/st/" + t.n + "/api/full");
   modal(b => {
     add(b, el("h2", null, T("line.detail.title", { n: t.n, uid: t.uid || T("line.uid_unknown") })));
+    if (t.state === "done") {
+      add(b, el("h3", null, T("line.detail.ship")), el("div", null, T("line.detail.ship_ok")));
+    }
     for (let i = 1; i <= 5; i++) {
-      add(b, el("b", null, T(STEP_KEY[i])));
+      const head = add(el("div", "agerow"), el("b", null, T(STEP_KEY[i])));
+      if ((t.results || {})[i]) { head.appendChild(pill(t.results[i])); }
+      add(b, head);
       const rec = (t.records || {})[i];
-      if (rec) { add(b, el("div", "hint mono", T("line.detail.record", { file: rec }))); }
+      if (rec && t.uid) {
+        const show = el("button", "act", T("line.detail.show"));
+        show.onclick = async () => { show.replaceWith(await recordTable(t.uid, rec)); };
+        add(b, show);
+      }
       if (t.step === i && f.run && f.run.steps && f.run.steps.length) {
         const tb = el("table"), hr = el("tr");
         add(hr, el("th", null, T("line.detail.where")), el("th", null, T("line.detail.outcome")), el("th", null, T("line.detail.value")));
@@ -227,4 +334,6 @@ $("#lntitle").textContent = T("line.title");
 $("#lnmodal").onclick = e => { if (e.target.id === "lnmodal") { closeModal(); } };
 initType();
 refresh();
+refreshSide();
 setInterval(refresh, 1000);
+setInterval(refreshSide, 5000);

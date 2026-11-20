@@ -95,11 +95,10 @@ func TestLineRunsThroughAging(t *testing.T) {
 func TestLineAgingFailureFailsStepThree(t *testing.T) {
 	var fail atomic.Bool
 	_, x := lineOnSim(t, &fail)
-	old := agingSpec[3].Step
-	t.Cleanup(func() { agingSpec[3].Step = old })
+	old := agingSpec[3]
+	t.Cleanup(func() { agingSpec[3] = old })
 	agingSpec[3].Step = "sdram-stress" // rtc.read judged by the SDRAM sweep's fields: never holds
 	agingSpec[3].Target, agingSpec[3].Args = "rtc.read", ""
-	t.Cleanup(func() { agingSpec[3].Target = "" })
 	v := waitState(t, x, lnFail, 90*time.Second)
 	if v.Step != 3 || v.Results[3] != "FAIL" || v.Why.Key != "line.why.age_failed" {
 		t.Fatalf("failed at step %d with %v, why %v; want ③ FAIL from the board's record", v.Step, v.Results, v.Why)
