@@ -1339,6 +1339,34 @@
    "de": "Die simulierte Platine {path} startet nicht: {detail}",
    "de_of": "c086ba9e"
   },
+  "go.station.bad_request": {
+   "zh": "工位请求看不懂，请刷新页面再试。",
+   "en": "The station request could not be read. Reload the page and try again.",
+   "en_of": "3bf56f4c",
+   "de": "Die Arbeitsplatz-Anfrage war nicht lesbar. Seite neu laden und erneut versuchen.",
+   "de_of": "3bf56f4c"
+  },
+  "go.station.busy": {
+   "zh": "工位 {n} 还连着板子，先断开再删。",
+   "en": "Station {n} still has a board connected. Disconnect it before removing the station.",
+   "en_of": "bb27a203",
+   "de": "Am Arbeitsplatz {n} ist noch eine Platine verbunden. Erst trennen, dann entfernen.",
+   "de_of": "bb27a203"
+  },
+  "go.station.keep_first": {
+   "zh": "1 号工位不能删。",
+   "en": "Station 1 cannot be removed.",
+   "en_of": "f50f5aab",
+   "de": "Arbeitsplatz 1 kann nicht entfernt werden.",
+   "de_of": "f50f5aab"
+  },
+  "go.station.none": {
+   "zh": "没有工位 {n}。",
+   "en": "There is no station {n}.",
+   "en_of": "d774df48",
+   "de": "Es gibt keinen Arbeitsplatz {n}.",
+   "de_of": "d774df48"
+  },
   "go.uid.missing": {
    "zh": "pt.id 的回答里没有 uid",
    "en": "The answer to pt.id has no uid",

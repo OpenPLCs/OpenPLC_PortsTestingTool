@@ -103,7 +103,8 @@ func (s *Server) configWhy(st ptstages.Step) *msg {
 func (s *Server) userLevelStep(uid string) ptstages.Func {
 	files, _ := ptstages.LocateUserLevelFiles(deliveryDir())
 	return ptstages.Stage6{
-		Files: files, Demo: files.Demo, Port: ptecho.FindCDC, UID: uid,
+		Files: files, Demo: files.Demo, Port: func() (string, error) { return ptecho.FindCDCFor(uid) },
+		UID: uid, STLinkSN: s.STLinkSN,
 		Test: s.configStep(ptitems.User),
 	}.Step()
 }

@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"PortTool/src/portmap"
 	"PortTool/src/ptboard"
 	"PortTool/src/ptecho"
 	"PortTool/src/ptproto"
@@ -280,10 +279,10 @@ func (s *Server) openChosenLink(port string) {
 					return "", fmt.Errorf("no adapter chosen for %s in the connection block", port)
 				}
 				if port == "usb" {
-					find = ptecho.FindCDC
+					find = s.findCDC
 				}
 				var com string
-				if com, err = pickedOr(port, find)(); err == nil {
+				if com, err = s.pickedOr(port, find)(); err == nil {
 					if _, err = s.bindSerialPeer(port, com, 0); err == nil {
 						kept()
 						return
@@ -443,7 +442,7 @@ func (s *Server) handleRelease(w http.ResponseWriter, r *http.Request) {
 	busy := []string{}
 	if !sim {
 		for _, port := range []string{"usb", "rs485", "can"} {
-			com, baud, ok := portmap.Peer(port)
+			com, baud, ok := s.Ports.Peer(port)
 			if !ok {
 				continue
 			}

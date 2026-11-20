@@ -6,7 +6,7 @@ async function api(path, body) {
                       body:JSON.stringify(body)} : {};
   // A request cut off (the page reloading, the panel gone) is an error reply, not a throw.
   let r;
-  try { r = await fetch(path, opt); } catch (e) { return {error:T("ui.api.unreachable")}; }
+  try { r = await fetch(apiURL(path), opt); } catch (e) { return {error:T("ui.api.unreachable")}; }
   const j = await r.json().catch(() => ({error:T("ui.api.1")}));
   return localize(j);
 }
@@ -141,7 +141,7 @@ $("#disconnect").onclick = async () => {
 
 function startEvents() {
   if (evtSource) evtSource.close();
-  evtSource = new EventSource("/api/events");
+  evtSource = new EventSource(apiURL("/api/events"));
   evtSource.onmessage = e => {
     const d = JSON.parse(e.data);
     addLog(d.kind, d.msg ? () => localize(d.msg) : d.line, d.at);

@@ -29,7 +29,7 @@ function sdfSize(n) {
 async function sdfCall(what, path, opt) {
   sdfBusy = what; renderRight();
   try {
-    const r = await fetch(path, opt || {});
+    const r = await fetch(apiURL(path), opt || {});
     if ((r.headers.get("Content-Type") || "").startsWith("application/octet-stream")) { return { blob: await r.blob() }; }
     return localize(await r.json().catch(() => ({ error: T("ui.api.1") })));
   } finally { sdfBusy = ""; renderRight(); }

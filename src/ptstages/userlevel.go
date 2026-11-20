@@ -97,8 +97,9 @@ type Stage6 struct {
 	// Test is the user-level test against the demo.
 	Test Func
 
-	// Flasher defaults to stlink.Open().
-	Flasher Flasher
+	// Flasher defaults to the ST-Link named by STLinkSN.
+	Flasher  Flasher
+	STLinkSN string
 	// RunIAPTool runs IAPTool and returns what it printed; defaults to exec.
 	RunIAPTool func(exe string, args ...string) (string, error)
 	// PortWait bounds how long Port is retried after the bootloader is
@@ -145,7 +146,7 @@ func (u Stage6) Step() Func {
 		}
 		fl := u.Flasher
 		if fl == nil {
-			p, err := stlink.Open()
+			p, err := stlink.OpenSN(u.STLinkSN)
 			if err != nil {
 				return ptreport.StepResult{Outcome: ptreport.OutcomeError, Reason: "ST-Link: " + err.Error()}
 			}

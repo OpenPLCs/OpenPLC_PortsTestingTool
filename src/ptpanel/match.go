@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"PortTool/src/portmap"
 	"PortTool/src/ptboard"
 	"PortTool/src/ptmatch"
 	"PortTool/src/ptproto"
@@ -282,7 +281,7 @@ func (s *Server) doMatch(b *ptboard.Board) (res matchResult, ran bool) {
 		// A recognised adapter is chosen, not opened (decision 168); the simulated
 		// board plays its own peers.
 		if o.OK && !res.sim {
-			portmap.SetPeer(t, o.COM, serialx.DefaultBaud)
+			s.Ports.SetPeer(t, o.COM, serialx.DefaultBaud)
 		}
 		res.terms[t] = tr
 		s.say(tr.Why)

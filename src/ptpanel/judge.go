@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"PortTool/src/ptboard"
+	"PortTool/src/ptecho"
 	"PortTool/src/ptplan"
 	"PortTool/src/ptproto"
 	"PortTool/src/simboard"
@@ -162,4 +163,13 @@ func uidOf(b *ptboard.Board) (string, error) {
 		}
 	}
 	return "", msgError{m("go.uid.missing")}
+}
+
+// findCDC names this station's board's USB CDC port: by the UID when the panel
+// has asked for it, else the only one on the PC (decision 190).
+func (s *Server) findCDC() (string, error) {
+	s.mu.Lock()
+	uid := s.uid
+	s.mu.Unlock()
+	return ptecho.FindCDCFor(uid)
 }

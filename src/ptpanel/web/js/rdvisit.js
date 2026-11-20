@@ -257,7 +257,7 @@ function rdLeave() {
 function rdUnload() {
   const v = rdVisit;
   if (!v) { return; }
-  const post = (url, body) => fetch(url, { method: "POST", keepalive: true,
+  const post = (url, body) => fetch(apiURL(url), { method: "POST", keepalive: true,
     headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => {});
   if (v.port === "aout" && (anaAoOn[1] || anaAoOn[2])) { post("/api/command", { cmd: "pt.stop aout" }); }
   const st = RD_SESSION[v.port] && rdState(v.port);

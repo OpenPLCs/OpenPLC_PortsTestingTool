@@ -104,6 +104,13 @@ type Server struct {
 	MatchPorts func() ([]serialx.PortInfo, error)
 	MatchOpen  func(name string, baud int) (io.ReadWriteCloser, error)
 	matchSt    matchState
+
+	// One fixture station's own pieces (decision 190, PORTTOOL-FLOW.md C.3.10):
+	// its adapter mapping (nil is porttool_ports.json), its ST-Link's serial
+	// number ("" is whichever is plugged in), and its board's SD slot lock.
+	Ports    *portmap.Map
+	STLinkSN string
+	sdfMu    sync.Mutex
 }
 
 // New returns a panel that talks to real serial ports.
@@ -307,7 +314,7 @@ func (s *Server) stateJSON() map[string]any {
 		st["ports"] = ports
 	}
 	// The adapters chosen last time, sent with every state.
-	st["saved"] = portmap.Saved()
+	st["saved"] = s.Ports.Saved()
 	return st
 }
 
@@ -357,7 +364,7 @@ func (s *Server) handleLink(w http.ResponseWriter, r *http.Request) {
 	if baud == 0 {
 		baud = serialx.DefaultBaud
 	}
-	portmap.SetPeer(body.Port, body.COM, baud)
+	s.Ports.SetPeer(body.Port, body.COM, baud)
 	writeJSON(w, 200, s.stateJSON())
 }
 
@@ -389,7 +396,7 @@ func (s *Server) handleUnlink(w http.ResponseWriter, r *http.Request) {
 	}
 	s.unbindLink(body.Port)
 	// A person unbinding forgets the adapter; unbindAllLinks on disconnect does not.
-	portmap.ForgetPeer(body.Port)
+	s.Ports.ForgetPeer(body.Port)
 	writeJSON(w, 200, s.stateJSON())
 }
 
@@ -454,7 +461,7 @@ func (s *Server) handleConnect(w http.ResponseWriter, r *http.Request) {
 	s.portNam = body.Port
 	s.baud = body.Baud
 	s.uid = ""
-	portmap.SetControl(body.Port)
+	s.Ports.SetControl(body.Port)
 	s.caps = caps
 	s.capsErr = msg{}
 	s.linkErr = msg{}
@@ -853,10 +860,14 @@ const PanelPort = 65432
 // Serve binds the panel to loopback only: all interfaces would make Windows
 // Firewall ask for administrator rights.
 func Serve(open bool, version string) int {
-	s := New()
-	s.Version = version
-	s.MatchPorts, s.MatchOpen = serialx.List, func(name string, baud int) (io.ReadWriteCloser, error) { return serialx.Open(name, baud) }
-	defer s.Close()
+	st := &Stations{New: func(int) *Server {
+		s := New()
+		s.Version = version
+		s.MatchPorts, s.MatchOpen = serialx.List, func(name string, baud int) (io.ReadWriteCloser, error) { return serialx.Open(name, baud) }
+		return s
+	}}
+	st.Load()
+	defer st.Close()
 
 	// A fixed port keeps bookmarks working; any free port if it is taken (decision 118).
 	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", PanelPort))
@@ -877,7 +888,7 @@ func Serve(open bool, version string) int {
 		openBrowser(url)
 	}
 
-	srv := &http.Server{Handler: s.Handler(), ReadHeaderTimeout: 10 * time.Second}
+	srv := &http.Server{Handler: st.Handler(), ReadHeaderTimeout: 10 * time.Second}
 	if err := srv.Serve(ln); err != nil && err != http.ErrServerClosed {
 		fmt.Printf("Server stopped: %v\n", err)
 		return 1

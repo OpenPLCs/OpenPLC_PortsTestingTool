@@ -8,12 +8,10 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 	"unicode/utf8"
 
 	"PortTool/src/ptboard"
-	"PortTool/src/ptecho"
 	"PortTool/src/ptsdfile"
 	"PortTool/src/serialx"
 	"PortTool/src/simboard"
@@ -28,8 +26,6 @@ const sdfMaxUpload = 64 << 20
 
 // sdfPreview is how much of a file the 查看 view shows.
 const sdfPreview = 4096
-
-var sdfMu sync.Mutex // one transfer at a time; the board has one slot
 
 func (s *Server) sdfileRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/sd/put", s.handleSDPut)
@@ -101,7 +97,7 @@ func (s *Server) sdfOpener(via string) (ptsdfile.Opener, msg, bool) {
 		}
 		// Looked up once the session runs: the board's USB port only appears
 		// with pt.start usb (PORTTOOL-FLOW.md B.11 in $PROD).
-		find := pickedOr("usb", ptecho.FindCDC)
+		find := s.pickedOr("usb", s.findCDC)
 		return func() (io.ReadWriteCloser, error) {
 			var err error
 			for end := time.Now().Add(sdfUSBWait); ; time.Sleep(200 * time.Millisecond) {
@@ -165,11 +161,11 @@ func (s *Server) handleSDPut(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, m("go.sdf.too_big", "mb", sdfMaxUpload>>20))
 		return
 	}
-	if !sdfMu.TryLock() {
+	if !s.sdfMu.TryLock() {
 		writeErr(w, 409, m("go.sdf.busy"))
 		return
 	}
-	defer sdfMu.Unlock()
+	defer s.sdfMu.Unlock()
 	b, why, ok := s.sdfBoard()
 	if !ok {
 		writeErr(w, 409, why)
@@ -196,11 +192,11 @@ func (s *Server) handleSDPut(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleSDList(w http.ResponseWriter, r *http.Request) {
-	if !sdfMu.TryLock() {
+	if !s.sdfMu.TryLock() {
 		writeErr(w, 409, m("go.sdf.busy"))
 		return
 	}
-	defer sdfMu.Unlock()
+	defer s.sdfMu.Unlock()
 	b, why, ok := s.sdfBoard()
 	if !ok {
 		writeErr(w, 409, why)
@@ -221,11 +217,11 @@ func (s *Server) handleSDGet(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, m("go.sdf.err.name"))
 		return
 	}
-	if !sdfMu.TryLock() {
+	if !s.sdfMu.TryLock() {
 		writeErr(w, 409, m("go.sdf.busy"))
 		return
 	}
-	defer sdfMu.Unlock()
+	defer s.sdfMu.Unlock()
 	b, why, ok := s.sdfBoard()
 	if !ok {
 		writeErr(w, 409, why)
@@ -296,11 +292,11 @@ func (s *Server) handleSDRemove(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, m("go.sdf.err.name"))
 		return
 	}
-	if !sdfMu.TryLock() {
+	if !s.sdfMu.TryLock() {
 		writeErr(w, 409, m("go.sdf.busy"))
 		return
 	}
-	defer sdfMu.Unlock()
+	defer s.sdfMu.Unlock()
 	b, why, ok := s.sdfBoard()
 	if !ok {
 		writeErr(w, 409, why)
@@ -314,11 +310,11 @@ func (s *Server) handleSDRemove(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleSDEject(w http.ResponseWriter, r *http.Request) {
-	if !sdfMu.TryLock() {
+	if !s.sdfMu.TryLock() {
 		writeErr(w, 409, m("go.sdf.busy"))
 		return
 	}
-	defer sdfMu.Unlock()
+	defer s.sdfMu.Unlock()
 	b, why, ok := s.sdfBoard()
 	if !ok {
 		writeErr(w, 409, why)

@@ -1,5 +1,9 @@
 "use strict";
 
+// A station's panel lives under /st/<n>/; its API calls carry the same prefix.
+const API_BASE = (location.pathname.match(/^\/st\/\d+(?=\/)/) || [""])[0];
+function apiURL(p) { return p.startsWith("/api") ? API_BASE + p : p; }
+
 function T(key, args) {
   const e = STRINGS[key];
   let s = e ? (e[LANG] || e.zh) : key;

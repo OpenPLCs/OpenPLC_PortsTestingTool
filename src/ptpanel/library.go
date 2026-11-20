@@ -18,9 +18,7 @@ import (
 	"time"
 
 	"PortTool/src/calstore"
-	"PortTool/src/portmap"
 	"PortTool/src/ptboard"
-	"PortTool/src/ptecho"
 	"PortTool/src/ptitems"
 	"PortTool/src/ptlib"
 	"PortTool/src/ptplan"
@@ -58,9 +56,9 @@ func (s *Server) libRoutes(mux *http.ServeMux) {
 
 // pickedOr is the adapter chosen for a board port in the connection block,
 // else what find turns up by USB id (decision 168).
-func pickedOr(boardPort string, find func() (string, error)) func() (string, error) {
+func (s *Server) pickedOr(boardPort string, find func() (string, error)) func() (string, error) {
 	return func() (string, error) {
-		if com, _, ok := portmap.Peer(boardPort); ok {
+		if com, _, ok := s.Ports.Peer(boardPort); ok {
 			return com, nil
 		}
 		return find()
@@ -76,15 +74,15 @@ func (s *Server) libRunner(b *ptboard.Board, port string) func() *ptseq.Runner {
 	sim := simboard.IsSim(port)
 	return func() *ptseq.Runner {
 		r := &ptseq.Runner{Board: b, Ref: s.refBoard(), ToolVersion: s.Version, PortName: port,
-			SerialPeer: portmap.Peer}
+			SerialPeer: s.Ports.Peer}
 		if sim {
 			r.OpenPeer = func(string, string, int) (io.ReadWriteCloser, error) { return nil, errSimPeer }
 			r.FindCDC = func() (string, error) { return "", errSimPeer }
 			r.FindCAN = func() (string, error) { return "", errSimPeer }
 		} else {
 			r.OpenPeer = s.openRunPeer
-			r.FindCDC = pickedOr("usb", ptecho.FindCDC)
-			r.FindCAN = pickedOr("can", slcan.Find)
+			r.FindCDC = s.pickedOr("usb", s.findCDC)
+			r.FindCAN = s.pickedOr("can", slcan.Find)
 		}
 		return r
 	}
@@ -103,7 +101,7 @@ func (s *Server) canPeer(port string) func(int) (ptlib.CANPeer, error) {
 		}
 	}
 	return func(bitrate int) (ptlib.CANPeer, error) {
-		com, err := pickedOr("can", slcan.Find)()
+		com, err := s.pickedOr("can", slcan.Find)()
 		if err != nil {
 			return nil, err
 		}

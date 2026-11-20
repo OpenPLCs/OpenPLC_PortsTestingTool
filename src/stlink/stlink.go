@@ -103,16 +103,31 @@ func Find() (string, error) {
 }
 
 // Programmer is one ST-Link attached to one board.
-type Programmer struct{ cli string }
+type Programmer struct {
+	cli string
+	sn  string // the probe's serial number; "" is whichever one is plugged in
+}
 
 // Open finds the programmer.
-func Open() (Programmer, error) {
+func Open() (Programmer, error) { return OpenSN("") }
+
+// OpenSN is the probe with this serial number, for a PC carrying one probe per
+// fixture station (decision 190); "" is the same as Open.
+func OpenSN(sn string) (Programmer, error) {
 	cli, err := Find()
-	return Programmer{cli: cli}, err
+	return Programmer{cli: cli, sn: sn}, err
+}
+
+// connect is the -c argument list, naming the probe when one was chosen.
+func (p Programmer) connect() []string {
+	if p.sn == "" {
+		return []string{"-c", "port=SWD", "mode=UR"}
+	}
+	return []string{"-c", "port=SWD", "sn=" + p.sn, "mode=UR"}
 }
 
 func (p Programmer) call(args ...string) error {
-	argv := append([]string{"-c", "port=SWD", "mode=UR"}, args...)
+	argv := append(p.connect(), args...)
 	out, err := Run(p.cli, argv...)
 	// The CLI can exit 0 after printing an error, so its words are checked too.
 	if err != nil || strings.Contains(out, "Error") {
@@ -268,7 +283,7 @@ func (p Programmer) resetBackupDomain() error {
 // read32 reads one word with -r32, whose size argument is in bytes and whose
 // output lines read "0x<addr> : <word> ...".
 func (p Programmer) read32(addr int) (int, error) {
-	argv := []string{"-c", "port=SWD", "mode=UR", "-r32", hex32(addr), "0x4"}
+	argv := append(p.connect(), "-r32", hex32(addr), "0x4")
 	out, err := Run(p.cli, argv...)
 	if err != nil || strings.Contains(out, "Error") {
 		return 0, fmt.Errorf("STM32_Programmer_CLI -r32 %s: %v\n%s", hex32(addr), err, lastLines(out, 6))
