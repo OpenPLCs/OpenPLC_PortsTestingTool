@@ -30,6 +30,7 @@ const PARAM_CN = tr({
   minutes: "param.minutes", drv: "param.drv", count: "param.count",
   ppm_max: "param.ppm_max", drift_max: "param.drift_max", start_ms_max: "param.start_ms_max", drop_max: "param.drop_max",
   out1: "param.out1", out2: "param.out2",
+  high: "param.high", in1: "param.in1", in2: "param.in2", tol: "param.tol",
 });
 
 // Enum values and reading values, as shown; what the board sends is unchanged.
@@ -42,7 +43,7 @@ const VALUE_CN = tr({
   write: "value.write", wait: "value.wait", verify: "value.verify",
   echo: "value.echo", sink: "value.sink", source: "value.source", info: "value.info",
   mirror: "value.mirror",
-  toggle: "value.toggle",
+  toggle: "value.toggle", cycle: "value.cycle",
   raw: "value.raw", inv: "value.inv", ack: "value.ack", bad: "value.bad",
   ok: "value.ok", odd: "value.odd",
   dhcp: "value.dhcp", cfg: "value.cfg", unknown: "value.unknown", dead: "value.dead",
@@ -162,7 +163,8 @@ function loadChannelOf(k) { return { out1: "AO1", out2: "AO2" }[k] || ""; }
 
 // A parameter's name; an AO load target adds its AO's registered unit.
 function paramLabel(it, k) {
-  const ch = it.load ? loadChannelOf(k) : "";
+  // AO load targets and ain.expect's set values carry their channel's unit.
+  const ch = it.load ? loadChannelOf(k) : ({ in1: "AI1", in2: "AI2" })[k] || "";
   if (!ch) { return paramCN(k); }
   const c = typeof anaState !== "undefined" && anaState && anaState.channels ? anaState.channels[ch] : null;
   return paramCN(k) + " (" + (c && c.unit ? c.unit : "mA / mV") + ")";
@@ -243,3 +245,54 @@ const BOARD_LABEL = tr({
   whole:    "board_label.whole",
 });
 
+
+// Frame fields that are a plain yes (1) or no (0).
+const GLOSS_YESNO = new Set(["ok", "done", "link", "conn", "alive", "detected", "ready"]);
+
+// A sample frame in words, shown under the original in the log
+// (PORTTOOL-FLOW.md C.4.1). Fields it does not know stay as sent.
+function frameGloss(line) {
+  const m = /^!([a-z0-9]+)(?:\.[a-z]+)? (.*)$/.exec(String(line || ""));
+  if (!m) { return ""; }
+  const port = m[1];
+  const p = (state.ports || []).find(x => x.name === port);
+  const name = n => p ? displayName(p, n) : port + n;
+  const sep = T("shell.list_sep");
+  const res = /(?:^| )res=(\d+)/.exec(m[2]);
+  const out = [];
+  for (const tok of m[2].split(" ")) {
+    const kv = /^([A-Za-z0-9_]+)=(.*)$/.exec(tok);
+    if (!kv) { continue; }
+    const [, k, v] = kv;
+    if (k === "t") { continue; }
+    const ch = /^ch(\d+)$/.exec(k);
+    const nn = /^n(\d+)$/.exec(k);
+    const parts = v.split("/");
+    if (ch && port === "temp" && parts.length === 2) {
+      out.push(T("gloss.temp", {name: name(ch[1]), where: T(ch[1] === "1" ? "gloss.temp.where1" : "gloss.temp.where2"), c: (Number(parts[1]) / 10).toFixed(1), mv: parts[0]}));
+    } else if (ch && port === "ain" && parts.length === 2) {
+      out.push(T("gloss.ain", {name: name(ch[1]), raw: parts[0], mv: parts[1]}));
+    } else if (ch && port === "aout" && parts.length === 3) {
+      out.push(T("gloss.aout", {name: name(ch[1]), a: parts[0], q: parts[1], ma: (Number(parts[2]) / 1000).toFixed(3)}));
+    } else if (ch && port === "din") {
+      out.push(name(ch[1]) + " " + T(v === "1" ? "gloss.high" : "gloss.low"));
+    } else if (ch && port === "relay") {
+      out.push(name(ch[1]) + " " + T(v === "1" ? "gloss.closed" : "gloss.open"));
+    } else if (ch && port === "dout") {
+      const max = (1 << (res ? Number(res[1]) : 8)) - 1;
+      out.push(T("gloss.dout", {name: name(ch[1]), v, max, pct: Math.round(Number(v) * 100 / max)}));
+    } else if (nn && port === "relay") {
+      out.push(T("gloss.relay_n", {name: name(nn[1]), n: v}));
+    } else if (k === "v" && port === "din") {
+      const bits = parseInt(v, 16), high = [];
+      for (let i = 0; i < 8; i++) { if (bits & (1 << i)) { high.push(p ? displayName(p, i + 1) : "DI" + (i + 1)); } }
+      out.push(fieldCN("v") + " " + v + " = " + (high.length ? T("gloss.din_high", {list: high.join(sep)}) : T("gloss.din_none")));
+    } else if (FIELD_CN[k] || PARAM_CN[k]) {
+      const yn = GLOSS_YESNO.has(k) && (v === "0" || v === "1") ? T(v === "1" ? "gloss.yes" : "gloss.no") : valueCN(v);
+      out.push((FIELD_CN[k] ? fieldCN(k) : paramCN(k)) + " " + yn);
+    } else {
+      out.push(tok);
+    }
+  }
+  return out.join(T("ui.gloss_sep"));
+}

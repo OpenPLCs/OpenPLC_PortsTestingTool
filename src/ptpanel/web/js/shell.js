@@ -5,36 +5,49 @@
 // and the full test's 「配置完成，开始测试」 start tests.
 
 const SHELL_TYPES = [
-  { k: "rd",   name: "shell.type.rd",    d: "shell.type.rd_d" },
-  { k: "full", name: "shell.entry.full", d: "shell.entry.full_d" },
+  { k: "rd",      name: "shell.type.rd",      d: "shell.type.rd_d" },
+  { k: "rdaging", name: "shell.type.rdaging", d: "shell.type.rdaging_d" },
+  { k: "full",    name: "shell.entry.full",   d: "shell.entry.full_d" },
 ];
 // The full test's sub-tests and the times each offers (decision 125; same
 // lists as stageDurations in stagecfg.go). Step numbers stay internal (decision 122).
 const FULL_SUBS = [
   { k: "func",   step: 2, name: "shell.type.func",   durs: ["once"] },   // single run only (decision 139)
-  { k: "aging",  step: 4, name: "shell.type.aging",  durs: ["1", "2", "4", "8"] },
   { k: "safety", step: 5, name: "shell.type.safety", durs: null },
   { k: "user",   step: 6, name: "shell.type.user",   durs: ["once", "10m", "30m", "1"] },
 ];
-const PEER_NAME = { none: "lib.peer.none", pc: "lib.peer.pc", ref: "lib.peer.ref", human: "lib.peer.human" };
+// R&D aging's two, one picked at a time (decision 187, PORTTOOL-FLOW.md C.3.8).
+const AGING_SUBS = [
+  { k: "aging",   step: 4, name: "shell.type.aging_ref", durs: ["1", "2", "4", "8"] },
+  { k: "agingpc", step: 7, name: "shell.type.aging_pc",  durs: ["1", "2", "4", "8"] },
+];
+const RUN_SUBS = FULL_SUBS.concat(AGING_SUBS);
+const isAgingSub = v => AGING_SUBS.some(s => s.k === v);
+// The sub-tests on the same page as v.
+const pageSubs = v => isAgingSub(v) ? AGING_SUBS : FULL_SUBS;
+// The sub-tests of the page a run started from.
+const runningSubs = () => ((fullData && fullData.picked) || []).some(n => n === 4 || n === 7) ? AGING_SUBS : FULL_SUBS;
+const PEER_NAME = { none: "lib.peer.none", pc: "lib.peer.pc", ref: "lib.peer.ref", human: "lib.peer.human", ext: "lib.peer.ext" };
 const DURATIONS = ["once", "1", "2", "3", "4", "forever"];   // R&D's repeatable group
 
 // view is "rd" or one of the full test's sub-tests: the sub-test on screen is
 // the configuration its cards edit.
 let view = "rd";
 let fullSub = "func";     // the sub-test 工装完整测试 opens on
+let agingSub = "aging";   // the one 研发老化测试 opens on
 let lport = null;         // the port picked in the middle
 let catalog = { ports: [], items: [] };
 let catalogKey = "";      // what the catalogue was fetched for
 let itemOff = {};         // `${view}|${item}` -> true unticked, false ticked
 let itemPeer = {};        // `${view}|${item}` -> chosen peer
 
-// R&D never offers the reference board (decision 133, ptitems.RDPeers); a
-// configuration offers every peer of the item.
-const peersIn = (v, it) => isCfgView(v) ? it.peers : (it.rd_peers || it.peers);
+// R&D never offers the reference board (decision 133, ptitems.RDPeers); R&D
+// aging with the PC has one peer per item (decision 187); a configuration
+// offers every peer of the item.
+const peersIn = (v, it) => v === "agingpc" ? [cfgPeer(v, it)] : isCfgView(v) ? it.peers : (it.rd_peers || it.peers);
 // An R&D item's default peer: its first R&D peer (Engine.withDefaultPeers).
 function defaultPeer(it) { return peersIn("rd", it)[0]; }
-let duration = { rd: "once", func: "once", aging: "4", user: "once" };
+let duration = { rd: "once", func: "once", aging: "4", agingpc: "4", user: "once" };
 
 // Same rule as ptitems.Excludes: one exclusive group and both once-only or both
 // repeatable (decision 128); in R&D by card group, which runs on its own Start.
@@ -54,7 +67,8 @@ function itemOnIn(v, it) {
   return !it.exclusive || itemsOf(v, it.port).find(o => o === it || excludes(v, o, it)) === it;
 }
 
-const isFullSub = v => FULL_SUBS.some(s => s.k === v);
+// A sub-test of a run page: the full test's or R&D aging's.
+const isFullSub = v => RUN_SUBS.some(s => s.k === v);
 const hasPorts = v => v === "rd" || isCfgView(v);
 const itemsOf = (v, port) => catalog.items.filter(it => it.port === port && it.stages.includes(v));
 
@@ -105,9 +119,10 @@ window.addEventListener("beforeunload", rdUnload);
 // from turning off what a card left on.
 function pickView(v) {
   if (v === "full") { v = fullSub; }
-  // A running full test keeps the page on it (decision 128).
-  if (v === "rd" && typeof fullRunning === "function" && fullRunning()) { return; }
-  if (isFullSub(v)) { fullSub = v; }
+  if (v === "rdaging") { v = agingSub; }
+  // A running test keeps the page on its own page (decision 128).
+  if (typeof fullRunning === "function" && fullRunning() && (!isFullSub(v) || pageSubs(v) !== runningSubs())) { return; }
+  if (isAgingSub(v)) { agingSub = v; } else if (isFullSub(v)) { fullSub = v; }
   const was = view;
   if (v !== view) { outputsOff(); }
   view = v;
@@ -116,20 +131,20 @@ function pickView(v) {
     lport = first ? first.port : lport;
   }
   renderShell();
-  if (isFullSub(v) && !isFullSub(was)) { flowLoad("full"); }     // flows.js
+  if (isFullSub(v) && (!isFullSub(was) || pageSubs(v) !== pageSubs(was))) { flowLoad("full"); }     // flows.js
 }
 
 function renderMenus() {
   const tm = $("#typemenu"); tm.textContent = "";
   for (const t of SHELL_TYPES) {
-    const cur = t.k === "full" ? isFullSub(view) : view === t.k;
+    const cur = t.k === "full" ? isFullSub(view) && !isAgingSub(view) : t.k === "rdaging" ? isAgingSub(view) : view === t.k;
     tm.appendChild(menuItem(t, cur, () => pickView(t.k)));
   }
 }
 
 function renderLports() {
   const host = $("#lports"); host.textContent = "";
-  const sub = FULL_SUBS.find(s => s.k === view);
+  const sub = RUN_SUBS.find(s => s.k === view);
   $("#midtitle").textContent = sub ? T("full.ports_of", { sub: T(sub.name) }) : T("shell.ports");
   if (view === "safety") {
     host.appendChild(el("div", "hint", T("shell.safety.noports")));
@@ -230,7 +245,7 @@ function renderSubTest(top, cards, note) {
   if (view === "safety") { note.textContent = T("shell.safety.what"); return; }
   const port = catalog.ports.find(p => p.port === lport);
   if (!port) { return; }
-  const sub = FULL_SUBS.find(s => s.k === view);
+  const sub = RUN_SUBS.find(s => s.k === view);
   const hd = el("div", "sechd", T("full.sechd", { sub: T(sub.name), port: port.label }));
   hd.dataset.sechd = view + "|" + port.port;
   cards.appendChild(hd);

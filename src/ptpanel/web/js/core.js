@@ -80,7 +80,7 @@ const MAX_LOG = 20000;
 let logBuf = [];        // every line, kept whether shown or not
 let paused = false, pausedCount = 0;
 // caps is off by default, see isCaps.
-let filters = new Set(["ok","err","frame","log","tx","echo","panel"]);
+let filters = new Set(["ok","err","frame","log","tx","echo","panel","gloss"]);
 
 function isEchoTraffic(kind, line) {
   return (kind === "ok" && line.startsWith("OK echo ")) ||
@@ -110,10 +110,17 @@ function addLog(kind, line, at) {
   appendLine(logBuf[logBuf.length-1]);
 }
 function lineText(e) { return typeof e.line === "function" ? e.line() : e.line; }
+// Sample frames get their words under them (PORTTOOL-FLOW.md C.4.1).
+function glossOf(e) {
+  const s = lineText(e);
+  return (e.kind === "frame" || e.kind === "timed") && typeof s === "string" && s[0] === "!" ? frameGloss(s) : "";
+}
 function logNode(e) {
   const n = el("span", "l " + e.kind);
   n.appendChild(el("span", "ts", e.at + "  "));
   n.appendChild(document.createTextNode(lineText(e)));
+  const g = filters.has("gloss") ? glossOf(e) : "";
+  if (g) { n.appendChild(el("span", "gloss", "\n  ↳ " + g)); }
   return n;
 }
 
@@ -178,7 +185,7 @@ $("#save").onclick = () => {
     "lines: " + logBuf.length,
     "".padEnd(60, "-"),
   ].join("\r\n");
-  const text = head + "\r\n" + logBuf.map(e => e.at + "  " + inLang("en", () => lineText(e))).join("\r\n") + "\r\n";
+  const text = head + "\r\n" + logBuf.map(e => e.at + "  " + inLang("en", () => { const g = glossOf(e); return lineText(e) + (g ? "\r\n    -> " + g : ""); })).join("\r\n") + "\r\n";
   const a = el("a");
   a.href = URL.createObjectURL(new Blob([text], {type:"text/plain;charset=utf-8"}));
   a.download = "porttool-" + stamp + ".txt";

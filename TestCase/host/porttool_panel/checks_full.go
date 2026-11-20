@@ -23,7 +23,7 @@ func checkFullTest(p *Page, com string) {
 	// The tiles draw before /api/full answers, and until then every step looks pickable.
 	p.WaitFunc("() => !!(fullData && fullData.steps)", nil, 0)
 	step := func(s string) *Loc { return p.L(`#subtiles input[data-fullstep="` + s + `"]`) }
-	for _, st := range []string{"2", "4", "5", "6"} {
+	for _, st := range []string{"2", "5", "6"} {
 		if !step(st).Disabled() {
 			step(st).SetChecked(false)
 		}
@@ -31,10 +31,10 @@ func checkFullTest(p *Page, com string) {
 	p.Wait(200)
 	check(p.L("#shellstart").Disabled() && p.L("#rtop [data-fullplan]").Text() == "下面一项都没勾",
 		"with nothing ticked, 「配置完成，开始测试」 cannot be pressed and says why")
-	// A real bench without a reference board cannot run steps 2, 4 and 6: their
+	// A real bench without a reference board cannot run steps 2 and 6: their
 	// configurations read DI through it.
 	noRef := !sim && !p.Eval("fetch('/api/full').then(r => r.json()).then(j => (j.steps || []).some(s => s.step === 2 && s.available))").Truthy()
-	for _, st := range []string{"2", "4"} {
+	for _, st := range []string{"2"} {
 		box := step(st)
 		if noRef {
 			check(box.Disabled(), "step "+st+" cannot be picked with no reference board connected")
@@ -316,7 +316,7 @@ func checkFullTestRelay(p *Page) {
 	if err := try(func() {
 		p.L(`.mi[data-menu="full"]`).Click()
 		p.WaitSel(`#subtiles input[data-fullstep="2"]`, 0)
-		for _, st := range []string{"2", "4", "5"} {
+		for _, st := range []string{"2", "5"} {
 			p.L(`#subtiles input[data-fullstep="` + st + `"]`).SetChecked(st == "2")
 		}
 		p.Wait(200)
@@ -394,7 +394,7 @@ func checkFullTestPorts(p *Page) {
 	if err := try(func() {
 		p.L(`.mi[data-menu="full"]`).Click()
 		p.WaitSel(`#subtiles input[data-fullstep="2"]`, 0)
-		for _, st := range []string{"2", "4", "5"} {
+		for _, st := range []string{"2", "5"} {
 			p.L(`#subtiles input[data-fullstep="` + st + `"]`).SetChecked(st == "2")
 		}
 		p.Wait(200)

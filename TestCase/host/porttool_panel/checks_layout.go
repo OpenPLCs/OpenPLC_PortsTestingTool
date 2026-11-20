@@ -112,6 +112,8 @@ func runChecks(p *Page, com string) {
 	checkLiveCards(p, com)
 	// Last: it rewires the simulated adapters and runs matching three times.
 	checkAdapterMatch(p, com)
+	// After every other check: it starts a run, whose sessions would show in the logs they read.
+	checkRDAgingRunLock(p)
 
 	// ---------------------------------------------------- disconnect
 	Section("disconnecting")
@@ -221,11 +223,16 @@ func checkWhichLimits(p *Page) {
 	check(p.L("#itemcards input[data-limit]").Count() == 0, "no limit is editable on the item cards")
 }
 
-// openSub opens 工装完整测试 on sub-test k (decision 125): the type menu, then its tile.
+// openSub opens sub-test k (decision 125) under its type menu: 研发老化测试
+// for aging / agingpc (decision 187), else 工装完整测试; then its tile.
 func openSub(p *Page, k string) {
 	tile := `#subtiles .subtile[data-sub="` + k + `"]`
 	if p.L(tile).Count() == 0 {
-		p.L(`.mi[data-menu="full"]`).Click()
+		menu := "full"
+		if k == "aging" || k == "agingpc" {
+			menu = "rdaging"
+		}
+		p.L(`.mi[data-menu="` + menu + `"]`).Click()
 		p.WaitSel(tile, 0)
 	}
 	p.L(tile + " .nm").Click()
@@ -266,8 +273,8 @@ func checkFiveBlocks(p *Page) {
 		check(p.L(b[0]).Visible(), "R&D: the "+b[1]+" block is on screen")
 	}
 	check(!p.L("#statcol").Visible(), "R&D: no run-status column")
-	check(eqStrings(attrs(p.L("#typemenu .mi"), "data-menu"), "rd", "full") && p.L(`.mi[data-menu="ref"]`).Count() == 0,
-		"two test types, R&D and the full fixture test; no separate 制作标准机 (decision 128)")
+	check(eqStrings(attrs(p.L("#typemenu .mi"), "data-menu"), "rd", "rdaging", "full") && p.L(`.mi[data-menu="ref"]`).Count() == 0,
+		"three test types, R&D, R&D aging and the full fixture test; no separate 制作标准机 (decisions 128, 187)")
 	// The test types sit at the bottom of the left column, under the other connections.
 	mb, rb, cb := p.L("#menus").Box(), p.L("#connrows").Box(), p.L("#connzone").Box()
 	check(mb != nil && rb != nil && cb != nil && mb.Y >= rb.Y+rb.H-1 && cb.X <= mb.X && mb.X < cb.X+cb.W,
@@ -280,16 +287,17 @@ func checkFiveBlocks(p *Page) {
 	})
 	p.Wait(300)
 	p.L("#clear").Click()
-	for _, k := range []string{"rd", "full", "rd"} {
+	for _, k := range []string{"rd", "rdaging", "full", "rd"} {
 		p.L(`.mi[data-menu="` + k + `"]`).Click()
 		p.Wait(150)
 		check(strings.Contains(p.L(`.mi[data-menu="`+k+`"]`).Attr("class"), "cur"), "clicking "+k+" marks it as the current menu")
 	}
-	for _, k := range []string{"func", "aging", "safety", "user"} {
+	for _, k := range []string{"func", "safety", "user", "aging", "agingpc"} {
 		openSub(p, k)
+		menu := map[bool]string{true: "rdaging", false: "full"}[k == "aging" || k == "agingpc"]
 		check(strings.Contains(p.L(`#subtiles .subtile[data-sub="`+k+`"]`).Attr("class"), "cur") &&
-			strings.Contains(p.L(`.mi[data-menu="full"]`).Attr("class"), "cur"),
-			"clicking the "+k+" tile shows it, under 工装完整测试")
+			strings.Contains(p.L(`.mi[data-menu="`+menu+`"]`).Attr("class"), "cur"),
+			"clicking the "+k+" tile shows it, under its menu "+menu)
 	}
 	p.L(`.mi[data-menu="rd"]`).Click()
 	p.WaitSel(".lport", 0)
@@ -412,8 +420,8 @@ func checkSubTestPage(p *Page) {
 	}
 	check(starts.Count() == 1 && starts.First().Attr("id") == "shellstart" && p.L("#shellstart").Text() == "配置完成，开始测试",
 		"the only start button is 「配置完成，开始测试」 on top", strings.Join(st, " | "))
-	check(eqStrings(attrs(p.L("#subtiles .subtile"), "data-sub"), "func", "aging", "safety", "user"),
-		"layer 2 has the four sub-tests side by side")
+	check(eqStrings(attrs(p.L("#subtiles .subtile"), "data-sub"), "func", "safety", "user"),
+		"layer 2 has the three sub-tests side by side; aging is under R&D aging (decision 187)")
 	opts := func(k string) []string {
 		return p.Eval("k => [...document.querySelectorAll(`#subtiles select[data-subdur='${k}'] option`)].map(o => o.textContent)", k).Strings()
 	}
@@ -422,7 +430,12 @@ func checkSubTestPage(p *Page) {
 	check(len(opts("func")) == 0 && only.Count() == 1 && only.Text() == "单次",
 		"functional shows 单次 with no time picker (decision 139)", show(opts("func")))
 	check(eqStrings(opts("user"), "单次", "10 分钟", "30 分钟", "1 小时"), "user-level offers once / 10 min / 30 min / 1 h", show(opts("user")))
-	check(eqStrings(opts("aging"), "1 小时", "2 小时", "4 小时", "8 小时"), "aging offers 1 / 2 / 4 / 8 h", show(opts("aging")))
+	openSub(p, "aging")
+	check(eqStrings(attrs(p.L("#subtiles .subtile"), "data-sub"), "aging", "agingpc"), "R&D aging has its two side by side (decision 187)")
+	for _, k := range []string{"aging", "agingpc"} {
+		check(eqStrings(opts(k), "1 小时", "2 小时", "4 小时", "8 小时"), k+" offers 1 / 2 / 4 / 8 h", show(opts(k)))
+	}
+	openSub(p, "func")
 	check(p.L(`#subtiles select[data-subdur="safety"]`).Count() == 0 &&
 		strings.Contains(p.L(`#subtiles .subtile[data-sub="safety"]`).Text(), "扫码"),
 		"safety has no time and says it is done by hand")
@@ -501,7 +514,7 @@ func checkCfgItemNotes(p *Page) {
 
 	openSub(p, "user")
 	// Decision 139: SDRAM read/write is functional only; the demo has none. The window CRC is gone (decision 141).
-	funcOnly := map[string][]string{"sdram": {"sdram.hold"}, "rs232": {}}
+	funcOnly := map[string][]string{"sdram": {}, "rs232": {}} // sdram.hold is in user level too (decision 184)
 	for _, port := range []string{"sdram", "rs232"} {
 		same := p.Eval("p => [itemsOf('user', p).map(it => it.id), itemsOf('func', p).map(it => it.id)]", port)
 		user, fn := same.I(0).Strings(), same.I(1).Strings()

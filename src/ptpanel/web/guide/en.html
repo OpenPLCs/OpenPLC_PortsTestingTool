@@ -32,7 +32,7 @@
   <li><b>User guide</b>: this page.</li>
   <li><b>Step 1</b>: connect the control port; every reading comes over this cable.</li>
   <li><b>Step 2</b>: connect the other ports; only what the ports you test need.</li>
-  <li><b>Step 3</b>: pick a test type, R&amp;D test or full fixture test.</li>
+  <li><b>Step 3</b>: pick a test type: R&amp;D test, R&amp;D aging test or full fixture test.</li>
   <li><b>Port list</b>: click a port to see its test items on the right.</li>
   <li><b>Test item cards</b>: each card gives the goal, how to test and the peer; the measured values are on its right.</li>
   <li><b>Log</b>: every line between the board and the panel.</li>
@@ -107,7 +107,8 @@
 </ol>
 
 <h2 id="full">9. Full fixture test</h2>
-<p>In step 3 pick “Full fixture test”: functional, burn-in, safety and user-level blocks, configured once and run in one go.</p>
+<p>In step 3 pick “Full fixture test”: functional, safety and user-level blocks, configured once and run in one go.</p>
+<p>Aging is under “R&amp;D aging test”, a page with the same three layers: pick “With reference board” or “With PC” and a time, then start. “With PC” is for a temperature chamber or an EMC lab: DI and AI are judged against the values you set, DO, AO and relays only output the values you set for outside instruments to watch.</p>
 <img src="shots/en/full.png" alt="Full fixture test">
 <ol>
   <li><b>Sub-tests</b>: tick the sub-tests to run and choose each one's time.</li>

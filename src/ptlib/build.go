@@ -120,6 +120,8 @@ type job struct {
 	lseFreq   bool          // the crystal frequency, repeated for its minutes (lse.go)
 	lseMargin bool          // the crystal restarted on every drive, judged by its limit (lse.go)
 	loadSteps []ptplan.Step // the load's criteria, AO1 then AO2
+	expect    bool          // judged against set values in a timed phase (expect.go)
+	judge     frameJudge    // how each frame of an expect job is judged; nil otherwise
 	steps     []ptplan.Step // judged steps, ref companions included; nil when record-only
 	record    bool
 	askYesNo  bool
@@ -184,6 +186,9 @@ var hostParamRule = map[string]string{
 	ptitems.ParamOrder:   "must be par or ser",
 	ptitems.ParamBy:      "must be gap or time",
 	ptitems.ParamMinutes: "must be a number above 0, or relay:number pairs",
+	ptitems.ParamHigh:    "must be DI numbers 1..8 like 1,3 or none",
+	ptitems.ParamIn1:     "must be a number within AI1's range",
+	ptitems.ParamIn2:     "must be a number within AI2's range",
 }
 
 // HostParamOK checks a parameter of item id kept on the PC; true for any other.
@@ -200,6 +205,9 @@ func HostParamOK(id, k, v string) bool {
 	}
 	if ptitems.LoadChannel(k) != "" {
 		return LoadTargetOK(v)
+	}
+	if ok, known := expectParamOK(k, v); known {
+		return ok
 	}
 	return RelayHostParamOK(k, v)
 }
@@ -313,6 +321,10 @@ func build(items []ptitems.Item, plan ptplan.Plan, caps ptproto.Caps, picks []Pi
 		}
 		if it.Load {
 			fillLoad(j, plan)
+			continue
+		}
+		if IsExpect(it) {
+			j.expect = true // readied by setExpect once the run has a duration
 			continue
 		}
 		if it.ID == lseFreqItem {

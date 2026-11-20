@@ -1,8 +1,8 @@
 package ptpanel
 
-// The three configurations - functional (2), aging (4), user-level (6) - and
-// the executor that runs steps 2 and 4 of a full test from them.
-// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.6 "三种配置"; decisions 97, 102.
+// The four configurations - functional (2), user-level (6), R&D aging with the
+// reference board (4) and with the PC (7) - and the executor that runs them.
+// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.6 "四种配置"; decisions 97, 102, 187.
 
 import (
 	"context"
@@ -50,8 +50,9 @@ type stageCfg struct {
 // stageCfgs is porttool_stagecfg.json.
 type stageCfgs struct {
 	Func  stageCfg `json:"func"`
-	Aging stageCfg `json:"aging"`
-	User  stageCfg `json:"user"`
+	Aging   stageCfg `json:"aging"`
+	AgingPC stageCfg `json:"agingpc"`
+	User    stageCfg `json:"user"`
 	// RefUnused is the connection zone's "reference board: unused".
 	RefUnused bool `json:"ref_unused"`
 	// Ranges are the AI / AO ranges all three test the board under test on,
@@ -60,7 +61,10 @@ type stageCfgs struct {
 }
 
 // cfgStages are the configurable test types, and their default durations (the prototype's).
-var cfgStages = map[ptitems.Stage]string{ptitems.Func: "once", ptitems.Aging: "4", ptitems.User: "once"}
+var cfgStages = map[ptitems.Stage]string{ptitems.Func: "once", ptitems.Aging: "4", ptitems.AgingPC: "4", ptitems.User: "once"}
+
+// cfgStageList is the configurations in a fixed order.
+var cfgStageList = []ptitems.Stage{ptitems.Func, ptitems.Aging, ptitems.AgingPC, ptitems.User}
 
 // durations are what R&D's timed group offers; forever is -1.
 var durations = map[string]time.Duration{
@@ -72,8 +76,9 @@ var durations = map[string]time.Duration{
 // test runs once only (decision 139).
 var stageDurations = map[ptitems.Stage][]string{
 	ptitems.Func:  {"once"},
-	ptitems.Aging: {"1", "2", "4", "8"},
-	ptitems.User:  {"once", "10m", "30m", "1"},
+	ptitems.Aging:   {"1", "2", "4", "8"},
+	ptitems.AgingPC: {"1", "2", "4", "8"},
+	ptitems.User:    {"once", "10m", "30m", "1"},
 }
 
 var cfgDurations = map[string]time.Duration{
@@ -96,6 +101,8 @@ func (f *stageCfgs) of(st ptitems.Stage) *stageCfg {
 		return &f.Func
 	case ptitems.Aging:
 		return &f.Aging
+	case ptitems.AgingPC:
+		return &f.AgingPC
 	case ptitems.User:
 		return &f.User
 	}
@@ -166,7 +173,7 @@ func (f *stageCfgs) setRanges(set calstore.Ranges) *msg {
 			continue
 		}
 		f.Ranges[n] = v
-		for _, st := range []ptitems.Stage{ptitems.Func, ptitems.Aging, ptitems.User} {
+		for _, st := range cfgStageList {
 			c := f.of(st)
 			for id, ic := range c.Items {
 				if it, ok := catalogueItem(id); ok && ptlib.IsAnalogReading(it) && ptlib.AnalogChannel(it) == n {
@@ -192,9 +199,18 @@ func saveStageCfgs(f stageCfgs) error {
 // on says whether an item is ticked: as recorded, else ticked, except that of
 // items excluding each other only the catalogue's first starts ticked (same
 // rule as cfgOn in web/js/stagecfg.js).
-func (c stageCfg) on(st ptitems.Stage, it ptitems.Item) bool {
+func (c stageCfg) on(st ptitems.Stage, it ptitems.Item, refUnused bool) bool {
 	if ic, ok := c.Items[it.ID]; ok && ic.On != nil {
 		return *ic.On
+	}
+	// R&D aging with the PC: the one-way items wait until an instrument is wired (decision 187).
+	if st == ptitems.AgingPC && it.Offers(ptitems.PeerExt) {
+		return false
+	}
+	// The reference board is only one test method: unused, what needs it starts
+	// unticked instead of greying the step (decision 188).
+	if refUnused && st != ptitems.Aging && fixedRef(it) && !it.Offers(ptitems.PeerExt) {
+		return false
 	}
 	if defaultOff(it) {
 		return false // ticked, it would refuse the step (decisions 129, 135)
@@ -214,8 +230,18 @@ func (c stageCfg) on(st ptitems.Stage, it ptitems.Item) bool {
 // the configuration runs (ptitems.DefaultPeer, decision 112). With the
 // reference board set to unused the first peer stays, so picks substitutes it
 // (decision 135).
-func (c stageCfg) peer(it ptitems.Item, refUnused, refConnected bool) ptitems.Peer {
+func (c stageCfg) peer(st ptitems.Stage, it ptitems.Item, refUnused, refConnected bool) ptitems.Peer {
 	if fixedRef(it) {
+		// Functional / user-level: the reference board or an outside instrument,
+		// the latter by default while the board is unused (decision 188).
+		if st != ptitems.Aging && it.Offers(ptitems.PeerExt) {
+			if p := c.Items[it.ID].Peer; p == ptitems.PeerRef || p == ptitems.PeerExt {
+				return p
+			}
+			if refUnused {
+				return ptitems.PeerExt
+			}
+		}
 		for _, p := range it.Peers {
 			if p == ptitems.PeerRef {
 				return p
@@ -234,7 +260,11 @@ func (c stageCfg) peer(it ptitems.Item, refUnused, refConnected bool) ptitems.Pe
 
 // fixedRef says an item runs against the reference board in every
 // configuration, never a person: the fixture tests are unattended (decisions 129, 130).
+// The one-way items of R&D aging with the PC have only an outside instrument (decision 187).
 func fixedRef(it ptitems.Item) bool {
+	if onlyExt(it) {
+		return false
+	}
 	switch it.Port {
 	case "ain", "aout", "din", "dout", "relay":
 		return true
@@ -242,11 +272,19 @@ func fixedRef(it ptitems.Item) bool {
 	return false
 }
 
+// onlyExt is an item whose only peer is an outside instrument (decision 187).
+func onlyExt(it ptitems.Item) bool {
+	return len(it.Peers) == 1 && it.Peers[0] == ptitems.PeerExt
+}
+
 // defaultOff is an item a configuration starts unticked: one the reference
-// board cannot test, or an analog channel the default wiring leaves without a
-// reference channel (refboard.Default, decisions 134, 135). /api/items hands it to
-// the page's cfgOn.
+// board cannot test, an analog channel the default wiring leaves without a
+// reference channel (refboard.Default, decisions 134, 135), or one that needs
+// an outside instrument wired (decision 187). /api/items hands it to the page's cfgOn.
 func defaultOff(it ptitems.Item) bool {
+	if onlyExt(it) {
+		return true
+	}
 	if noAutoRoute(it) {
 		return true
 	}
@@ -349,7 +387,7 @@ func (c stageCfg) check(st ptitems.Stage, caps ptproto.Caps, hasCaps bool) *msg 
 	// and repeatable items of one group may both be ticked (decision 128).
 	var on []ptitems.Item
 	for _, it := range ptitems.Catalogue {
-		if it.Exclusive == "" || !it.In(st) || !c.on(st, it) {
+		if it.Exclusive == "" || !it.In(st) || !c.on(st, it, false) {
 			continue
 		}
 		for _, o := range on {
@@ -403,11 +441,14 @@ func (c stageCfg) picks(st ptitems.Stage, caps ptproto.Caps, refUnused, refConne
 	_, items := ptitems.ForCaps(caps)
 	var out []ItemPick
 	for _, it := range items {
-		if !it.In(st) || c.PortsOff[it.Port] || !c.on(st, it) {
+		if !it.In(st) || c.PortsOff[it.Port] || !c.on(st, it, refUnused) {
 			continue
 		}
-		p := ItemPick{Item: it, Peer: c.peer(it, refUnused, refConnected), Params: c.Items[it.ID].Params, Points: c.Items[it.ID].Points}
-		if p.Peer == ptitems.PeerRef && refUnused {
+		p := ItemPick{Item: it, Peer: c.peer(st, it, refUnused, refConnected), Params: c.Items[it.ID].Params, Points: c.Items[it.ID].Points}
+		// R&D aging with the PC never uses the reference board (decision 187).
+		if st == ptitems.AgingPC {
+			p.Peer = ptitems.AgingPCPeer(it)
+		} else if p.Peer == ptitems.PeerRef && refUnused {
 			var note msg
 			p.Peer, note = substitute(it)
 			p.Note = note.English()
@@ -419,7 +460,7 @@ func (c stageCfg) picks(st ptitems.Stage, caps ptproto.Caps, refUnused, refConne
 
 func (s *Server) stageCfgJSON() map[string]any {
 	f := loadStageCfgs()
-	out := map[string]any{"func": f.Func, "aging": f.Aging, "user": f.User, "ref_unused": f.RefUnused,
+	out := map[string]any{"func": f.Func, "aging": f.Aging, "agingpc": f.AgingPC, "user": f.User, "ref_unused": f.RefUnused,
 		"ranges": f.Ranges, "channels": chanInfos(f.Ranges)}
 	// What the reference board as registered cannot test, per item (decisions 134, 135).
 	if !f.RefUnused && s.refBoard() != nil {
@@ -427,7 +468,7 @@ func (s *Server) stageCfgJSON() map[string]any {
 		s.mu.Lock()
 		caps := s.caps
 		s.mu.Unlock()
-		for _, st := range []ptitems.Stage{ptitems.Func, ptitems.Aging, ptitems.User} {
+		for _, st := range cfgStageList {
 			for _, p := range f.of(st).picks(st, caps, false, true) {
 				if p.Peer != ptitems.PeerRef {
 					continue
@@ -529,8 +570,8 @@ func stageTimeUp(ctx context.Context) <-chan struct{} {
 	return c
 }
 
-// configStep is a full-test step run from a saved configuration: steps 2 and 4,
-// and the test part of step 6.
+// configStep is a step run from a saved configuration: steps 2, 4 and 7, and
+// the test part of step 6.
 func (s *Server) configStep(st ptitems.Stage) ptstages.Func {
 	return func(ctx context.Context) ptreport.StepResult {
 		fail := func(reason string) ptreport.StepResult {

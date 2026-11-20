@@ -343,6 +343,10 @@ func (e *Engine) relayVerdict(ctx context.Context, j *job) (ptreport.Outcome, st
 	if j.peer == ptitems.PeerRef {
 		return e.relayChainVerdict(j)
 	}
+	// An outside instrument watches the contacts; the board's counts are recorded only (decision 187).
+	if j.peer == ptitems.PeerExt {
+		return Recorded, ""
+	}
 	att := ptreport.Attempt{StartedAt: time.Now(), Sent: []string{"ask the operator for each relay's cycles"}}
 	defer func() {
 		att.DurationMS = time.Since(att.StartedAt).Milliseconds()

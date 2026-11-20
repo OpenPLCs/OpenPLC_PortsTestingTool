@@ -122,6 +122,9 @@ func takes(p ptproto.Port, param string) bool {
 	return false
 }
 
+// onlyExt is an outside-instrument item: not in R&D, no analog group (decision 188).
+func onlyExt(it Item) bool { return len(it.Peers) == 1 && it.Peers[0] == PeerExt }
+
 func TestItemsAreWellFormed(t *testing.T) {
 	seen := map[string]bool{}
 	for _, it := range Catalogue {
@@ -129,7 +132,8 @@ func TestItemsAreWellFormed(t *testing.T) {
 			t.Errorf("%s twice", it.ID)
 		}
 		seen[it.ID] = true
-		if !it.In(RD) {
+		// The one-way items of R&D aging with the PC need an outside instrument (decision 187).
+		if !it.In(RD) && !onlyExt(it) {
 			t.Errorf("%s: not in R&D, which lists every item", it.ID)
 		}
 		if len(it.Peers) == 0 {
@@ -250,7 +254,7 @@ func TestDefaultPeerFollowsTheConnection(t *testing.T) {
 func TestAnalogItemsFormFourGroups(t *testing.T) {
 	members := map[string][]string{}
 	for _, it := range Catalogue {
-		if it.Port != "ain" && it.Port != "aout" {
+		if it.Port != "ain" && it.Port != "aout" || onlyExt(it) {
 			continue
 		}
 		if it.Group == "" {

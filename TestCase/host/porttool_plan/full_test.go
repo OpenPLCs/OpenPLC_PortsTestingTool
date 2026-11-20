@@ -271,6 +271,33 @@ func TestFullTestContinuesFromTheStepThatDidNotPass(t *testing.T) {
 	waitFull(t, srv, "the third run to stop", finished)
 }
 
+// R&D aging runs one of its two steps alone, writes a record and leaves the
+// full test's progress alone (decision 187, PORTTOOL-FLOW.md C.3.8).
+func TestRDAgingRunsAloneWithARecordAndNoProgress(t *testing.T) {
+	srv, records := fullPanel(t, nil, map[ptstages.Step]ptstages.Func{
+		ptstages.Functional: fixedStage(ptreport.OutcomePass),
+		ptstages.Aging:      fixedStage(ptreport.OutcomePass),
+		ptstages.AgingPC:    fixedStage(ptreport.OutcomePass),
+	})
+	postJSON(t, srv, "/api/connect", map[string]any{"port": "fake"})
+	for _, pick := range [][]int{{2, 4}, {4, 7}, {7, 2}} {
+		if r := postJSON(t, srv, "/api/full/start", map[string]any{"steps": pick}); r["started"] == true {
+			t.Fatalf("%v started: R&D aging runs alone", pick)
+		}
+	}
+	if r := postJSON(t, srv, "/api/full/start", map[string]any{"steps": []int{7}}); r["started"] != true {
+		t.Fatalf("start: %v", r)
+	}
+	waitFull(t, srv, "the run to finish", finished)
+	rep, _ := onlyReport(t, records)
+	if got := outcomesOf(rep); got != "7:PASS" || rep.Steps[0].ID != "aging_pc" {
+		t.Fatalf("%s %+v", got, rep.Steps)
+	}
+	if _, err := os.Stat(filepath.Join(records, fakeUID, "progress.json")); !os.IsNotExist(err) {
+		t.Fatal("R&D aging wrote the full test's progress")
+	}
+}
+
 func TestStopRecordsStoppedAndSkipsTheRest(t *testing.T) {
 	srv, records := fullPanel(t, nil, map[ptstages.Step]ptstages.Func{
 		ptstages.UserLevel: fixedStage(ptreport.OutcomePass),

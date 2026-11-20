@@ -228,6 +228,7 @@ table.crit tr.bad td{color:var(--err)}
   white-space:pre-wrap;word-break:break-all;min-height:300px}
 .l{display:block;border-left:3px solid transparent;padding-left:7px;margin:1px 0}
 .l .ts{color:var(--ink3)}
+.l .gloss{color:var(--ink3)}
 .l.ok{border-left-color:var(--ok)}
 .l.err{border-left-color:var(--err);background:var(--err-bg);color:var(--err)}
 .l.frame{border-left-color:#4c6ea8;color:var(--ink2)}
@@ -448,6 +449,7 @@ table.rltab .unit{color:var(--ink3);font-size:12px;margin-left:3px}
 .subtile.cur{border-color:var(--accent);background:var(--accent-bg)}
 .subtile .row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .subtile .nm{font-weight:600}
+.subtile .subwhy{margin-top:6px;padding:4px 6px;border-radius:4px;background:var(--warn-bg);color:#8a5300;font-size:12.5px;line-height:1.45}
 .subtile.cur .nm{color:var(--accent)}
 .subtile .stbar{height:6px;background:var(--line2);border-radius:3px;overflow:hidden;flex:1;min-width:40px}
 .subtile .stbar i{display:block;height:100%;background:var(--accent)}

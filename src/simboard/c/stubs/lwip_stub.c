@@ -40,6 +40,10 @@ static struct tcp_pcb *client_pcb;
 /* Small, so source mode's "until the window is full" path is exercised. */
 #define FAKE_SNDBUF 256
 
+/* Bridged: tcp_write fills a TCP_WND window and tcp_output empties it, so
+ * source mode's pump stops once per pass instead of spinning forever. */
+static uint32_t open_used;
+
 static struct tcp_pcb *alloc_pcb(void)
 {
     for (size_t i = 0; i < sizeof(pcbs) / sizeof(pcbs[0]); i++) {
@@ -102,6 +106,7 @@ err_t tcp_write(struct tcp_pcb *pcb, const void *data, u16_t len, uint8_t flags)
     if (test_eth_on_write != NULL) {
         test_eth_on_write(data, len);
     }
+    open_used += len;
 
     /* Kept for the test; the tail is dropped, not wrapped, so the echo lines
      * stay findable. */
@@ -115,7 +120,7 @@ err_t tcp_write(struct tcp_pcb *pcb, const void *data, u16_t len, uint8_t flags)
     return ERR_OK;
 }
 
-err_t tcp_output(struct tcp_pcb *pcb) { (void)pcb; return ERR_OK; }
+err_t tcp_output(struct tcp_pcb *pcb) { (void)pcb; open_used = 0; return ERR_OK; }
 void  tcp_recved(struct tcp_pcb *pcb, u16_t len) { (void)pcb; (void)len; }
 
 u16_t tcp_sndbuf(struct tcp_pcb *pcb)
@@ -124,7 +129,7 @@ u16_t tcp_sndbuf(struct tcp_pcb *pcb)
     static int handed_out;
 
     if (pcb == NULL) { return 0; }
-    if (test_eth_sndbuf_open) { return TCP_WND; }
+    if (test_eth_sndbuf_open) { return (open_used >= TCP_WND) ? 0 : (u16_t)(TCP_WND - open_used); }
     if (handed_out) { handed_out = 0; return 0; }
     handed_out = 1;
     return FAKE_SNDBUF;

@@ -8,11 +8,11 @@ function cfgPortCard(port) {
   const its = itemsOf(v, p);
   const card = el("div", "item anacard cfgcard"); card.dataset.cfgcard = p;
 
-  // Data source: always the reference board here (decision 129).
+  // Test method: the reference board, an outside instrument, or per item (decisions 129, 187, 188).
   const hd = el("div", "ih");
   hd.appendChild(el("b", null, port.label));
   hd.appendChild(el("span", "sp"));
-  const src = el("span", "hint", T("cfg.src_fixed")); src.dataset.cfgsrc = p;
+  const src = el("span", "hint", T(cfgSrcKey(v))); src.dataset.cfgsrc = p;
   hd.appendChild(src);
   card.appendChild(hd);
   // Reference board set to unused: say what each item uses instead (PORTTOOL-FLOW.md C.3.6 「标准机「不用」」).
@@ -69,7 +69,8 @@ function cfgPortCard(port) {
     for (const it of rest) {
       const tr = el("tr"); tr.dataset.item = it.id;
       tr.appendChild(el("td")).appendChild(cfgOnBox(v, it));
-      tr.appendChild(el("td", null, it.name));
+      const nm = tr.appendChild(el("td", null, it.name));
+      if (cfgSrcKey(v) === "cfg.src_both") { nm.appendChild(el("span", "hint", " · " + T(cfgPeer(v, it) === "ext" ? "lib.peer.ext" : "lib.peer.ref"))).dataset.cfgmethod = it.id; }
       tr.appendChild(el("td")).appendChild((it.params || []).length ? cfgParamEditor(v, it) : el("span", "hint", "-"));
       tbl.appendChild(tr);
     }
@@ -92,6 +93,10 @@ function cfgAnaNote(port, it) {
   box.appendChild(el("div", null, lim.check ? T("cfg.ana.crit", { tol: lim.check.max }) : T("shell.item.crit_missing", { step: lim.step || "-" })));
   return box;
 }
+
+// The card's test-method line: with the PC an outside instrument, the
+// reference board's aging the board, functional / user-level per item (decision 188).
+const cfgSrcKey = v => v === "agingpc" ? "cfg.src_ext" : v === "aging" ? "cfg.src_fixed" : "cfg.src_both";
 
 function cfgOnBox(v, it) {
   const cb = el("input"); cb.type = "checkbox"; cb.dataset.pick = it.id;

@@ -203,6 +203,7 @@ func checkStageConfigs(p *Page) {
 		p.Eval("api('/api/analog/ranges', {ranges: {AI1: 'v'}})") // the shared UID back to the product default
 	}
 	checkRelayConfigs(p)
+	checkRDAging(p)
 
 	openSub(p, "func")
 	p.L(lport("usb")).Click()
@@ -230,6 +231,18 @@ func checkStageConfigs(p *Page) {
 	p.Wait(300)
 	check(p.L(`#itemcards [data-subst="din.level"]`).Count() == 1 && p.L(`#itemcards [data-cfgnoauto="din.level"]`).Count() == 1,
 		"with the reference board unused, the DI card says there is no self-loop and it cannot run (decision 135)")
+	// Decision 188: the board is one test method; unused, what needs it starts
+	// unticked, the step stays tickable, outside-instrument items are offered.
+	check(!p.L(`#itemcards input[data-pick="din.level"]`).Checked() && p.L(`#itemcards input[data-pick="din.expect"]`).Count() == 1 &&
+		strings.Contains(p.L(`#itemcards [data-cfgmethod="din.expect"]`).Text(), "外部仪器"),
+		"with the board unused, DI read-each-input starts unticked and DI against set levels is offered as an outside instrument")
+	check(!p.L(`#subtiles input[data-fullstep="2"]`).Disabled(), "and the functional test can still be ticked",
+		cut(p.L("#subtiles").Text(), 300))
+	p.L(lport("relay")).Click()
+	p.Wait(300)
+	check(p.L(`#itemcards select[data-cfgpeer="relay.cycle"]`).Value() == "ext", "relays default to the outside instrument")
+	p.L(lport("din")).Click()
+	p.Wait(300)
 	p.Eval(flip, false)
 	p.Wait(200)
 	check(p.L(`#itemcards [data-subst="din.level"]`).Count() == 0, "and stops saying so when the reference board is back")

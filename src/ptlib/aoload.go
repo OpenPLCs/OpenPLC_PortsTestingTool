@@ -21,7 +21,12 @@ import (
 )
 
 // fillLoad readies an AO load job: its two criteria steps, one per channel.
+// With an outside instrument the current is only driven and recorded (decision 187).
 func fillLoad(j *job, plan ptplan.Plan) {
+	if j.peer == ptitems.PeerExt {
+		j.record = true
+		return
+	}
 	for _, id := range j.item.Criteria {
 		for _, st := range plan.Steps {
 			if st.ID == id {
@@ -40,8 +45,12 @@ func fillLoad(j *job, plan ptplan.Plan) {
 }
 
 // TargetMissing says a pick lacks an AO load target: both are set before the
-// run, never defaulted, in every test type (decisions 129, 134).
+// run, never defaulted, in every test type (decisions 129, 134); or a
+// set-value item has nothing to judge against (decision 187).
 func TargetMissing(it ptitems.Item, params map[string]string) bool {
+	if expectMissing(it, params) {
+		return true
+	}
 	return it.Load && (strings.TrimSpace(params[ptitems.ParamOut1]) == "" || strings.TrimSpace(params[ptitems.ParamOut2]) == "")
 }
 

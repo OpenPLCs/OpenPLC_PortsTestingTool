@@ -292,7 +292,13 @@ watch:
 			if l.frames < l.warm {
 				continue
 			}
-			res, all := ptcheck.EvalAll(l.j.steps[0].Checks, ptseq.FrameLookup(ev.Frame))
+			var res []ptcheck.Result
+			var all bool
+			if l.j.judge != nil {
+				res, all, vals = l.j.judge(ev.Frame)
+			} else {
+				res, all = ptcheck.EvalAll(l.j.steps[0].Checks, ptseq.FrameLookup(ev.Frame))
+			}
 			l.judged++
 			l.att.Checks = res
 			n := l.judged

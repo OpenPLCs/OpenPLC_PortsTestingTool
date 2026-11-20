@@ -1,7 +1,8 @@
-// Package ptstages runs a full fixture test: the picked steps of 2, 4, 5 and 6
-// in order, stopping at the first that does not pass, and the inside of step 6.
-// Rules: $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.3 and C.3.5; decisions 89,
-// 94, 96.
+// Package ptstages runs a full fixture test: the picked steps of 2, 5 and 6
+// in order, stopping at the first that does not pass, and the inside of step 6;
+// and an R&D aging run, step 4 or 7 on its own (decision 187).
+// Rules: $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.3, C.3.5 and C.3.8;
+// decisions 89, 94, 96.
 package ptstages
 
 import (
@@ -18,13 +19,18 @@ type Step int
 
 const (
 	Functional Step = 2
-	Aging      Step = 4
+	Aging      Step = 4 // R&D aging with the reference board
 	Safety     Step = 5
 	UserLevel  Step = 6
+	AgingPC    Step = 7 // R&D aging with the PC and outside instruments
 )
 
-// Order is every step a full test can pick, in the order they run.
-var Order = []Step{Functional, Aging, Safety, UserLevel}
+// Order is every step, in the order they run.
+var Order = []Step{Functional, Aging, Safety, UserLevel, AgingPC}
+
+// RDAging says a step is one of R&D aging's two, which run alone, never in a
+// full fixture test (decision 187).
+func (s Step) RDAging() bool { return s == Aging || s == AgingPC }
 
 // Name is the step's id in a report.
 func (s Step) Name() string {
@@ -37,6 +43,8 @@ func (s Step) Name() string {
 		return "safety"
 	case UserLevel:
 		return "user"
+	case AgingPC:
+		return "aging_pc"
 	}
 	return "step" + strconv.Itoa(int(s))
 }

@@ -114,6 +114,7 @@ func New() *Server {
 	s.Stages = map[ptstages.Step]ptstages.Func{
 		ptstages.Functional: s.configStep(ptitems.Func),
 		ptstages.Aging:      s.configStep(ptitems.Aging),
+		ptstages.AgingPC:    s.configStep(ptitems.AgingPC),
 		ptstages.Safety:     s.safetyStep,
 	}
 	s.RunItems = s.runItems

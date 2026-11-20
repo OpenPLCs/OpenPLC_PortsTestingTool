@@ -9,9 +9,9 @@
  * full.js; the right column is runview.js.
  */
 
-// Called from pickView when the full test is opened.
+// Called from pickView when the full test or R&D aging is opened.
 function flowLoad() {
-  $("#flowwhat").textContent = T("ui.full.what");
+  $("#flowwhat").textContent = T(isAgingSub(view) ? "ui.aging.what" : "ui.full.what");
   fullSeen = "";
   loadFull();
 }
@@ -21,7 +21,7 @@ function flowLoad() {
 const fullRunning = () => !!(fullData && fullData.running);
 const fullStepInfo = step => ((fullData && fullData.steps) || []).find(s => s.step === step);
 const fullAvailable = step => { const s = fullStepInfo(step); return !s || s.available; };
-const fullTicked = () => FULL_SUBS.filter(s => fullPick[s.step] && fullAvailable(s.step));
+const fullTicked = () => pageSubs(view).filter(s => fullPick[s.step] && fullAvailable(s.step));
 
 // How many items a sub-test's configuration runs on this board.
 function subPicked(k) {
@@ -38,7 +38,7 @@ function subPlanText() {
 function fullTop(top, host) {
   top.textContent = ""; host.textContent = "";
   const running = fullRunning();
-  top.appendChild(el("h2", null, T("shell.entry.full")));
+  top.appendChild(el("h2", null, T(isAgingSub(view) ? "shell.type.rdaging" : "shell.entry.full")));
   const plan = el("span", "sub", subPlanText()); plan.dataset.fullplan = "1";
   top.appendChild(plan);
   top.appendChild(el("span", "sp"));
@@ -54,7 +54,7 @@ function subTiles(running) {
   const w = el("div", "subtiles");
   const st = fullData || {};
   const shown = running || !!st.last;   // run states stay up after a run
-  for (const s of FULL_SUBS) {
+  for (const s of pageSubs(view)) {
     const info = fullStepInfo(s.step);
     const avail = !info || info.available;
     const tile = el("div", "subtile" + (s.k === view ? " cur" : ""));
@@ -64,8 +64,14 @@ function subTiles(running) {
     const cb = el("input"); cb.type = "checkbox"; cb.dataset.fullstep = s.step;
     cb.checked = !!fullPick[s.step] && avail;
     cb.disabled = !avail || running;
+    if (!avail && info.why) { cb.title = info.why; }
     cb.onclick = e => e.stopPropagation();
-    cb.onchange = () => { fullPick[s.step] = cb.checked; renderFullTop(); };
+    cb.onchange = () => {
+      fullPick[s.step] = cb.checked;
+      // R&D aging runs one of its two (decision 187).
+      if (cb.checked && isAgingSub(s.k)) { for (const o of AGING_SUBS) { if (o !== s) { fullPick[o.step] = false; } } }
+      renderFullTop();
+    };
     head.appendChild(cb);
     head.appendChild(el("span", "nm", T(s.name)));
     tile.appendChild(head);
@@ -87,7 +93,8 @@ function subTiles(running) {
       time.appendChild(el("span", "hint", T("full.safety_d")));
     }
     tile.appendChild(time);
-    if (!avail && info.why) { tile.appendChild(el("div", "sub", info.why)); }
+    // Why it cannot be ticked, where the eye lands after the grey box (PORTTOOL-FLOW.md C.3.6 layer 2).
+    if (!avail && info.why) { const w = el("div", "subwhy", info.why); w.dataset.subwhy = s.step; tile.appendChild(w); }
 
     if (shown) { tile.appendChild(subState(s.step, st)); }
     if (s.durs && !running) {

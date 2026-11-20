@@ -28,22 +28,21 @@ func outcomes(r ptreport.Report) []string {
 func TestAStepThatDoesNotPassStopsTheRest(t *testing.T) {
 	var ran []ptstages.Step
 	run := ptstages.Run{
-		Steps: ptstages.Order,
+		Steps: []ptstages.Step{ptstages.Functional, ptstages.Safety, ptstages.UserLevel},
 		Do: map[ptstages.Step]ptstages.Func{
 			2: fixed(ptreport.OutcomePass, &ran, 2),
-			4: fixed(ptreport.OutcomeFail, &ran, 4),
-			5: fixed(ptreport.OutcomePass, &ran, 5),
+			5: fixed(ptreport.OutcomeFail, &ran, 5),
 			6: fixed(ptreport.OutcomePass, &ran, 6),
 		},
 	}
 	rep := run.Execute(context.Background(), ptreport.Report{})
-	if got := strings.Join(outcomes(rep), " "); got != "2:PASS 4:FAIL 5:SKIPPED 6:SKIPPED" {
+	if got := strings.Join(outcomes(rep), " "); got != "2:PASS 5:FAIL 6:SKIPPED" {
 		t.Fatal(got)
 	}
 	if len(ran) != 2 {
 		t.Fatalf("ran %v after a failure", ran)
 	}
-	if rep.Steps[0].ID != "functional" || !strings.Contains(rep.Steps[3].Reason, "step 4") {
+	if rep.Steps[0].ID != "functional" || !strings.Contains(rep.Steps[2].Reason, "step 5") {
 		t.Fatalf("ids / reasons: %+v", rep.Steps)
 	}
 }

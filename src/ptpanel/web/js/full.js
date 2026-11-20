@@ -2,13 +2,14 @@
 
 /* ================= Full test page, below layer 2 =================
  *
- * Steps 2, 4, 5, 6 are ticked on layer 2 (flows.js) and run in order by the
- * server (src/ptstages); one record per board in records/<UID>/.
+ * Steps 2, 5, 6 are ticked on layer 2 (flows.js) and run in order by the
+ * server (src/ptstages); one record per board in records/<UID>/. R&D aging's
+ * step 4 or 7 runs the same way, alone (decision 187).
  * PORTTOOL-FLOW.md C.3.3, C.3.4. This draws the refusals, the "continue?"
  * question, the safety card and the last outcome, re-rendered only when the
  * server's state changes so the safety card's inputs are not wiped.
  */
-const FULL_STEP = { 2: "ui.full.step2", 4: "ui.full.step4", 5: "ui.full.step5", 6: "ui.full.step6" };
+const FULL_STEP = { 2: "ui.full.step2", 4: "ui.full.step4", 5: "ui.full.step5", 6: "ui.full.step6", 7: "ui.full.step7" };
 const FULL_OUTCOME = { PASS: "go.full.o.pass", FAIL: "go.full.o.fail", TIMEOUT: "go.full.o.timeout",
   ERROR: "go.full.o.error", SKIPPED: "go.full.o.skipped", STOPPED: "go.full.o.stopped" };
 let fullPick = {};            // step -> ticked

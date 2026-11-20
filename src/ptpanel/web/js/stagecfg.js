@@ -1,11 +1,11 @@
 "use strict";
 
-// The functional / aging / user-level configurations (decision 97).
+// The functional / user-level configurations and R&D aging's two (decisions 97, 187).
 // Kept by the panel in porttool_stagecfg.json via /api/stagecfg;
 // every change is saved on the spot and sends nothing to the board.
 // PORTTOOL-FLOW.md C.3.6 "三种配置".
 
-const CFG_VIEWS = ["func", "aging", "user"];
+const CFG_VIEWS = ["func", "aging", "agingpc", "user"];
 let stageCfgs = null;     // the last /api/stagecfg reply
 let stageCfgLoading = false;
 
@@ -24,6 +24,9 @@ async function loadStageCfgs() {
 function cfgOn(v, it) {
   const c = cfgItem(v, it.id);
   if (c.on !== undefined) { return c.on; }
+  if (v === "agingpc" && it.peers.includes("ext")) { return false; }   // wired to an instrument first (stageCfg.on, decision 187)
+  // Reference board unused: what needs it starts unticked, the step is not greyed (decision 188).
+  if (cfgRefUnused() && v !== "aging" && cfgFixedRef(it) && !it.peers.includes("ext")) { return false; }
   if (it.default_off) { return false; }   // the reference board cannot test it as wired by default (defaultOff, decisions 129, 135)
   return !it.exclusive || itemsOf(v, it.port).find(o => o === it || excludes(v, o, it)) === it; // shell.js
 }
@@ -31,7 +34,13 @@ const cfgRefUnused = () => !!(stageCfgs && stageCfgs.ref_unused);
 // AI / AO / DI / DO run against the reference board outside R&D, never a
 // person; one with no such route is refused at the start (decisions 129, 130; fixedRef in stagecfg.go).
 const cfgFixedRef = it => ["ain", "aout", "din", "dout", "relay"].includes(it.port);
-const cfgPeer = (v, it) => cfgFixedRef(it) ? (it.peers.includes("ref") ? "ref" : it.peers[0])
+// R&D aging with the PC: an outside instrument where the item offers one, never the reference board (ptitems.AgingPCPeer).
+// Functional / user-level: an item offering both runs with the saved one, else an
+// outside instrument while the board is unused (stageCfg.peer, decision 188).
+const cfgPeer = (v, it) => v === "agingpc" ? (it.peers.includes("ext") ? "ext" : it.peers.find(p => p !== "ref"))
+  : cfgFixedRef(it) && v !== "aging" && it.peers.includes("ext") && it.peers.includes("ref")
+    ? (["ref", "ext"].includes(cfgItem(v, it.id).peer) ? cfgItem(v, it.id).peer : cfgRefUnused() ? "ext" : "ref")
+  : cfgFixedRef(it) ? (it.peers.includes("ref") ? "ref" : it.peers[0])
   : cfgItem(v, it.id).peer || (cfgRefUnused() ? it.peers[0] : cfgDefaultPeer(it));
 // Same rule as ptitems.DefaultPeer (decision 112): an item that offers the
 // reference board takes it while it is connected, else its other peer.
@@ -200,6 +209,11 @@ function cfgHumanText(it, peer) {
 // 「功能 / 老化 / 用户级有什么不同」).
 function cfgRunText(v, it, peer) {
   const timed = cfgDuration(v) !== "once", d = durLabel(cfgDuration(v));
+  // One way each with an outside instrument (decision 187, C.3.8).
+  if (peer === "ext") {
+    const judged = it.id === "din.expect" || it.id === "ain.expect";
+    return timed ? T(judged ? "cfg.run.expect_timed" : "cfg.run.emit_timed", { d }) : T(judged ? "cfg.run.expect_once" : "cfg.run.emit_once");
+  }
   if (it.id === "relay.cycle") { return timed ? T("cfg.run.relay_timed", { d }) : T("cfg.run.single"); }
   // The DO chain runs before the relays share it (decision 133, ptlib Engine.Run).
   if (it.id === "dout.load" && peer === "ref") { return timed ? T("cfg.run.chain_first") : T("cfg.run.single"); }
@@ -226,7 +240,7 @@ function cfgItemNotes(v, it) {
   out.push(el("h3", null, T("cfg.run.head")));
   const r = el("div", null, cfgRunText(v, it, peer));
   r.dataset.cfgrun = it.id; out.push(r);
-  const subs = FULL_SUBS.filter(s => s.k !== "safety" && it.stages.includes(s.k)).map(s => T(s.name));
+  const subs = RUN_SUBS.filter(s => s.k !== "safety" && it.stages.includes(s.k)).map(s => T(s.name));
   const i = el("div", "hint", T("cfg.run.in", { list: subs.join(T("shell.list_sep")) }));
   i.dataset.cfgin = it.id; out.push(i);
   return out;
@@ -241,7 +255,9 @@ function cfgItemInfo(v, it) {
   for (const n of cfgItemNotes(v, it)) { box.appendChild(n); }
   box.appendChild(el("h3", null, T("full.crit")));
   const ib = ITEM_BODIES[it.id];
-  if (it.id === "relay.cycle") { box.appendChild(el("div", "hint", T("cfg.crit.relay"))); }
+  const ext = cfgEffPeer(v, it) === "ext";
+  if (ext) { box.appendChild(el("div", "hint", T({ "din.expect": "cfg.crit.din_expect", "ain.expect": "cfg.crit.ain_expect" }[it.id] || "cfg.crit.emit"))); }
+  else if (it.id === "relay.cycle") { box.appendChild(el("div", "hint", T("cfg.crit.relay"))); }
   else if (it.id === "dout.load" && cfgEffPeer(v, it) === "ref") { box.appendChild(el("div", "hint", T("cfg.crit.dout_chain"))); }
   else { box.appendChild(ib ? el("div", "hint", ib.crit(it, v)) : libCritTable(it, null, true, cfgEffPeer(v, it))); }
   return box;

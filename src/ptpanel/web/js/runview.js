@@ -18,7 +18,7 @@ let runDrawn = 0;       // log lines already in #runlog under the current filter
 
 const runSince = () => runSeq;
 const runStep = no => ((runData && runData.steps) || []).find(s => s.no === no);
-const runSubOf = stage => FULL_SUBS.find(s => s.step === stage);
+const runSubOf = stage => RUN_SUBS.find(s => s.step === stage);
 
 const RUN_VERDICT = { RUN: "run.v.run", PASS: "run.v.pass", FAIL: "run.v.fail", TIMEOUT: "run.v.timeout",
   ERROR: "run.v.error", STOPPED: "run.v.stopped", RECORDED: "run.v.recorded", SKIPPED: "run.v.skipped" };

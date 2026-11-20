@@ -2901,11 +2901,11 @@
    "de_of": "58921cce"
   },
   "ui.full.what": {
-   "zh": "工装完整测试：在上面四块里勾要跑的子测试、选时间，点「配置完成，开始测试」，按顺序依次跑，某项没通过后面的就不跑。要测的 AI / AO 在板子上没有校准值时不让开始。每次跑完给这块板写一份记录，在 exe 旁边的 records 文件夹里按板子 UID 分；中途停下的，下次接上这块板可以从停下的那一项接着跑。",
-   "en": "Full fixture test: tick the sub-tests to run in the four boxes above, pick their times and click “Configuration done, start test”. They run in order, and once one does not pass the rest do not run. It does not start while an AI / AO to be tested has no calibration on the board. Each run writes one record for the board, in the records folder beside the exe, by board UID; a run that stopped can continue from that sub-test the next time the board is connected.",
-   "en_of": "e70e4130",
-   "de": "Komplette Vorrichtungsprüfung: oben in den vier Feldern die Teiltests ankreuzen, Zeiten wählen und „Konfiguration fertig, Prüfung starten“ klicken. Sie laufen der Reihe nach; besteht einer nicht, laufen die übrigen nicht. Sie startet nicht, solange ein zu prüfender AI / AO auf der Platine keine Kalibrierwerte hat. Jeder Lauf schreibt ein Protokoll für die Platine, im Ordner records neben der exe, nach Platinen-UID; ein gestoppter Lauf kann beim nächsten Anschließen der Platine ab diesem Teiltest fortgesetzt werden.",
-   "de_of": "e70e4130"
+   "zh": "工装完整测试：在上面三块里勾要跑的子测试、选时间，点「配置完成，开始测试」，按顺序依次跑，某项没通过后面的就不跑。要测的 AI / AO 在板子上没有校准值时不让开始。每次跑完给这块板写一份记录，在 exe 旁边的 records 文件夹里按板子 UID 分；中途停下的，下次接上这块板可以从停下的那一项接着跑。",
+   "en": "Full fixture test: tick the sub-tests to run in the three boxes above, pick their times and click “Configuration done, start test”. They run in order, and once one does not pass the rest do not run. It does not start while an AI / AO to be tested has no calibration on the board. Each run writes one record for the board, in the records folder beside the exe, by board UID; a run that stopped can continue from that sub-test the next time the board is connected.",
+   "en_of": "84480f86",
+   "de": "Vollständiger Vorrichtungstest: In den drei Feldern oben die Teiltests ankreuzen, Zeiten wählen und „Konfiguration fertig, Test starten“ klicken. Sie laufen nacheinander; besteht einer nicht, laufen die übrigen nicht. Startet nicht, solange ein zu prüfender AI / AO keine Kalibrierung auf der Platine hat. Jeder Lauf schreibt einen Bericht für die Platine in den Ordner records neben der exe, nach Platinen-UID; ein gestoppter Lauf kann beim nächsten Anschließen dieser Platine bei diesem Teiltest fortgesetzt werden.",
+   "de_of": "84480f86"
   },
   "ui.full.step2": {
    "zh": "功能测试",
@@ -2915,11 +2915,11 @@
    "de_of": "a8a8f074"
   },
   "ui.full.step4": {
-   "zh": "老化测试",
-   "en": "Burn-in test",
-   "en_of": "c613f57b",
-   "de": "Dauerlauf",
-   "de_of": "c613f57b"
+   "zh": "研发老化 · 接标准机",
+   "en": "R&D aging · with reference board",
+   "en_of": "9fb15ad6",
+   "de": "F&E-Alterung · mit Referenzgerät",
+   "de_of": "9fb15ad6"
   },
   "ui.full.step5": {
    "zh": "安规测试",
@@ -4160,13 +4160,6 @@
    "de": "Funktionsprüfung",
    "de_of": "a8a8f074"
   },
-  "shell.type.aging": {
-   "zh": "老化测试",
-   "en": "Aging test",
-   "en_of": "c613f57b",
-   "de": "Dauertest",
-   "de_of": "c613f57b"
-  },
   "shell.type.safety": {
    "zh": "安规测试",
    "en": "Safety test",
@@ -4189,11 +4182,11 @@
    "de_of": "d36236aa"
   },
   "shell.entry.full_d": {
-   "zh": "功能 / 老化 / 安规 / 用户级，在右侧勾选、配时间，一起开始",
-   "en": "Functional / aging / safety / user-level: tick them and set their times on the right, then start them together",
-   "en_of": "0d58b99a",
-   "de": "Funktion / Dauertest / Sicherheit / Anwenderebene: rechts anhaken und Zeiten wählen, dann gemeinsam starten",
-   "de_of": "0d58b99a"
+   "zh": "功能 / 安规 / 用户级，在右侧勾选、配时间，一起开始",
+   "en": "Functional / safety / user-level: tick them and set their times on the right, then start them together",
+   "en_of": "ef22741f",
+   "de": "Funktion / Sicherheit / Anwenderebene: rechts ankreuzen, Zeiten einstellen und gemeinsam starten",
+   "de_of": "ef22741f"
   },
   "shell.safety.noports": {
    "zh": "安规不分端口",
@@ -12097,6 +12090,342 @@
    "en_of": "70ff8353",
    "de": "Prüfsumme des Zurückgelesenen",
    "de_of": "70ff8353"
+  },
+  "shell.type.rdaging": {
+   "zh": "研发老化测试",
+   "en": "R&D aging test",
+   "en_of": "e0f35c68",
+   "de": "F&E-Alterungstest",
+   "de_of": "e0f35c68"
+  },
+  "shell.type.rdaging_d": {
+   "zh": "接标准机，或接上位机和外部仪器（高低温、EMC），二选一，带时长",
+   "en": "With the reference board, or with this PC and outside instruments (temperature chamber, EMC); one of the two, for a set time",
+   "en_of": "1c7c6938",
+   "de": "Mit Referenzgerät oder mit diesem PC und externen Messgeräten (Klimakammer, EMV); eines von beiden, mit fester Dauer",
+   "de_of": "1c7c6938"
+  },
+  "shell.type.aging_ref": {
+   "zh": "接标准机",
+   "en": "With reference board",
+   "en_of": "5459e551",
+   "de": "Mit Referenzgerät",
+   "de_of": "5459e551"
+  },
+  "shell.type.aging_pc": {
+   "zh": "接上位机",
+   "en": "With PC",
+   "en_of": "b5bc4366",
+   "de": "Mit PC",
+   "de_of": "b5bc4366"
+  },
+  "ui.full.step7": {
+   "zh": "研发老化 · 接上位机",
+   "en": "R&D aging · with PC",
+   "en_of": "3b8d0536",
+   "de": "F&E-Alterung · mit PC",
+   "de_of": "3b8d0536"
+  },
+  "ui.aging.what": {
+   "zh": "研发老化测试：在上面两块里选一种、选时间，点「配置完成，开始测试」。接标准机：和原来的老化一样由标准机陪测。接上位机：板子在高低温箱或 EMC 实验室里经 RS232 接这台电脑，DI、AI 按设定值判，DO、AO、继电器只按设定值输出、由外部仪器看。要测的 AI / AO 在板子上没有校准值时不让开始。每次跑完写一份记录，在 exe 旁边的 records 文件夹里按板子 UID 分；停下的不续跑。",
+   "en": "R&D aging test: pick one of the two boxes above and its time, then click “Configuration done, start test”. With reference board: the reference board tests alongside, as aging always did. With PC: the board sits in a temperature chamber or an EMC lab and talks to this PC over RS232; DI and AI are judged against the values you set, DO, AO and relays only output the values you set and outside instruments watch them. It does not start while an AI / AO to be tested has no calibration on the board. Each run writes one record in the records folder beside the exe, by board UID; a stopped run does not continue.",
+   "en_of": "e0490bdb",
+   "de": "F&E-Alterungstest: Oben eines der beiden Felder und die Dauer wählen, dann „Konfiguration fertig, Test starten“ klicken. Mit Referenzgerät: Das Referenzgerät prüft mit, wie bisher bei der Alterung. Mit PC: Die Platine steht in einer Klimakammer oder im EMV-Labor und ist über RS232 mit diesem PC verbunden; DI und AI werden gegen die eingestellten Werte geprüft, DO, AO und Relais geben nur die eingestellten Werte aus, externe Messgeräte beobachten sie. Startet nicht, solange ein zu prüfender AI / AO keine Kalibrierung auf der Platine hat. Jeder Lauf schreibt einen Bericht in den Ordner records neben der exe, nach Platinen-UID; ein gestoppter Lauf wird nicht fortgesetzt.",
+   "de_of": "e0490bdb"
+  },
+  "lib.peer.ext": {
+   "zh": "外部仪器",
+   "en": "Outside instrument",
+   "en_of": "542c6bdf",
+   "de": "Externes Messgerät",
+   "de_of": "542c6bdf"
+  },
+  "param.high": {
+   "zh": "该为高的 DI（如 1,3；全低填 none）",
+   "en": "DIs that should read high (e.g. 1,3; none if all low)",
+   "en_of": "1b1a9a47",
+   "de": "DIs, die High lesen sollen (z. B. 1,3; none, wenn alle Low)",
+   "de_of": "1b1a9a47"
+  },
+  "param.in1": {
+   "zh": "AI1 设定值",
+   "en": "AI1 set value",
+   "en_of": "81dcc719",
+   "de": "AI1 Sollwert",
+   "de_of": "81dcc719"
+  },
+  "param.in2": {
+   "zh": "AI2 设定值",
+   "en": "AI2 set value",
+   "en_of": "87ca12eb",
+   "de": "AI2 Sollwert",
+   "de_of": "87ca12eb"
+  },
+  "param.tol": {
+   "zh": "允许偏差（% 满量程）",
+   "en": "Tolerance (% of full scale)",
+   "en_of": "b6670acb",
+   "de": "Toleranz (% vom Endwert)",
+   "de_of": "b6670acb"
+  },
+  "cfg.src_ext": {
+   "zh": "数据来源：外部仪器（输出只按设定值发，输入按设定值判）",
+   "en": "Data source: outside instruments (outputs only drive the set values, inputs are judged against them)",
+   "en_of": "79933cdf",
+   "de": "Datenquelle: externe Messgeräte (Ausgänge geben nur die Sollwerte aus, Eingänge werden gegen sie geprüft)",
+   "de_of": "79933cdf"
+  },
+  "cfg.run.expect_timed": {
+   "zh": "和其他项同时跑满 {d}，每帧都按设定值判，第一次不符全停。",
+   "en": "Runs together with the other items for {d}, every frame judged against the set values; the first mismatch stops everything.",
+   "en_of": "9728a173",
+   "de": "Läuft zusammen mit den anderen Prüfungen {d} lang, jeder Frame wird gegen die Sollwerte geprüft; die erste Abweichung stoppt alles.",
+   "de_of": "9728a173"
+  },
+  "cfg.run.emit_timed": {
+   "zh": "和其他项同时开始，按设定值一直输出到 {d} 结束；不判，只记录。",
+   "en": "Starts with the other items and outputs the set values until {d} are over; not judged, only recorded.",
+   "en_of": "7db24fb3",
+   "de": "Startet mit den anderen Prüfungen und gibt die Sollwerte aus, bis {d} vorbei sind; nicht bewertet, nur aufgezeichnet.",
+   "de_of": "7db24fb3"
+  },
+  "cfg.crit.emit": {
+   "zh": "不判：只按设定值输出，由外部仪器看；板子报的数只记录。",
+   "en": "Not judged: it only outputs the set values for outside instruments to watch; what the board reports is only recorded.",
+   "en_of": "e5e6152a",
+   "de": "Nicht bewertet: Gibt nur die Sollwerte aus, externe Messgeräte beobachten; was die Platine meldet, wird nur aufgezeichnet.",
+   "de_of": "e5e6152a"
+  },
+  "cfg.crit.din_expect": {
+   "zh": "选中的每一路 DI 读到的电平等于设定值：列在「该为高的 DI」里的是高，其余是低。",
+   "en": "Each selected DI reads the set level: high for those listed under “DIs that should read high”, low for the rest.",
+   "en_of": "99c65267",
+   "de": "Jeder gewählte DI liest den Sollpegel: High für die unter „DIs, die High lesen sollen“ aufgeführten, Low für die übrigen.",
+   "de_of": "99c65267"
+  },
+  "cfg.crit.ain_expect": {
+   "zh": "设了设定值的每一路 AI，按板上校准值换算后和设定值相差不超过允许偏差；VREF 要正常（ok=1）。",
+   "en": "Each AI with a set value, converted with the board's calibration, stays within the tolerance of it; VREF must be fine (ok=1).",
+   "en_of": "ecac946e",
+   "de": "Jeder AI mit Sollwert bleibt, mit der Kalibrierung der Platine umgerechnet, innerhalb der Toleranz; VREF muss in Ordnung sein (ok=1).",
+   "de_of": "ecac946e"
+  },
+  "lib.item.din.expect.name": {
+   "zh": "DI 按设定值判",
+   "en": "DI against set levels",
+   "en_of": "03a4f23a",
+   "de": "DI gegen Sollpegel",
+   "de_of": "03a4f23a"
+  },
+  "lib.item.din.expect.goal": {
+   "zh": "确认高低温或 EMC 下，DI 每一路一直读到外部信号源给的电平。",
+   "en": "Check that under temperature or EMC stress each DI keeps reading the level an outside source applies.",
+   "en_of": "a0d19178",
+   "de": "Prüfen, dass jeder DI unter Temperatur- oder EMV-Belastung stets den Pegel liest, den eine externe Quelle anlegt.",
+   "de_of": "a0d19178"
+  },
+  "lib.item.din.expect.how": {
+   "zh": "外部信号源给选中的 DI 加上设定的电平\n填「该为高的 DI」\n时长内每帧都判，第一次不符就停",
+   "en": "An outside source applies the set levels to the chosen DIs\nEnter “DIs that should read high”\nEvery frame is judged for the whole time; the first mismatch stops the test",
+   "en_of": "2db54497",
+   "de": "Eine externe Quelle legt die Sollpegel an die gewählten DIs\n„DIs, die High lesen sollen“ eintragen\nJeder Frame wird über die ganze Dauer geprüft; die erste Abweichung stoppt den Test",
+   "de_of": "2db54497"
+  },
+  "lib.item.ain.expect.name": {
+   "zh": "AI 按设定值判",
+   "en": "AI against set values",
+   "en_of": "80ce2ee2",
+   "de": "AI gegen Sollwerte",
+   "de_of": "80ce2ee2"
+  },
+  "lib.item.ain.expect.goal": {
+   "zh": "确认高低温或 EMC 下，AI 读数一直在外部信号源给的值附近。",
+   "en": "Check that under temperature or EMC stress the AI readings stay near the value an outside source applies.",
+   "en_of": "164c2e63",
+   "de": "Prüfen, dass die AI-Messwerte unter Temperatur- oder EMV-Belastung nahe an dem Wert bleiben, den eine externe Quelle anlegt.",
+   "de_of": "164c2e63"
+  },
+  "lib.item.ain.expect.how": {
+   "zh": "外部信号源给 AI1 / AI2 加上设定值\n填每一路的设定值（单位跟档位），不测的那一路空着\n时长内每帧按板上校准值换算后判，第一次超出允许偏差就停",
+   "en": "An outside source applies the set values to AI1 / AI2\nEnter each channel's set value (unit of its range); leave a channel blank to skip it\nEvery frame is converted with the board's calibration and judged for the whole time; the first one outside the tolerance stops the test",
+   "en_of": "b399f549",
+   "de": "Eine externe Quelle legt die Sollwerte an AI1 / AI2\nSollwert je Kanal eintragen (Einheit des Bereichs); einen Kanal leer lassen, um ihn auszulassen\nJeder Frame wird mit der Kalibrierung der Platine umgerechnet und über die ganze Dauer geprüft; der erste außerhalb der Toleranz stoppt den Test",
+   "de_of": "b399f549"
+  },
+  "lib.item.dout.emit.name": {
+   "zh": "DO 按设定值输出",
+   "en": "DO outputs set levels",
+   "en_of": "6effe570",
+   "de": "DO gibt Sollpegel aus",
+   "de_of": "6effe570"
+  },
+  "lib.item.dout.emit.goal": {
+   "zh": "高低温或 EMC 下让选中的 DO 一直输出 24 V，给外部仪器看。",
+   "en": "Keep the chosen DOs at 24 V under temperature or EMC stress for outside instruments to watch.",
+   "en_of": "9f4b49b8",
+   "de": "Die gewählten DOs unter Temperatur- oder EMV-Belastung auf 24 V halten, damit externe Messgeräte sie beobachten.",
+   "de_of": "9f4b49b8"
+  },
+  "lib.item.dout.emit.how": {
+   "zh": "选中要输出的 DO\n时长内一直输出 24 V，到时间关掉\n• 不判，外部仪器看输出",
+   "en": "Choose the DOs to drive\nThey stay at 24 V for the whole time and go off at the end\n• Not judged; outside instruments watch the outputs",
+   "en_of": "fc1942d6",
+   "de": "Die anzusteuernden DOs wählen\nSie bleiben die ganze Dauer auf 24 V und gehen am Ende aus\n• Nicht bewertet; externe Messgeräte beobachten die Ausgänge",
+   "de_of": "fc1942d6"
+  },
+  "html.filter.gloss": {
+   "zh": "帧的译文",
+   "en": "Frames explained",
+   "en_of": "7e9e2b66",
+   "de": "Messwerte erklärt",
+   "de_of": "7e9e2b66"
+  },
+  "gloss.temp": {
+   "zh": "{name}（{where}）{c} ℃，传感器 {mv} mV",
+   "en": "{name} ({where}) {c} °C, sensor {mv} mV",
+   "en_of": "f188a932",
+   "de": "{name} ({where}) {c} °C, Sensor {mv} mV",
+   "de_of": "f188a932"
+  },
+  "gloss.temp.where1": {
+   "zh": "短路保护处",
+   "en": "at the short-circuit protection",
+   "en_of": "8d60f28b",
+   "de": "am Kurzschlussschutz",
+   "de_of": "8d60f28b"
+  },
+  "gloss.temp.where2": {
+   "zh": "高边开关处",
+   "en": "at the high-side switches",
+   "en_of": "ebb66732",
+   "de": "an den High-Side-Schaltern",
+   "de_of": "ebb66732"
+  },
+  "gloss.ain": {
+   "zh": "{name} 原始码 {raw}，MCU 引脚上 {mv} mV（端子上的值按档位换算）",
+   "en": "{name} raw {raw}, {mv} mV at the MCU pin (the terminal value depends on the range)",
+   "en_of": "719e361a",
+   "de": "{name} Rohwert {raw}, {mv} mV am MCU-Pin (der Klemmenwert hängt vom Bereich ab)",
+   "de_of": "719e361a"
+  },
+  "gloss.aout": {
+   "zh": "{name} 要求 DAC {a} mV，实际 DAC {q} mV，预计输出 {ma} mA（算的，不是量的）",
+   "en": "{name} DAC asked {a} mV, DAC actually {q} mV, expected output {ma} mA (computed, not measured)",
+   "en_of": "0a1fd21c",
+   "de": "{name} DAC angefordert {a} mV, DAC tatsächlich {q} mV, erwarteter Ausgang {ma} mA (berechnet, nicht gemessen)",
+   "de_of": "0a1fd21c"
+  },
+  "gloss.din_high": {
+   "zh": "{list} 是高，其余是低",
+   "en": "{list} high, the rest low",
+   "en_of": "5c4272b2",
+   "de": "{list} High, die übrigen Low",
+   "de_of": "5c4272b2"
+  },
+  "gloss.din_none": {
+   "zh": "八路全低",
+   "en": "all eight low",
+   "en_of": "9a051331",
+   "de": "alle acht Low",
+   "de_of": "9a051331"
+  },
+  "gloss.high": {
+   "zh": "高",
+   "en": "high",
+   "en_of": "b096b3f5",
+   "de": "High",
+   "de_of": "b096b3f5"
+  },
+  "gloss.low": {
+   "zh": "低",
+   "en": "low",
+   "en_of": "b9ee259b",
+   "de": "Low",
+   "de_of": "b9ee259b"
+  },
+  "gloss.closed": {
+   "zh": "吸合",
+   "en": "closed",
+   "en_of": "235193a8",
+   "de": "angezogen",
+   "de_of": "235193a8"
+  },
+  "gloss.open": {
+   "zh": "断开",
+   "en": "open",
+   "en_of": "28fb7ced",
+   "de": "abgefallen",
+   "de_of": "28fb7ced"
+  },
+  "gloss.relay_n": {
+   "zh": "{name} 已开合 {n} 次",
+   "en": "{name} switched {n} times",
+   "en_of": "1684ebd0",
+   "de": "{name} {n}-mal geschaltet",
+   "de_of": "1684ebd0"
+  },
+  "ui.gloss_sep": {
+   "zh": "；",
+   "en": "; ",
+   "en_of": "207da69d",
+   "de": "; ",
+   "de_of": "207da69d"
+  },
+  "gloss.dout": {
+   "zh": "{name} 占空比 {pct}%（{v}/{max}）",
+   "en": "{name} duty {pct}% ({v}/{max})",
+   "en_of": "17ea6099",
+   "de": "{name} Tastgrad {pct} % ({v}/{max})",
+   "de_of": "17ea6099"
+  },
+  "gloss.yes": {
+   "zh": "是",
+   "en": "yes",
+   "en_of": "30160a21",
+   "de": "ja",
+   "de_of": "30160a21"
+  },
+  "gloss.no": {
+   "zh": "否",
+   "en": "no",
+   "en_of": "8bf5c10a",
+   "de": "nein",
+   "de_of": "8bf5c10a"
+  },
+  "value.cycle": {
+   "zh": "反复开合",
+   "en": "Cycling",
+   "en_of": "94394e2c",
+   "de": "Zyklisch schalten",
+   "de_of": "94394e2c"
+  },
+  "cfg.src_both": {
+   "zh": "测试方式：每一项写着用标准机还是外部仪器（工装测试不问人）",
+   "en": "Test method: each item says whether it uses the reference board or an outside instrument (the fixture tests ask nobody)",
+   "en_of": "8b4a99cc",
+   "de": "Prüfmethode: Bei jeder Prüfung steht, ob sie das Referenzgerät oder ein externes Messgerät nutzt (die Vorrichtungstests fragen niemanden)",
+   "de_of": "8b4a99cc"
+  },
+  "cfg.run.expect_once": {
+   "zh": "采样 3 秒，每一帧都按设定值判，第一次不符就判不过。",
+   "en": "Samples for 3 s and judges every frame against the set values; the first mismatch fails it.",
+   "en_of": "6bf66398",
+   "de": "Misst 3 s lang und prüft jeden Frame gegen die Sollwerte; die erste Abweichung lässt sie durchfallen.",
+   "de_of": "6bf66398"
+  },
+  "cfg.run.emit_once": {
+   "zh": "按设定值输出一次；不判，只记录，由外部仪器看。",
+   "en": "Outputs the set values once; not judged, only recorded, for outside instruments to watch.",
+   "en_of": "756ba737",
+   "de": "Gibt die Sollwerte einmal aus; nicht bewertet, nur aufgezeichnet, externe Messgeräte beobachten.",
+   "de_of": "756ba737"
+  },
+  "cfg.method": {
+   "zh": "测试方式",
+   "en": "Test method",
+   "en_of": "8ed016b1",
+   "de": "Prüfmethode",
+   "de_of": "8ed016b1"
   }
  }
 }

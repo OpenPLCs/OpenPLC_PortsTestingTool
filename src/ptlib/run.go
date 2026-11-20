@@ -242,11 +242,24 @@ func (e *Engine) Run(ctx context.Context, picks []Pick, dur time.Duration) (ptre
 			}
 		}
 	}
+	// Set-value items are judged frame by frame; a single run samples them for
+	// ExpectOnce (decisions 187, 188, PORTTOOL-FLOW.md C.3.6 「测试方式」).
+	for _, j := range jobs {
+		if j.skip != "" || !j.expect {
+			continue
+		}
+		if o, r, d := e.setExpect(j); o != "" {
+			e.finish(j, o, r, d)
+			j.skip = r
+		}
+	}
 
 	var first, timed []*job
 	for _, j := range jobs {
 		switch {
 		case j.skip != "":
+		case dur == 0 && j.expect:
+			timed = append(timed, j)
 		case dur != 0 && j.relay && j.fail == "":
 			// Starts with the timed items and runs to its count; judged at the end
 			// (decisions 123, 130, PORTTOOL-FLOW.md C.3.6 「选了时长」).
@@ -291,7 +304,11 @@ func (e *Engine) Run(ctx context.Context, picks []Pick, dur time.Duration) (ptre
 		timed = nil
 	}
 	if len(timed) > 0 {
-		e.runTimed(ctx, timed, dur)
+		win := dur
+		if dur == 0 {
+			win = ExpectOnce
+		}
+		e.runTimed(ctx, timed, win)
 	}
 
 	for _, j := range jobs {

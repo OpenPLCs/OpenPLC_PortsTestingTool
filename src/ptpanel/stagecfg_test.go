@@ -103,7 +103,7 @@ func TestStageCfgRefusesBadConfigurations(t *testing.T) {
 	var f stageCfgs
 	for _, id := range []string{"usb.info", "usb.xfer"} {
 		it, _ := catalogueItem(id)
-		if !f.Func.on(ptitems.Func, it) {
+		if !f.Func.on(ptitems.Func, it, false) {
 			t.Errorf("%s not ticked by default", id)
 		}
 	}
@@ -139,30 +139,40 @@ func TestParamsAreCheckedAgainstTheBoardsLimits(t *testing.T) {
 	}
 }
 
-// The reference board set to unused: no self-loop (decision 135); its AI / AO
-// / DI / DO items turn to a person, which configWhy refuses, CAN to the PC.
+// The reference board set to unused (decisions 135, 188): what needs it starts
+// unticked instead of greying the step, relays turn to an outside instrument,
+// CAN to the PC; an item ticked by hand that needs the board turns to a
+// person, which configWhy refuses.
 func TestRefUnusedSubstitution(t *testing.T) {
 	picks := stageCfg{}.picks(ptitems.Func, cfgGoldenCaps(t), true, false)
-	want := map[string]ptitems.Peer{
-		"din.level": ptitems.PeerHuman, "dout.load": ptitems.PeerHuman,
-		"aout.out1": ptitems.PeerHuman, "aout.out2": ptitems.PeerHuman,
-		"ain.read2": ptitems.PeerHuman, "can.peer": ptitems.PeerPC,
-	}
+	want := map[string]ptitems.Peer{"can.peer": ptitems.PeerPC, "relay.cycle": ptitems.PeerExt}
 	for _, p := range picks {
-		w, ok := want[p.Item.ID]
-		if !ok {
-			if p.Peer == ptitems.PeerRef {
-				t.Errorf("%s still needs the reference board", p.Item.ID)
-			}
-			continue
+		if p.Peer == ptitems.PeerRef || p.Peer == ptitems.PeerHuman {
+			t.Errorf("%s picked with %s by default", p.Item.ID, p.Peer)
 		}
-		delete(want, p.Item.ID)
-		if p.Peer != w || p.Note == "" {
-			t.Errorf("%s: peer %s note %q, want %s with a note", p.Item.ID, p.Peer, p.Note, w)
+		if w, ok := want[p.Item.ID]; ok {
+			delete(want, p.Item.ID)
+			if p.Peer != w {
+				t.Errorf("%s: peer %s, want %s", p.Item.ID, p.Peer, w)
+			}
 		}
 	}
 	for id := range want {
 		t.Errorf("%s missing from the functional picks", id)
+	}
+	on := true
+	byHand := stageCfg{Items: map[string]itemCfg{"din.level": {On: &on}}}
+	found := false
+	for _, p := range byHand.picks(ptitems.Func, cfgGoldenCaps(t), true, false) {
+		if p.Item.ID == "din.level" {
+			found = true
+			if p.Peer != ptitems.PeerHuman || p.Note == "" {
+				t.Errorf("din.level ticked by hand: peer %s note %q, want a person with a note", p.Peer, p.Note)
+			}
+		}
+	}
+	if !found {
+		t.Error("din.level ticked by hand is not picked")
 	}
 	for _, p := range (stageCfg{}).picks(ptitems.Func, cfgGoldenCaps(t), false, true) {
 		if p.Item.ID == "din.level" && p.Peer != ptitems.PeerRef {

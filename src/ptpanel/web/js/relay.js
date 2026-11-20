@@ -264,7 +264,15 @@ function relayCard(port) {
   hd.appendChild(el("span", "sp"));
   // Who reports the load's cycles: a person in R&D, the reference DI in the fixture tests (decisions 130, 133).
   if (cfg) {
-    hd.appendChild(el("span", "hint", T("cfg.src_fixed")));
+    hd.appendChild(el("span", "hint", T(cfgSrcKey(v))));
+    // Functional / user-level: the reference board's DI counts, or an outside instrument watches (decision 188).
+    if (cfgSrcKey(v) === "cfg.src_both") {
+      const sel = el("select"); sel.dataset.cfgpeer = RELAY_ID; sel.disabled = locked;
+      sel.title = T("cfg.method");
+      for (const pe of ["ref", "ext"]) { const o = el("option", null, T(pe === "ext" ? "lib.peer.ext" : "lib.peer.ref")); o.value = pe; o.selected = cfgPeer(v, it) === pe; sel.appendChild(o); }
+      sel.onchange = () => cfgChange(v, c => { (c.items[RELAY_ID] = c.items[RELAY_ID] || {}).peer = sel.value; return ""; });
+      hd.appendChild(sel);
+    }
   } else {
     hd.appendChild(libPill(it)); // a sub-test's card shows no result (decision 125)
   }

@@ -1,7 +1,8 @@
 package ptpanel
 
-// The full fixture test: pick which of steps 2, 4, 5 and 6 to run, start, and
-// get one record per board. Ordering and stop rules are in ptstages, records
+// The full fixture test: pick which of steps 2, 5 and 6 to run, start, and
+// get one record per board. R&D aging (step 4 or 7) starts the same way, one
+// step alone, with a record and no progress (decision 187, C.3.8). Ordering and stop rules are in ptstages, records
 // in ptrecord; this is the HTTP surface, the calibration gate, step 5's safety
 // card and step 6's wiring. $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.3-C.3.5.
 
@@ -110,6 +111,7 @@ func (s *Server) userLevelStep(uid string) ptstages.Func {
 // stepStage is the configuration each full-test step runs.
 var stepStage = map[ptstages.Step]ptitems.Stage{
 	ptstages.Functional: ptitems.Func, ptstages.Aging: ptitems.Aging, ptstages.UserLevel: ptitems.User,
+	ptstages.AgingPC: ptitems.AgingPC,
 }
 
 // calNeeded is which of AI1, AI2, AO1, AO2 the picked steps' saved
@@ -324,6 +326,14 @@ func (s *Server) handleFullStart(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, map[string]any{"error": m("go.full.pick")})
 		return
 	}
+	// R&D aging runs one of its two alone, never inside a full test (decision 187).
+	aging := picked[0].RDAging()
+	for _, st := range picked {
+		if st.RDAging() != aging || (aging && len(picked) > 1) {
+			writeJSON(w, 200, map[string]any{"error": m("go.full.pick")})
+			return
+		}
+	}
 
 	s.mu.Lock()
 	b, port, caps := s.board, s.portNam, s.caps
@@ -360,7 +370,8 @@ func (s *Server) handleFullStart(w http.ResponseWriter, r *http.Request) {
 		nums[i] = int(st)
 	}
 	from, earlier := 0, map[ptstages.Step]string{}
-	if uid != "" {
+	// R&D aging neither continues nor touches the full test's progress (C.3.8).
+	if uid != "" && !aging {
 		prog, err := ptrecord.LoadProgress(uid)
 		if err != nil {
 			writeJSON(w, 200, map[string]any{"error": m("go.full.progress_unreadable", "detail", err)})
@@ -472,7 +483,7 @@ func (s *Server) handleFullStart(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	go func() {
-		s.finishFull(ctx, run, header, uid, nums)
+		s.finishFull(ctx, run, header, uid, nums, !aging)
 		unsent()
 		unsub()
 	}()
@@ -490,7 +501,7 @@ func stageFailCode(st ptstages.Step, res *ptreport.StepResult) string {
 	return ptreport.FailCode(st.Name(), 0, res.Outcome, "", nil)
 }
 
-func (s *Server) finishFull(ctx context.Context, run ptstages.Run, header ptreport.Report, uid string, nums []int) {
+func (s *Server) finishFull(ctx context.Context, run ptstages.Run, header ptreport.Report, uid string, nums []int, progress bool) {
 	rep := run.Execute(ctx, header)
 	rep.FailCodes = rep.CollectFailCodes()
 	f := &s.full
@@ -517,8 +528,10 @@ func (s *Server) finishFull(ctx context.Context, run ptstages.Run, header ptrepo
 	} else {
 		last["record"] = path
 		name := path[strings.LastIndexAny(path, `/\`)+1:]
-		if err := ptrecord.Update(uid, nums, rep, name); err != nil {
-			last["record_why"] = m("go.full.progress_unreadable", "detail", err)
+		if progress {
+			if err := ptrecord.Update(uid, nums, rep, name); err != nil {
+				last["record_why"] = m("go.full.progress_unreadable", "detail", err)
+			}
 		}
 	}
 	if jr := s.fullJournal(); jr != nil {
@@ -651,7 +664,7 @@ func (s *Server) handleFullSafety(w http.ResponseWriter, r *http.Request) {
 }
 
 // The panel names the full test's steps without their numbers (decision 122).
-var stepNameKey = map[int]string{2: "ui.full.step2", 4: "ui.full.step4", 5: "ui.full.step5", 6: "ui.full.step6"}
+var stepNameKey = map[int]string{2: "ui.full.step2", 4: "ui.full.step4", 5: "ui.full.step5", 6: "ui.full.step6", 7: "ui.full.step7"}
 
 func stepName(n int) msg {
 	if k, ok := stepNameKey[n]; ok {
