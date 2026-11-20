@@ -1703,6 +1703,13 @@
    "de": "+ Arbeitsplatz hinzufügen",
    "de_of": "f16fd6a7"
   },
+  "line.btn.cancelage": {
+   "zh": "取消老化",
+   "en": "Cancel aging",
+   "en_of": "83c57dcd",
+   "de": "Alterung abbrechen",
+   "de_of": "83c57dcd"
+  },
   "line.btn.continue": {
    "zh": "继续：重做这一步",
    "en": "Continue: redo this step",
@@ -1724,6 +1731,13 @@
    "de": "Fixture-Firmware {v} flashen",
    "de_of": "1823b7ad"
   },
+  "line.btn.keepaging": {
+   "zh": "接着跑（放回高温柜）",
+   "en": "Keep aging (back to the oven)",
+   "en_of": "d558f34b",
+   "de": "Weiter altern (zurück in den Wärmeschrank)",
+   "de_of": "d558f34b"
+  },
   "line.btn.open_panel": {
    "zh": "打开这个工位的面板",
    "en": "Open this station's panel",
@@ -1737,6 +1751,13 @@
    "en_of": "130448bc",
    "de": "Pausieren",
    "de_of": "130448bc"
+  },
+  "line.btn.reage": {
+   "zh": "重新老化",
+   "en": "Age again",
+   "en_of": "ce840b71",
+   "de": "Neu altern",
+   "de_of": "ce840b71"
   },
   "line.btn.remove_board": {
    "zh": "摘下板子",
@@ -1772,6 +1793,13 @@
    "en_of": "dca67166",
    "de": "Auf {v} aktualisieren",
    "de_of": "dca67166"
+  },
+  "line.confirm.cancelage": {
+   "zh": "取消这块板的老化？这块板这次不能出厂。",
+   "en": "Cancel this board's aging? It cannot ship this time.",
+   "en_of": "49e73de1",
+   "de": "Alterung dieser Platine abbrechen? Sie kann diesmal nicht versandt werden.",
+   "de_of": "49e73de1"
   },
   "line.confirm.remove_board": {
    "zh": "把工位 {n} 的板子摘下来？做到哪一步记着。",
@@ -1955,6 +1983,13 @@
    "de": "Arbeitsplatz {n} einstellen",
    "de_of": "d579edfc"
   },
+  "line.st.agego": {
+   "zh": "已进入老化模式：拔线拿去高温柜",
+   "en": "In aging mode: unplug it and take it to the oven",
+   "en_of": "70244b19",
+   "de": "Im Alterungsmodus: abstecken und in den Wärmeschrank bringen",
+   "de_of": "70244b19"
+  },
   "line.st.blocked": {
    "zh": "停在这一步",
    "en": "Stopped at this step",
@@ -2010,6 +2045,13 @@
    "en_of": "3680ae54",
    "de": "Läuft automatisch",
    "de_of": "3680ae54"
+  },
+  "line.st.short": {
+   "zh": "老化没跑满、没出错：选一个",
+   "en": "Aging cut short, no failure: choose one",
+   "en_of": "75a97a25",
+   "de": "Alterung zu kurz, kein Fehler: bitte wählen",
+   "de_of": "75a97a25"
   },
   "line.st.wire": {
    "zh": "等接线：软件逐根认",
@@ -2095,12 +2137,47 @@
    "de": "UID unbekannt",
    "de_of": "583c6d61"
   },
-  "line.why.aging_mode": {
-   "zh": "工装固件还没有老化模式，停在这一步",
-   "en": "The fixture firmware has no aging mode yet; stopped at this step",
-   "en_of": "a98bd456",
-   "de": "Die Fixture-Firmware hat noch keinen Alterungsmodus; an diesem Schritt angehalten",
-   "de_of": "a98bd456"
+  "line.why.age_cancelled": {
+   "zh": "老化已取消：这次不能出厂",
+   "en": "Aging cancelled: cannot ship this time",
+   "en_of": "fdc19d8f",
+   "de": "Alterung abgebrochen: diesmal kein Versand",
+   "de_of": "fdc19d8f"
+  },
+  "line.why.age_failed": {
+   "zh": "老化中不过 {fails} 次，第一次：{first}",
+   "en": "Failed {fails} times during aging; first: {first}",
+   "en_of": "0772b6b5",
+   "de": "Während der Alterung {fails}-mal nicht bestanden; zuerst: {first}",
+   "de_of": "0772b6b5"
+  },
+  "line.why.age_none": {
+   "zh": "板上没有老化任务",
+   "en": "No aging task on the board",
+   "en_of": "4e213cd4",
+   "de": "Kein Alterungsauftrag auf der Platine",
+   "de_of": "4e213cd4"
+  },
+  "line.why.age_short": {
+   "zh": "跑了 {elapsed}，要跑 {secs}",
+   "en": "Ran {elapsed} of {secs}",
+   "en_of": "133679c5",
+   "de": "{elapsed} von {secs} gelaufen",
+   "de_of": "133679c5"
+  },
+  "line.why.age_task": {
+   "zh": "老化任务读写失败：{detail}",
+   "en": "Aging task could not be written or read: {detail}",
+   "en_of": "6f85fdd1",
+   "de": "Alterungsauftrag nicht schreib- oder lesbar: {detail}",
+   "de_of": "6f85fdd1"
+  },
+  "line.why.age_written": {
+   "zh": "老化任务已写进板子：{items} 项，{hours} 小时",
+   "en": "Aging task written to the board: {items} items, {hours} h",
+   "en_of": "266b960a",
+   "de": "Alterungsauftrag auf die Platine geschrieben: {items} Punkte, {hours} h",
+   "de_of": "266b960a"
   },
   "line.why.connect_failed": {
    "zh": "控制口连不上",

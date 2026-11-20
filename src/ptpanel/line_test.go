@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -28,6 +29,12 @@ func lineOnSim(t *testing.T, fail *atomic.Bool) (*Stations, *lineStation) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { StageCfgFile = "" })
+	plans, _ := filepath.Abs("../plans")
+	PlanDir = plans
+	t.Cleanup(func() { PlanDir = "" })
+	oldSecs := agingSecs
+	agingSecs = func() int { return 2 }
+	t.Cleanup(func() { agingSecs = oldSecs })
 	old := fixtureImage
 	fixtureImage = func() (string, string) { return "", "" }
 	t.Cleanup(func() { fixtureImage = old })
@@ -64,15 +71,41 @@ func waitState(t *testing.T, x *lineStation, want string, within time.Duration) 
 	return v
 }
 
-func TestLinePassesStepOneThenWaitsForAgingMode(t *testing.T) {
+// ① passes, ② writes a two-second aging task, the board runs it, ③ reads it
+// back and passes, ④ passes by default, and ⑤ stops: the simulated board has
+// no ST-Link or bootloader for the user step.
+func TestLineRunsThroughAging(t *testing.T) {
 	var fail atomic.Bool
 	_, x := lineOnSim(t, &fail)
-	v := waitState(t, x, lnBlocked, 60*time.Second)
-	if v.Step != 2 || !v.Passed[1] || v.Results[1] != "PASS" {
-		t.Fatalf("blocked at step %d, passed %v, results %v; want step 2 after ① passed", v.Step, v.Passed, v.Results)
+	v := waitState(t, x, lnBlocked, 90*time.Second)
+	if v.Step != 5 {
+		t.Fatalf("blocked at step %d (why %v), want 5", v.Step, v.Why)
 	}
-	if v.Why.Key != "line.why.aging_mode" {
-		t.Fatalf("why = %v, want the aging-mode reason", v.Why)
+	for i := 1; i <= 4; i++ {
+		if !v.Passed[i] || v.Results[i] != "PASS" {
+			t.Fatalf("step %d: passed %v result %q; all of ①-④ should have passed (%v)", i, v.Passed[i], v.Results[i], v.Results)
+		}
+	}
+	if v.Why.Key != "go.full.user_sim" {
+		t.Fatalf("why = %v, want the simulated board's user-step reason", v.Why)
+	}
+}
+
+// A task that cannot pass: ③ fails with the board's first failure record.
+func TestLineAgingFailureFailsStepThree(t *testing.T) {
+	var fail atomic.Bool
+	_, x := lineOnSim(t, &fail)
+	old := agingSpec[3].Step
+	t.Cleanup(func() { agingSpec[3].Step = old })
+	agingSpec[3].Step = "sdram-stress" // rtc.read judged by the SDRAM sweep's fields: never holds
+	agingSpec[3].Target, agingSpec[3].Args = "rtc.read", ""
+	t.Cleanup(func() { agingSpec[3].Target = "" })
+	v := waitState(t, x, lnFail, 90*time.Second)
+	if v.Step != 3 || v.Results[3] != "FAIL" || v.Why.Key != "line.why.age_failed" {
+		t.Fatalf("failed at step %d with %v, why %v; want ③ FAIL from the board's record", v.Step, v.Results, v.Why)
+	}
+	if first, _ := v.Why.Args["first"].(string); !strings.Contains(first, "code=4") {
+		t.Fatalf("first failure %q should name LED code 4", first)
 	}
 }
 
@@ -88,19 +121,19 @@ func TestLineFailContinueRestart(t *testing.T) {
 	x.act <- "continue"
 	time.Sleep(300 * time.Millisecond)
 	waitState(t, x, lnFail, 30*time.Second)
-	// Fixed, restart goes from ① and reaches the aging step.
+	// Fixed, restart goes from ① through aging to the user step.
 	fail.Store(false)
 	x.act <- "restart"
-	v = waitState(t, x, lnBlocked, 30*time.Second)
-	if v.Step != 2 {
-		t.Fatalf("after restart blocked at step %d, want 2", v.Step)
+	v = waitState(t, x, lnBlocked, 60*time.Second)
+	if v.Step != 5 {
+		t.Fatalf("after restart blocked at step %d, want 5", v.Step)
 	}
 }
 
 func TestLinePauseAndRemove(t *testing.T) {
 	var fail atomic.Bool
 	_, x := lineOnSim(t, &fail)
-	waitState(t, x, lnBlocked, 60*time.Second)
+	waitState(t, x, lnBlocked, 90*time.Second)
 	x.act <- "pause"
 	time.Sleep(300 * time.Millisecond)
 	if !x.view().Paused {

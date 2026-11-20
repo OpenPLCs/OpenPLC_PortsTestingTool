@@ -796,6 +796,10 @@ int main(int argc, char **argv)
            PORTTOOL_VERSION);
     fflush(stdout);
 
+    test_age_erase();
+    test_set_tick((uint32_t)(wall_ms() - sim_started) + 1000u);
+    PortAge_Boot(HAL_GetTick());
+
     for (;;) {
         uint32_t now = (uint32_t)(wall_ms() - sim_started) + 1000u;
 
@@ -825,6 +829,7 @@ int main(int argc, char **argv)
         line_check(now);
         cut_apply(wall_ms());
         tick_sessions(now);
+        PortAge_Tick(now);
         stimulate(now);
         PortEth_Poll();
 

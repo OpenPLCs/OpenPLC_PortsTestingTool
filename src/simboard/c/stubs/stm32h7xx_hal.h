@@ -114,6 +114,10 @@ extern uint32_t test_uid_words[3];
  * test_calib_erase() makes the whole sector erased flash. */
 extern uint8_t test_calib_area[];
 #define PORTTOOL_CALIB_BASE ((uintptr_t)test_calib_area)
+/* Bank 2 sector 6, the aging task and its records (porttool_age.c). */
+extern uint8_t test_age_area[];
+#define PORTTOOL_AGE_BASE ((uintptr_t)test_age_area)
+void test_age_erase(void);
 void test_calib_erase(void);
 void test_calib_write(const uint32_t uid[3], const float gain_offset[8]);
 
@@ -123,6 +127,7 @@ void test_calib_write(const uint32_t uid[3], const float gain_offset[8]);
  * writes one 32-byte word and refuses a word already written (ECC on H7). */
 #define FLASH_BANK2_BASE              0x08100000UL
 #define FLASH_SECTOR_SIZE             0x00020000UL
+#define FLASH_SECTOR_6                6U
 #define FLASH_SECTOR_7                7U
 #define FLASH_BANK_2                  0x02U
 #define FLASH_TYPEERASE_SECTORS       0x00U

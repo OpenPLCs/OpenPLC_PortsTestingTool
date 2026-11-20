@@ -319,4 +319,5 @@ func (st *Stations) handleLineAct(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var lineActs = map[string]bool{"flash": true, "continue": true, "restart": true, "pause": true, "resume": true, "remove": true}
+var lineActs = map[string]bool{"flash": true, "continue": true, "restart": true, "pause": true, "resume": true,
+	"remove": true, "keepaging": true, "reage": true, "cancelage": true}

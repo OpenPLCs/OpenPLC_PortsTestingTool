@@ -37,6 +37,10 @@ const RunTimeout = 180 * time.Second
 // (SECTOR-15.md), plus programming and the read-back.
 const CalWriteTimeout = 15 * time.Second
 
+// AgeTimeout is for pt.age: a board in aging mode answers between items, and
+// one item can be the 6.5 s SDRAM sweep; commit also erases a sector.
+const AgeTimeout = 30 * time.Second
+
 // TimeoutFor is how long a given command is allowed. Derived from the command
 // rather than passed in by every caller, so a new slow command cannot be
 // forgotten at one call site and time out only there.
@@ -47,6 +51,8 @@ func TimeoutFor(cmd string) time.Duration {
 		return RunTimeout
 	case len(fields) > 0 && fields[0] == "pt.calw":
 		return CalWriteTimeout
+	case len(fields) > 0 && fields[0] == "pt.age":
+		return AgeTimeout
 	}
 	return DefaultTimeout
 }

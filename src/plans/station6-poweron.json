@@ -28,7 +28,7 @@
         {
           "field": "porttool",
           "op": "eq",
-          "value": "0.18.9"
+          "value": "0.18.10"
         },
         {
           "field": "uid",

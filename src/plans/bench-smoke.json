@@ -12,7 +12,7 @@
       "command": "pt.id",
       "timeout_ms": 3000,
       "checks": [
-        { "field": "porttool", "op": "eq", "value": "0.18.9" },
+        { "field": "porttool", "op": "eq", "value": "0.18.10" },
         { "field": "uid", "op": "contains", "value": "00" }
       ]
     },

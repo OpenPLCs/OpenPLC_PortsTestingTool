@@ -29,8 +29,8 @@ const add = (p, ...c) => { for (const x of c) { if (x) { p.appendChild(x); } } r
 
 const STEP_KEY = { 1: "line.step.1", 2: "line.step.2", 3: "line.step.3", 4: "line.step.4", 5: "line.step.5" };
 const STATE_KEY = { empty: "line.st.empty", needflash: "line.st.needflash", flashing: "line.st.flashing", wire: "line.st.wire",
-  run: "line.st.run", fail: "line.st.fail", blocked: "line.st.blocked", done: "line.st.done" };
-const STATE_CLS = { empty: "empty", needflash: "wait", flashing: "run", wire: "wait", run: "run", fail: "fail", blocked: "wait", done: "done" };
+  run: "line.st.run", fail: "line.st.fail", blocked: "line.st.blocked", done: "line.st.done", agego: "line.st.agego", short: "line.st.short" };
+const STATE_CLS = { empty: "empty", needflash: "wait", flashing: "run", wire: "wait", run: "run", fail: "fail", blocked: "wait", done: "done", agego: "wait", short: "wait" };
 const NUMS = "①②③④⑤";
 
 let tiles = [], now = Date.now();
@@ -110,6 +110,13 @@ function tileOf(t) {
   if (t.state === "fail" || t.state === "blocked") {
     { const c = el("button", "act", T("line.btn.continue")); c.onclick = e => { e.stopPropagation(); act(t.n, "continue"); }; acts.appendChild(c); }
     const r = el("button", "act", T("line.btn.restart")); r.onclick = e => { e.stopPropagation(); act(t.n, "restart"); }; acts.appendChild(r);
+  }
+  if (t.state === "short") {
+    const k = el("button", "act", T("line.btn.keepaging")), r = el("button", "act", T("line.btn.reage")), c = el("button", "act", T("line.btn.cancelage"));
+    k.onclick = e => { e.stopPropagation(); act(t.n, "keepaging"); };
+    r.onclick = e => { e.stopPropagation(); act(t.n, "reage"); };
+    c.onclick = e => { e.stopPropagation(); if (confirm(T("line.confirm.cancelage"))) { act(t.n, "cancelage"); } };
+    add(acts, k, r, c);
   }
   if (acts.childNodes.length) { box.appendChild(acts); }
   const ch = el("div", "chain");

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -16,6 +17,7 @@ import (
 	"time"
 
 	"PortTool/src/ptboard"
+	"PortTool/src/ptplan"
 	"PortTool/src/ptrecord"
 	"PortTool/src/ptreport"
 	"PortTool/src/ptstages"
@@ -35,7 +37,9 @@ const (
 	lnWire      = "wire"    // connected, waiting for adapters
 	lnRun       = "run"     // a step is running
 	lnFail      = "fail"    // a step did not pass; LED3 on, waits for continue / restart
-	lnBlocked   = "blocked" // the next step cannot run yet (aging mode not built)
+	lnBlocked   = "blocked" // the panel refuses the step; waits for continue
+	lnAgeGo     = "agego"   // task written: unplug, off to the oven; ③ starts once the task ends
+	lnShort     = "short"   // back early, no failure: keep aging, age again or cancel
 	lnDone      = "done"    // all five passed
 )
 
@@ -82,6 +86,7 @@ type lineStation struct {
 	act     chan string
 	stop    chan struct{}
 	lastSWD time.Time
+	lastAge time.Time
 }
 
 // api calls the station's own panel in-process.
@@ -200,7 +205,13 @@ func (x *lineStation) step() {
 			return
 		}
 		x.watchRun()
-	case lnFail, lnBlocked, lnDone:
+	case lnAgeGo:
+		if !x.connected() {
+			x.lost()
+			return
+		}
+		x.watchAging()
+	case lnFail, lnBlocked, lnDone, lnShort:
 		if !x.connected() {
 			x.lost()
 		}
@@ -365,12 +376,15 @@ func (x *lineStation) start(i int) {
 	x.set(func(t *lineTile) { t.Step = i; delete(t.Results, i) })
 	x.api("POST", "/api/command", map[string]any{"cmd": "pt.led fault=0"})
 	switch lineSteps[i-1].ID {
-	case "aging", "aging_check":
-		x.enter(lnBlocked, m("line.why.aging_mode"))
+	case "aging":
+		x.writeAging(i)
+		return
+	case "aging_check":
+		x.checkAging(i)
 		return
 	case "safety":
 		// Safety is not defined yet and passes by default (decision 190).
-		x.finish(i, ptreport.OutcomePass, x.writeOwn(i, ptreport.OutcomePass))
+		x.finish(i, ptreport.OutcomePass, x.writeOwn(i, ptreport.OutcomePass, "safety not defined yet; passes by default"))
 		return
 	}
 	// A step the station cannot start (configuration, reference board) waits
@@ -388,7 +402,7 @@ func (x *lineStation) start(i int) {
 }
 
 // writeOwn writes the record of a step the line judges itself.
-func (x *lineStation) writeOwn(i int, o ptreport.Outcome) string {
+func (x *lineStation) writeOwn(i int, o ptreport.Outcome, reason string) string {
 	t := x.view()
 	if t.Sim || t.UID == "" {
 		return ""
@@ -397,7 +411,7 @@ func (x *lineStation) writeOwn(i int, o ptreport.Outcome) string {
 	f, _ := ptrecord.Write(ptreport.Report{ToolVersion: x.srv.Version, Firmware: t.FW, BoardUID: t.UID,
 		Port: t.Port, StartedAt: now, EndedAt: now,
 		Steps: []ptreport.StepResult{{ID: lineSteps[i-1].ID, Type: "line" + strconv.Itoa(i), Outcome: o,
-			Reason: "safety not defined yet; passes by default", StartedAt: now}}})
+			Reason: reason, StartedAt: now}}})
 	return f
 }
 
@@ -496,6 +510,20 @@ func (x *lineStation) do(a string) {
 		if t.State == lnRun || (t.State == lnFail && t.Paused) {
 			x.start(t.Step)
 		}
+	case "keepaging":
+		if t.State == lnShort {
+			x.enter(lnAgeGo, msg{})
+		}
+	case "reage":
+		if t.State == lnShort {
+			x.start(2)
+		}
+	case "cancelage":
+		if t.State == lnShort {
+			_, _ = x.send("pt.age clear")
+			x.writeOwn(3, ptreport.OutcomeFail, "aging cancelled")
+			x.fail(3, ptreport.OutcomeFail, m("line.why.age_cancelled"))
+		}
 	case "remove":
 		x.lost()
 		x.set(func(t *lineTile) { t.Why = m("line.why.removed") })
@@ -556,3 +584,138 @@ func msgFromJSON(v map[string]any) msg {
 	args, _ := v["args"].(map[string]any)
 	return msg{Key: key, Args: args}
 }
+
+// send is one command to the station's board.
+func (x *lineStation) send(cmd string) ([]string, error) {
+	x.srv.mu.Lock()
+	b := x.srv.board
+	x.srv.mu.Unlock()
+	if b == nil {
+		return nil, errors.New("no board connected")
+	}
+	return b.Send(cmd, ptboard.ExpectFor(cmd), ptboard.TimeoutFor(cmd))
+}
+
+// agingSecs is how long the template's aging runs; tests shorten it.
+var agingSecs = func() int {
+	d := loadStageCfgs().Aging.Duration
+	if h, err := strconv.Atoi(d); err == nil && h > 0 {
+		return h * 3600
+	}
+	return 4 * 3600
+}
+
+// writeAging is step ②: the task goes into the board, which starts aging.
+func (x *lineStation) writeAging(i int) {
+	name, _, problem := criteriaSource()
+	var lines []string
+	err := errors.New(problem)
+	if problem == "" {
+		var path string
+		if path, err = safePlanPath(name); err == nil {
+			var plan ptplan.Plan
+			if plan, err = ptplan.Load(path); err == nil {
+				lines, err = agingTask(&plan, loadStageCfgs().Aging.PortsOff)
+			}
+		}
+	}
+	secs := agingSecs()
+	cmds := append([]string{fmt.Sprintf("pt.age begin secs=%d", secs)}, prefixed("pt.age add ", lines)...)
+	cmds = append(cmds, "pt.age commit")
+	for _, c := range cmds {
+		if err != nil {
+			break
+		}
+		_, err = x.send(c)
+	}
+	if err != nil {
+		x.writeOwn(i, ptreport.OutcomeError, err.Error())
+		x.fail(i, ptreport.OutcomeError, m("line.why.age_task", "detail", err.Error()))
+		return
+	}
+	file := x.writeOwn(i, ptreport.OutcomePass, fmt.Sprintf("aging task written: %d items, %d s", len(lines), secs))
+	x.set(func(t *lineTile) {
+		t.Results[i], t.Passed[i] = string(ptreport.OutcomePass), true
+		if file != "" {
+			t.Records[i] = file
+		}
+	})
+	if t := x.view(); !t.Sim {
+		saveLine(t.UID, t.Passed, t.Records)
+	}
+	x.set(func(t *lineTile) { t.Step = i + 1 })
+	x.enter(lnAgeGo, m("line.why.age_written", "items", len(lines), "hours", float64(secs)/3600))
+}
+
+func prefixed(p string, xs []string) []string {
+	out := make([]string, len(xs))
+	for i, s := range xs {
+		out[i] = p + s
+	}
+	return out
+}
+
+var ageReadRe = regexp.MustCompile(`state=(\w+) secs=(\d+) elapsed=(\d+) rounds=(\d+) fails=(\d+)`)
+
+type ageState struct {
+	State                        string
+	Secs, Elapsed, Rounds, Fails int
+}
+
+func (x *lineStation) readAging() (ageState, error) {
+	lines, err := x.send("pt.age read")
+	if err != nil {
+		return ageState{}, err
+	}
+	for _, l := range lines {
+		if mm := ageReadRe.FindStringSubmatch(l); mm != nil {
+			a := ageState{State: mm[1]}
+			a.Secs, _ = strconv.Atoi(mm[2])
+			a.Elapsed, _ = strconv.Atoi(mm[3])
+			a.Rounds, _ = strconv.Atoi(mm[4])
+			a.Fails, _ = strconv.Atoi(mm[5])
+			return a, nil
+		}
+	}
+	return ageState{}, errors.New("no pt.age read reply")
+}
+
+// watchAging waits, on the bench, for the board's task to end; then ③.
+func (x *lineStation) watchAging() {
+	if time.Since(x.lastAge) < 2*time.Second {
+		return
+	}
+	x.lastAge = time.Now()
+	a, err := x.readAging()
+	if err == nil && a.State != "run" {
+		x.checkAging(3)
+	}
+}
+
+// checkAging is step ③: the board's own record decides (decision 190).
+func (x *lineStation) checkAging(i int) {
+	x.set(func(t *lineTile) { t.Step = i })
+	a, err := x.readAging()
+	switch {
+	case err != nil:
+		x.fail(i, ptreport.OutcomeError, m("line.why.age_task", "detail", err.Error()))
+	case a.State == "none":
+		x.writeOwn(i, ptreport.OutcomeFail, "no aging task on the board")
+		x.fail(i, ptreport.OutcomeFail, m("line.why.age_none"))
+	case a.Fails > 0:
+		got := ""
+		if lines, err := x.send("pt.age fail i=1"); err == nil && len(lines) > 0 {
+			got = strings.TrimPrefix(lines[0], "OK age ")
+		}
+		x.writeOwn(i, ptreport.OutcomeFail, fmt.Sprintf("aging failed %d times in %d rounds; first: %s", a.Fails, a.Rounds, got))
+		x.fail(i, ptreport.OutcomeFail, m("line.why.age_failed", "fails", a.Fails, "first", got))
+	case a.State == "run":
+		x.enter(lnShort, m("line.why.age_short", "elapsed", fmtSecs(a.Elapsed), "secs", fmtSecs(a.Secs)))
+	default:
+		_, _ = x.send("pt.age clear")
+		x.finish(i, ptreport.OutcomePass, x.writeOwn(i, ptreport.OutcomePass,
+			fmt.Sprintf("aging passed: %d s, %d rounds", a.Elapsed, a.Rounds)))
+	}
+}
+
+func fmtSecs(s int) string { return fmt.Sprintf("%d:%02d:%02d", s/3600, s/60%60, s%60) }

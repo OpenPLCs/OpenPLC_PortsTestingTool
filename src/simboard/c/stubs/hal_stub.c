@@ -18,6 +18,9 @@ uint32_t test_uid_words[3] = { 0x00340041u, 0x31355114u, 0x39303538u };
  * through calib_area_t so a change to the real header changes what the sim
  * board reports. */
 uint8_t test_calib_area[FLASH_SECTOR_SIZE] __attribute__((aligned(32)));
+/* Sector 6 of bank 2: the aging task. Erased at start; it lives as long as the
+ * simulated board does. */
+uint8_t test_age_area[FLASH_SECTOR_SIZE] __attribute__((aligned(32)));
 
 FLASH_TypeDef test_flash_regs;
 unsigned test_flash_erases, test_flash_programs, test_flash_stray;
@@ -33,13 +36,17 @@ HAL_StatusTypeDef HAL_FLASHEx_Erase(FLASH_EraseInitTypeDef *e, uint32_t *sector_
     if (test_flash_fail_erase) {
         return HAL_ERROR;
     }
-    /* Only sector 15 exists here; any other sector is a stray erase. */
+    /* Only sectors 14 and 15 exist here; any other sector is a stray erase. */
     if (e->TypeErase != FLASH_TYPEERASE_SECTORS || e->Banks != FLASH_BANK_2
-        || e->Sector != FLASH_SECTOR_7 || e->NbSectors != 1u) {
+        || (e->Sector != FLASH_SECTOR_7 && e->Sector != FLASH_SECTOR_6) || e->NbSectors != 1u) {
         test_flash_stray++;
         return HAL_ERROR;
     }
     test_flash_erases++;
+    if (e->Sector == FLASH_SECTOR_6) {
+        memset(test_age_area, 0xFF, sizeof(test_age_area));
+        return HAL_OK;
+    }
     memset(test_calib_area, 0xFF, sizeof(test_calib_area));
     return HAL_OK;
 }
@@ -47,6 +54,21 @@ HAL_StatusTypeDef HAL_FLASHEx_Erase(FLASH_EraseInitTypeDef *e, uint32_t *sector_
 HAL_StatusTypeDef test_flash_program(uint32_t type, uintptr_t dst, uintptr_t src)
 {
     uintptr_t base = (uintptr_t)test_calib_area;
+    if (dst >= (uintptr_t)test_age_area && dst < (uintptr_t)test_age_area + sizeof(test_age_area)) {
+        base = (uintptr_t)test_age_area;
+        if ((dst - base) % 32u != 0u || dst - base > sizeof(test_age_area) - 32u) {
+            test_flash_stray++;
+            return HAL_ERROR;
+        }
+        for (unsigned i = 0; i < 32u; i++) {
+            if (test_age_area[dst - base + i] != 0xFFu) {
+                return HAL_ERROR;
+            }
+        }
+        memcpy(&test_age_area[dst - base], (const void *)src, 32u);
+        test_flash_programs++;
+        return HAL_OK;
+    }
 
     if (type != FLASH_TYPEPROGRAM_FLASHWORD || dst < base
         || dst - base > sizeof(test_calib_area) - 32u || (dst - base) % 32u != 0u) {
@@ -63,6 +85,10 @@ HAL_StatusTypeDef test_flash_program(uint32_t type, uintptr_t dst, uintptr_t src
     return HAL_OK;
 }
 
+void test_age_erase(void)
+{
+    memset(test_age_area, 0xFF, sizeof(test_age_area));
+}
 void test_calib_erase(void)
 {
     memset(test_calib_area, 0xFF, sizeof(test_calib_area));

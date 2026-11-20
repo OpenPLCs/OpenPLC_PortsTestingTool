@@ -35,5 +35,6 @@ $BOOT/TestCase/porttool/porttool_match.c
 $BOOT/TestCase/porttool/porttool_sd.c
 $BOOT/TestCase/porttool/porttool_sdfile.c
 $BOOT/TestCase/porttool/porttool_sdram.c
+$BOOT/TestCase/porttool/porttool_age.c
 # TEMPORARY, pt.aodiag
 $BOOT/TestCase/porttool/porttool_aodiag.c
