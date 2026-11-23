@@ -1,14 +1,9 @@
 "use strict";
 
-// The shell (decisions 97, 125, 128; PORTTOOL-FLOW.md C.3.6). The test types
-// on the left and the port list only choose what is shown; R&D's group Starts
-// and the full test's 「配置完成，开始测试」 start tests.
+// The shell (decisions 97, 125, 128; PORTTOOL-FLOW.md C.3.6). The port list
+// only chooses what is shown; R&D's group Starts start tests. The test type is
+// the top bar's chip (gear.js); the fixture test is the big screen.
 
-const SHELL_TYPES = [
-  { k: "rd",      name: "shell.type.rd",      d: "shell.type.rd_d" },
-  { k: "rdaging", name: "shell.type.rdaging", d: "shell.type.rdaging_d" },
-  { k: "full",    name: "shell.entry.full",   d: "shell.entry.full_d" },
-];
 // The full test's sub-tests and the times each offers (decision 125; same
 // lists as stageDurations in stagecfg.go). Step numbers stay internal (decision 122).
 const FULL_SUBS = [
@@ -16,38 +11,61 @@ const FULL_SUBS = [
   { k: "safety", step: 5, name: "shell.type.safety", durs: null },
   { k: "user",   step: 6, name: "shell.type.user",   durs: ["once", "10m", "30m", "1"] },
 ];
-// R&D aging's two, one picked at a time (decision 187, PORTTOOL-FLOW.md C.3.8).
-const AGING_SUBS = [
-  { k: "aging",   step: 4, name: "shell.type.aging_ref", durs: ["1", "2", "4", "8"] },
-  { k: "agingpc", step: 7, name: "shell.type.aging_pc",  durs: ["1", "2", "4", "8"] },
+// R&D aging is an R&D test with a duration, not a page of its own (decisions 190, 191).
+const RUN_SUBS = FULL_SUBS;
+// The template window's five steps (PORTTOOL-FLOW.md C.3.10 「模板」); ③ has no configuration yet.
+const TPL_SUBS = [
+  { k: "func", step: 2, name: "line.step.1" }, { k: "aging", name: "line.step.2" }, { k: "check", name: "line.step.3" },
+  { k: "safety", step: 5, name: "line.step.4" }, { k: "user", step: 6, name: "line.step.5" },
 ];
-const RUN_SUBS = FULL_SUBS.concat(AGING_SUBS);
-const isAgingSub = v => AGING_SUBS.some(s => s.k === v);
-// The sub-tests on the same page as v.
-const pageSubs = v => isAgingSub(v) ? AGING_SUBS : FULL_SUBS;
-// The sub-tests of the page a run started from.
-const runningSubs = () => ((fullData && fullData.picked) || []).some(n => n === 4 || n === 7) ? AGING_SUBS : FULL_SUBS;
-const PEER_NAME = { none: "lib.peer.none", pc: "lib.peer.pc", ref: "lib.peer.ref", human: "lib.peer.human", ext: "lib.peer.ext" };
+const PEER_NAME = { none: "lib.peer.none", pc: "lib.peer.pc", ref: "lib.peer.ref", human: "lib.peer.human", ext: "lib.peer.ext", self: "wire.self" };
+
+// R&D's wiring (decision 191, PORTTOOL-FLOW.md C.3.8): DI / DO / relays share
+// one, AI / AO another; it is the peer of every item on those pages.
+const WIRE_PAIR = { din: "dio", dout: "dio", relay: "dio", ain: "aio", aout: "aio" };
+const WIRES = ["self", "ref", "ext", "human"];
+const WIRE_NAME = { self: "wire.self", ref: "wire.ref", ext: "wire.ext", human: "wire.human" };
+const WIRE_SHARED = { dio: "wire.shared.dio", aio: "wire.shared.aio" };
+const WIRE_HOW = {
+  dio: { self: "wire.how.dio.self", ref: "wire.how.dio.ref", ext: "wire.how.dio.ext", human: "wire.how.dio.human" },
+  aio: { self: "wire.how.aio.self", ref: "wire.how.aio.ref", ext: "wire.how.aio.ext", human: "wire.how.aio.human" },
+};
+let rdWire = { dio: "human", aio: "human" };
+try { Object.assign(rdWire, JSON.parse(localStorage.getItem("pt.rdwire") || "{}")); } catch (e) { /* defaults */ }
+function setWire(pair, w) {
+  rdWire[pair] = w;
+  try { localStorage.setItem("pt.rdwire", JSON.stringify(rdWire)); } catch (e) { /* kept for this page only */ }
+}
+const wireOf = port => WIRE_PAIR[port] ? rdWire[WIRE_PAIR[port]] : "";
+function wirePicker(port) {
+  const pair = WIRE_PAIR[port], box = el("span", "wirebox");
+  box.appendChild(el("span", "hint", T("wire.label")));
+  const s = el("select"); s.dataset.wire = pair; s.title = T(WIRE_SHARED[pair]);
+  for (const w of WIRES) { const o = el("option", null, T(WIRE_NAME[w])); o.value = w; o.selected = rdWire[pair] === w; s.appendChild(o); }
+  s.disabled = libRunning();
+  s.onchange = () => { setWire(pair, s.value); renderRight(); };
+  box.appendChild(s);
+  return box;
+}
 const DURATIONS = ["once", "1", "2", "3", "4", "forever"];   // R&D's repeatable group
 
 // view is "rd" or one of the full test's sub-tests: the sub-test on screen is
 // the configuration its cards edit.
-let view = "rd";
+let view = EMBED ? "func" : "rd";
 let fullSub = "func";     // the sub-test 工装完整测试 opens on
-let agingSub = "aging";   // the one 研发老化测试 opens on
 let lport = null;         // the port picked in the middle
 let catalog = { ports: [], items: [] };
 let catalogKey = "";      // what the catalogue was fetched for
 let itemOff = {};         // `${view}|${item}` -> true unticked, false ticked
 let itemPeer = {};        // `${view}|${item}` -> chosen peer
 
-// R&D never offers the reference board (decision 133, ptitems.RDPeers); R&D
-// aging with the PC has one peer per item (decision 187); a configuration
-// offers every peer of the item.
-const peersIn = (v, it) => v === "agingpc" ? [cfgPeer(v, it)] : isCfgView(v) ? it.peers : (it.rd_peers || it.peers);
+// R&D's wired ports take the page's wiring, other R&D items their R&D peers
+// (decision 191, ptitems.RDPeers); a configuration offers every peer of the item.
+const peersIn = (v, it) => isCfgView(v) ? it.peers
+  : WIRE_PAIR[it.port] ? [wireOf(it.port)] : (it.rd_peers || it.peers);
 // An R&D item's default peer: its first R&D peer (Engine.withDefaultPeers).
 function defaultPeer(it) { return peersIn("rd", it)[0]; }
-let duration = { rd: "once", func: "once", aging: "4", agingpc: "4", user: "once" };
+let duration = { rd: "once", func: "once", aging: "4", user: "once" };
 
 // Same rule as ptitems.Excludes: one exclusive group and both once-only or both
 // repeatable (decision 128); in R&D by card group, which runs on its own Start.
@@ -67,19 +85,22 @@ function itemOnIn(v, it) {
   return !it.exclusive || itemsOf(v, it.port).find(o => o === it || excludes(v, o, it)) === it;
 }
 
-// A sub-test of a run page: the full test's or R&D aging's.
-const isFullSub = v => RUN_SUBS.some(s => s.k === v);
-const hasPorts = v => v === "rd" || isCfgView(v);
-const itemsOf = (v, port) => catalog.items.filter(it => it.port === port && it.stages.includes(v));
+// A sub-test of the full test's page.
+const isFullSub = v => (EMBED ? TPL_SUBS : RUN_SUBS).some(s => s.k === v);
+const hasPorts = v => v === "rd" || (isCfgView(v) && !(EMBED && v === "aging"));
+// R&D's wired ports list only the items the page's wiring can run (decision 191).
+const itemsOf = (v, port) => catalog.items.filter(it => it.port === port && it.stages.includes(v)
+  && (v !== "rd" || !WIRE_PAIR[port] || (it.rd_peers || []).includes(wireOf(port))));
 
 // Called from applyState: the catalogue depends on the board's caps and on
 // which plan supplies the criteria.
 function shellOnState(st) {
-  const key = st.connected ? [st.port, st.firmware, st.criteriaPlan].join("|") : "";
+  // The template window configures every port, board or not (?all=1).
+  const key = EMBED ? "embed" : st.connected ? [st.port, st.firmware, st.criteriaPlan].join("|") : "";
   if (key !== catalogKey) {
     catalogKey = key;
     if (!key) { catalog = { ports: [], items: [] }; renderShell(); return; }
-    api("/api/items").then(j => {
+    api(EMBED ? "/api/items?all=1" : "/api/items").then(j => {
       catalog = { ports: j.ports || [], items: j.items || [] };
       if (!catalog.ports.some(p => p.port === lport)) { lport = catalog.ports.length ? catalog.ports[0].port : null; }
       renderShell();
@@ -92,21 +113,8 @@ function shellOnState(st) {
 
 function renderShell() {
   if (!stageCfgs) { loadStageCfgs(); }
-  renderMenus();
   renderLports();
   renderRight();
-}
-
-function menuItem(m, cur, onpick) {
-  const d = el("div", "mi" + (cur ? " cur" : ""));
-  d.dataset.menu = m.k;
-  // Names only, no sequence numbers on the test types (decision 122).
-  const b = el("div");
-  b.appendChild(el("div", "n", T(m.name)));
-  b.appendChild(el("div", "d", T(m.d)));
-  d.appendChild(b);
-  d.onclick = onpick;
-  return d;
 }
 
 // Leaving an R&D port page ends what runs on it and keeps the round
@@ -119,10 +127,9 @@ window.addEventListener("beforeunload", rdUnload);
 // from turning off what a card left on.
 function pickView(v) {
   if (v === "full") { v = fullSub; }
-  if (v === "rdaging") { v = agingSub; }
   // A running test keeps the page on its own page (decision 128).
-  if (typeof fullRunning === "function" && fullRunning() && (!isFullSub(v) || pageSubs(v) !== runningSubs())) { return; }
-  if (isAgingSub(v)) { agingSub = v; } else if (isFullSub(v)) { fullSub = v; }
+  if (typeof fullRunning === "function" && fullRunning() && !isFullSub(v)) { return; }
+  if (isFullSub(v)) { fullSub = v; }
   const was = view;
   if (v !== view) { outputsOff(); }
   view = v;
@@ -131,23 +138,15 @@ function pickView(v) {
     lport = first ? first.port : lport;
   }
   renderShell();
-  if (isFullSub(v) && (!isFullSub(was) || pageSubs(v) !== pageSubs(was))) { flowLoad("full"); }     // flows.js
-}
-
-function renderMenus() {
-  const tm = $("#typemenu"); tm.textContent = "";
-  for (const t of SHELL_TYPES) {
-    const cur = t.k === "full" ? isFullSub(view) && !isAgingSub(view) : t.k === "rdaging" ? isAgingSub(view) : view === t.k;
-    tm.appendChild(menuItem(t, cur, () => pickView(t.k)));
-  }
+  if (isFullSub(v) && !isFullSub(was)) { flowLoad("full"); }     // flows.js
 }
 
 function renderLports() {
   const host = $("#lports"); host.textContent = "";
   const sub = RUN_SUBS.find(s => s.k === view);
   $("#midtitle").textContent = sub ? T("full.ports_of", { sub: T(sub.name) }) : T("shell.ports");
-  if (view === "safety") {
-    host.appendChild(el("div", "hint", T("shell.safety.noports")));
+  if (view === "safety" || (EMBED && !hasPorts(view))) {
+    if (!EMBED) { host.appendChild(el("div", "hint", T("shell.safety.noports"))); }
     return;
   }
   const order = ["bridge", "upper", "lower", "junction", "whole"];
@@ -217,6 +216,7 @@ function renderRight() {
   $("#shell").className = "shell " + (isFullSub(view) ? "full" : "rd");
   cards.classList.toggle("locked", isFullSub(view) && fullRunning());
 
+  if (EMBED) { tplStep(top, $("#subtiles"), cards); return; }                     // flows.js
   if (isFullSub(view)) { renderSubTest(top, cards, note); runHighlight(); return; } // runview.js
 
   const port = catalog.ports.find(p => p.port === lport);
@@ -232,8 +232,15 @@ function renderRight() {
   const left = el("div", "phl"), right = el("div", "phr");
   left.appendChild(el("h2", null, port.label));
   left.appendChild(el("span", "sub", T("shell.port.term", { term: port.term })));
+  if (WIRE_PAIR[port.port]) { left.appendChild(wirePicker(port.port)); }
   right.appendChild(rdLastBox(port.port));
   top.append(left, right);
+  if (WIRE_PAIR[port.port]) {
+    const pair = WIRE_PAIR[port.port];
+    const how = el("div", "hint wirehow", T(WIRE_HOW[pair][rdWire[pair]]) + T("wire.shared_note", { who: T(WIRE_SHARED[pair]) }));
+    how.dataset.wirehow = pair;
+    cards.appendChild(how);
+  }
   renderPortCards(cards, port);
 }
 
@@ -267,9 +274,10 @@ function renderPortCards(cards, port) {
   // A configuration's AI / AO / DI / DO card: the same shape, settings only (decision 121, cfgcard.js).
   if (isCfgView(view) && ["ain", "aout", "din", "dout"].includes(port.port)) { cards.appendChild(cfgPortCard(port)); return; }
   // R&D's AI / AO is one card of its own (decision 117, anacard.js).
-  if (view === "rd" && (port.port === "ain" || port.port === "aout")) { cards.appendChild(anaPortCard(port)); return; }
+  const byHand = wireOf(port.port) === "human"; // other wirings run as plain item cards (decision 191)
+  if (view === "rd" && byHand && (port.port === "ain" || port.port === "aout")) { cards.appendChild(anaPortCard(port)); return; }
   // DI / DO the same way (decision 119, dio.js).
-  if (view === "rd" && (port.port === "din" || port.port === "dout")) { cards.appendChild(dioPortCard(port)); return; }
+  if (view === "rd" && byHand && (port.port === "din" || port.port === "dout")) { cards.appendChild(dioPortCard(port)); return; }
   // Relays: one card in every test type, per-relay rows (decision 123, relay.js).
   if (port.port === "relay") { cards.appendChild(relayCard(port)); return; }
   // Two groups (decision 115): checked once on top, repeatable for a duration

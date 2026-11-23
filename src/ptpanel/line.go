@@ -21,6 +21,7 @@ import (
 	"PortTool/src/ptrecord"
 	"PortTool/src/ptreport"
 	"PortTool/src/ptstages"
+	"PortTool/src/serialx"
 	"PortTool/src/simboard"
 	"PortTool/src/stlink"
 )
@@ -41,6 +42,8 @@ const (
 	lnAgeGo     = "agego"   // task written: unplug, off to the oven; ③ starts once the task ends
 	lnShort     = "short"   // back early, no failure: keep aging, age again or cancel
 	lnDone      = "done"    // all five passed
+	lnBack      = "back"    // back from the oven: ③ reads the record next
+	lnCancel    = "cancel"  // aging cancelled: this board cannot ship this time
 )
 
 // lineSteps are the five steps; index+1 is the number shown (①..⑤).
@@ -73,6 +76,12 @@ type lineTile struct {
 	Port    string         `json:"port"`    // control port
 	Sim     bool           `json:"sim"`
 	Records map[int]string `json:"records,omitempty"` // step -> report file
+	Tpl     tplRef         `json:"tpl"`               // the template version this board runs on
+	Done    int            `json:"done"`              // items finished in the running step
+	Total   int            `json:"total"`             // items the running step will take
+	Cur     string         `json:"cur,omitempty"`     // the item running now: "port|item"
+	EstMS   int64          `json:"est_ms,omitempty"`  // the step's time last run on this PC
+	LED     bool           `json:"led"`               // LED3 as the tile shows it
 }
 
 type lineStation struct {
@@ -114,11 +123,74 @@ func (x *lineStation) set(f func(t *lineTile)) {
 func (x *lineStation) view() lineTile {
 	x.mu.Lock()
 	defer x.mu.Unlock()
-	return x.tile
+	t := x.tile
+	t.LED = t.State == lnFail || t.State == lnDone
+	return t
 }
 
 func (x *lineStation) enter(state string, why msg) {
-	x.set(func(t *lineTile) { t.State, t.Why, t.StepAt = state, why, time.Now() })
+	x.set(func(t *lineTile) {
+		t.State, t.Why, t.StepAt = state, why, time.Now()
+		t.Done, t.Total, t.Cur = 0, 0, ""
+		t.EstMS = 0
+		if state == lnRun || state == lnFlashing {
+			t.EstMS = stepTime(stepKey(state, t.Step))
+		}
+	})
+}
+
+// stepKey names a step for its remembered time: "flash" or "1".."5".
+func stepKey(state string, step int) string {
+	if state == lnFlashing {
+		return "flash"
+	}
+	return strconv.Itoa(step)
+}
+
+// The time each step last took on this PC, for the tile's estimate (C.3.10).
+var stepTimesMu sync.Mutex
+
+func stepTimesPath() string { return filepath.Join(filepath.Dir(stationsPath()), "line_times.json") }
+
+func stepTime(key string) int64 {
+	stepTimesMu.Lock()
+	defer stepTimesMu.Unlock()
+	t := map[string]int64{}
+	if b, err := os.ReadFile(stepTimesPath()); err == nil {
+		_ = json.Unmarshal(b, &t)
+	}
+	return t[key]
+}
+
+func setStepTime(key string, d time.Duration) {
+	stepTimesMu.Lock()
+	defer stepTimesMu.Unlock()
+	t := map[string]int64{}
+	if b, err := os.ReadFile(stepTimesPath()); err == nil {
+		_ = json.Unmarshal(b, &t)
+	}
+	t[key] = d.Milliseconds()
+	_ = writeJSONFile(stepTimesPath(), t)
+}
+
+// useTemplate picks the board's template version: the one it started with when
+// that is still on disk, else the one in use now.
+func (x *lineStation) useTemplate(r tplRef) tplRef {
+	tplMu.Lock()
+	defer tplMu.Unlock()
+	cfg, err := tplLoad(r)
+	if r.ID == "" || err != nil {
+		r = tplCurrent()
+		cfg, err = tplLoad(r)
+	}
+	x.srv.tplMu.Lock()
+	if err == nil {
+		x.srv.tplCfg = &cfg
+	} else {
+		x.srv.tplCfg = nil
+	}
+	x.srv.tplMu.Unlock()
+	return r
 }
 
 // fixtureImage is the fixture image this PortTool ships and its version: the
@@ -144,12 +216,12 @@ var fixtureImage = func() (path, version string) {
 var idRe = regexp.MustCompile(`uid=([0-9A-Fa-f]{24}).*porttool=(\S+)`)
 
 func (x *lineStation) askID(port string) (uid, fw string, ok bool) {
-	rw, err := x.srv.Open(port, 0)
+	rw, err := x.srv.Open(port, serialx.DefaultBaud)
 	if err != nil {
 		return "", "", false
 	}
-	defer rw.Close()
 	b := ptboard.New(rw, 64)
+	defer b.Close() // waits for its reader, so the panel can open the port next
 	lines, err := b.Send("pt.id", ptboard.ExpectFor("pt.id"), 1500*time.Millisecond)
 	if err != nil {
 		return "", "", false
@@ -184,8 +256,18 @@ func (x *lineStation) connected() bool {
 	return x.srv.board != nil && x.srv.linkErr.Key == ""
 }
 
+// rdMode is the page memo's test type: during R&D the line loops idle and
+// station 1 only connects its registered control port (C.3.10 「入口」).
+var rdMode = func() bool { return loadPageMemo()["ui"]["type"] == "rd" }
+
 // step advances whatever can advance by itself.
 func (x *lineStation) step() {
+	if rdMode() {
+		if x.n == 1 {
+			x.rdAttach()
+		}
+		return
+	}
 	t := x.view()
 	if t.Paused {
 		return
@@ -211,7 +293,13 @@ func (x *lineStation) step() {
 			return
 		}
 		x.watchAging()
-	case lnFail, lnBlocked, lnDone, lnShort:
+	case lnBack:
+		if !x.connected() {
+			x.lost()
+			return
+		}
+		x.checkAging(3)
+	case lnFail, lnBlocked, lnDone, lnShort, lnCancel:
 		if !x.connected() {
 			x.lost()
 		}
@@ -222,7 +310,92 @@ func (x *lineStation) step() {
 func (x *lineStation) lost() {
 	x.api("POST", "/api/full/stop", nil)
 	x.api("POST", "/api/disconnect", nil)
+	x.srv.tplMu.Lock()
+	x.srv.tplCfg = nil
+	x.srv.tplMu.Unlock()
 	x.set(func(t *lineTile) { *t = lineTile{N: t.N, State: lnEmpty, Want: t.Want, StepAt: time.Now()} })
+}
+
+// rdAttach connects R&D's panel to the board on the registered control port
+// once the fixture firmware answers there, and fills the tile for R&D's
+// 「电脑上看到的板子」: a board without the current fixture firmware waits in
+// needflash for its 烧写 button (C.3.6 「左 · 接线」). Nothing else runs.
+func (x *lineStation) rdAttach() {
+	_, want := fixtureImage()
+	x.mu.Lock()
+	port := x.control
+	x.mu.Unlock()
+	sim := simboard.IsSim(port)
+	x.set(func(t *lineTile) { t.Want, t.Port, t.Sim = want, port, sim })
+	// The registration changed under a connected panel: let go of the old port.
+	x.srv.mu.Lock()
+	held, on := x.srv.board != nil, x.srv.portNam
+	x.srv.mu.Unlock()
+	if held && on != port {
+		x.api("POST", "/api/disconnect", nil)
+		x.set(func(t *lineTile) { t.State, t.UID, t.FW = lnEmpty, "", "" })
+		return
+	}
+	if port == "" || x.view().State == lnFlashing {
+		return
+	}
+	if x.connected() {
+		x.srv.mu.Lock()
+		uid, fw := x.srv.uid, x.srv.caps.Version
+		x.srv.mu.Unlock()
+		state := lnEmpty
+		if !sim && want != "" && fw != want {
+			state = lnNeedFlash
+		}
+		x.set(func(t *lineTile) { t.UID, t.FW, t.State = uid, fw, state })
+		return
+	}
+	if !sim {
+		uid, fw, ok := x.askID(port)
+		if !ok {
+			x.rdLookSWD()
+			return
+		}
+		x.set(func(t *lineTile) { t.UID, t.FW = uid, fw })
+	}
+	x.connect(port)
+}
+
+// connect opens the station's panel on port. Some USB serial drivers report
+// the port busy for ~100 ms after askID has closed it, so it tries a few times.
+func (x *lineStation) connect(port string) bool {
+	for i := 0; i < 5; i++ {
+		if st := x.api("POST", "/api/connect", map[string]any{"port": port}); st["connected"] == true {
+			return true
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	return false
+}
+
+// rdLookSWD looks behind the ST-Link when nothing answers on the control port,
+// at most every 5 s: an empty chip or one without the fixture firmware.
+func (x *lineStation) rdLookSWD() {
+	if time.Since(x.lastSWD) < 5*time.Second {
+		return
+	}
+	x.lastSWD = time.Now()
+	clear := func() { x.set(func(t *lineTile) { t.State, t.UID, t.FW = lnEmpty, "", "" }) }
+	p, err := stlink.OpenSN(x.srv.STLinkSN)
+	if err != nil {
+		clear()
+		return
+	}
+	blank, err := p.Blank()
+	if err != nil {
+		clear()
+		return
+	}
+	fw := ""
+	if blank {
+		fw = "blank"
+	}
+	x.set(func(t *lineTile) { t.State, t.UID, t.FW = lnNeedFlash, "", fw })
 }
 
 // detect looks for a board on the control port, then behind the ST-Link.
@@ -238,6 +411,11 @@ func (x *lineStation) detect() {
 	}
 	var uid, fw string
 	ok := false
+	if x.connected() {
+		// Left connected by R&D: the panel already holds the port.
+		x.attach("", "")
+		return
+	}
 	if simboard.IsSim(port) {
 		ok, fw = true, want
 	} else {
@@ -291,10 +469,11 @@ func (x *lineStation) attach(uid, fw string) {
 	x.mu.Lock()
 	port := x.control
 	x.mu.Unlock()
-	st := x.api("POST", "/api/connect", map[string]any{"port": port})
-	if st["connected"] != true {
-		x.set(func(t *lineTile) { t.Why = m("line.why.connect_failed") })
-		return
+	if !x.connected() {
+		if !x.connect(port) {
+			x.set(func(t *lineTile) { t.Why = m("line.why.connect_failed") })
+			return
+		}
 	}
 	if fw == "" {
 		x.srv.mu.Lock()
@@ -306,20 +485,21 @@ func (x *lineStation) attach(uid, fw string) {
 			uid, _ = u["uid"].(string)
 		}
 	}
-	passed, recs := map[int]bool{}, map[int]string{}
+	passed, recs, tpl := map[int]bool{}, map[int]string{}, tplRef{}
 	if !simboard.IsSim(port) {
-		passed, recs = loadLine(uid)
+		passed, recs, tpl = loadLine(uid)
 	}
+	tpl = x.useTemplate(tpl)
 	x.set(func(t *lineTile) {
-		t.UID, t.FW, t.Since, t.Passed, t.Records = uid, fw, time.Now(), passed, recs
+		t.UID, t.FW, t.Since, t.Passed, t.Records, t.Tpl = uid, fw, time.Now(), passed, recs, tpl
 		t.Results = map[int]string{}
 	})
 	x.enter(lnWire, msg{})
 }
 
 // wiringNeeded is the adapters the functional test's ticked ports use.
-func wiringNeeded() []string {
-	c := loadStageCfgs().Func
+func (x *lineStation) wiringNeeded() []string {
+	c := x.srv.cfgs().Func
 	need := []string{}
 	for _, p := range []string{"rs485", "can"} {
 		if !c.PortsOff[p] {
@@ -346,7 +526,7 @@ func (x *lineStation) checkWiring() {
 	terms, _ := mt["terms"].(map[string]any)
 	missing := []string{}
 	if mt["sim"] != true {
-		for _, p := range wiringNeeded() {
+		for _, p := range x.wiringNeeded() {
 			if tm, _ := terms[p].(map[string]any); tm == nil || tm["ok"] != true {
 				missing = append(missing, p)
 			}
@@ -380,7 +560,7 @@ func (x *lineStation) start(i int) {
 		x.writeAging(i)
 		return
 	case "aging_check":
-		x.checkAging(i)
+		x.enter(lnBack, msg{})
 		return
 	case "safety":
 		// Safety is not defined yet and passes by default (decision 190).
@@ -409,7 +589,7 @@ func (x *lineStation) writeOwn(i int, o ptreport.Outcome, reason string) string 
 	}
 	now := time.Now()
 	f, _ := ptrecord.Write(ptreport.Report{ToolVersion: x.srv.Version, Firmware: t.FW, BoardUID: t.UID,
-		Port: t.Port, StartedAt: now, EndedAt: now,
+		Port: t.Port, Station: x.n, StartedAt: now, EndedAt: now,
 		Steps: []ptreport.StepResult{{ID: lineSteps[i-1].ID, Type: "line" + strconv.Itoa(i), Outcome: o,
 			Reason: reason, StartedAt: now}}})
 	return f
@@ -418,6 +598,7 @@ func (x *lineStation) writeOwn(i int, o ptreport.Outcome, reason string) string 
 func (x *lineStation) watchRun() {
 	f := x.api("GET", "/api/full", nil)
 	if f["running"] == true {
+		x.progress(f)
 		return
 	}
 	t := x.view()
@@ -438,7 +619,35 @@ func (x *lineStation) watchRun() {
 	x.fail(t.Step, ptreport.Outcome(o), m("line.why.step_failed", "step", t.Step, "outcome", o))
 }
 
+// progress copies the running step's item count and current item to the tile.
+func (x *lineStation) progress(f map[string]any) {
+	run, _ := f["run"].(map[string]any)
+	if run == nil {
+		return
+	}
+	total, _ := run["total"].(float64)
+	done, cur := 0, ""
+	steps, _ := run["steps"].([]any)
+	for _, v := range steps {
+		st, _ := v.(map[string]any)
+		if st == nil {
+			continue
+		}
+		if st["state"] == jRunning {
+			port, _ := st["port"].(string)
+			item, _ := st["item"].(string)
+			cur = port + "|" + item
+		} else {
+			done++
+		}
+	}
+	x.set(func(t *lineTile) { t.Done, t.Total, t.Cur = done, int(total), cur })
+}
+
 func (x *lineStation) finish(i int, o ptreport.Outcome, file string) {
+	if t := x.view(); t.State == lnRun {
+		setStepTime(strconv.Itoa(i), time.Since(t.StepAt))
+	}
 	x.set(func(t *lineTile) {
 		t.Results[i] = string(o)
 		t.Passed[i] = true
@@ -448,7 +657,7 @@ func (x *lineStation) finish(i int, o ptreport.Outcome, file string) {
 	})
 	t := x.view()
 	if !t.Sim {
-		saveLine(t.UID, t.Passed, t.Records)
+		saveLine(t.UID, t.Passed, t.Records, t.Tpl)
 	}
 	x.next()
 }
@@ -476,7 +685,10 @@ func (x *lineStation) do(a string) {
 			x.set(func(t *lineTile) { t.Why = m("line.why.no_image") })
 			return
 		}
+		// R&D may hold the port with an older fixture firmware.
+		x.api("POST", "/api/disconnect", nil)
 		x.enter(lnFlashing, msg{})
+		began := time.Now()
 		go func() {
 			p, err := stlink.OpenSN(x.srv.STLinkSN)
 			if err == nil {
@@ -486,6 +698,7 @@ func (x *lineStation) do(a string) {
 				x.enter(lnNeedFlash, m("line.why.flash_failed", "detail", err.Error()))
 				return
 			}
+			setStepTime("flash", time.Since(began))
 			x.set(func(t *lineTile) { *t = lineTile{N: t.N, State: lnEmpty, Want: t.Want, Port: t.Port} })
 		}()
 	case "continue":
@@ -522,7 +735,8 @@ func (x *lineStation) do(a string) {
 		if t.State == lnShort {
 			_, _ = x.send("pt.age clear")
 			x.writeOwn(3, ptreport.OutcomeFail, "aging cancelled")
-			x.fail(3, ptreport.OutcomeFail, m("line.why.age_cancelled"))
+			x.set(func(t *lineTile) { t.Results[3] = string(ptreport.OutcomeFail) })
+			x.enter(lnCancel, m("line.why.age_cancelled"))
 		}
 	case "remove":
 		x.lost()
@@ -535,14 +749,15 @@ type lineFile struct {
 	UID     string         `json:"uid"`
 	Passed  []int          `json:"passed"`
 	Records map[int]string `json:"records,omitempty"`
+	Tpl     tplRef         `json:"tpl"`
 }
 
 func linePath(uid string) string { return filepath.Join(ptrecord.BoardDir(uid), "line.json") }
 
-func loadLine(uid string) (map[int]bool, map[int]string) {
+func loadLine(uid string) (map[int]bool, map[int]string, tplRef) {
 	passed, recs := map[int]bool{}, map[int]string{}
 	if uid == "" {
-		return passed, recs
+		return passed, recs, tplRef{}
 	}
 	var f lineFile
 	if b, err := os.ReadFile(linePath(uid)); err == nil && json.Unmarshal(b, &f) == nil && f.UID == uid {
@@ -553,14 +768,14 @@ func loadLine(uid string) (map[int]bool, map[int]string) {
 			recs[k] = v
 		}
 	}
-	return passed, recs
+	return passed, recs, f.Tpl
 }
 
-func saveLine(uid string, passed map[int]bool, recs map[int]string) {
+func saveLine(uid string, passed map[int]bool, recs map[int]string, tpl tplRef) {
 	if uid == "" {
 		return
 	}
-	f := lineFile{UID: uid, Records: recs}
+	f := lineFile{UID: uid, Records: recs, Tpl: tpl}
 	for i := range passed {
 		f.Passed = append(f.Passed, i)
 	}
@@ -597,8 +812,8 @@ func (x *lineStation) send(cmd string) ([]string, error) {
 }
 
 // agingSecs is how long the template's aging runs; tests shorten it.
-var agingSecs = func() int {
-	d := loadStageCfgs().Aging.Duration
+var agingSecs = func(cfg stageCfgs) int {
+	d := cfg.Aging.Duration
 	if h, err := strconv.Atoi(d); err == nil && h > 0 {
 		return h * 3600
 	}
@@ -615,7 +830,7 @@ func (x *lineStation) writeAging(i int) {
 		if path, err = safePlanPath(name); err == nil {
 			var plan ptplan.Plan
 			if plan, err = ptplan.Load(path); err == nil {
-				off := loadStageCfgs().Aging.PortsOff
+				off := x.srv.cfgs().Aging.PortsOff
 				lines, err = agingTask(&plan, off, cardPpmMax())
 				// The simulated board has no harness to loop AO into AI.
 				if err == nil && !off["aout"] && !x.view().Sim {
@@ -623,14 +838,14 @@ func (x *lineStation) writeAging(i int) {
 					cal := x.srv.readBoardCal(x.view().UID)
 					if cal.State != calOK {
 						err = fmt.Errorf("the board's calibration area is %s", cal.State)
-					} else if an, err = agingAnalog(cal.Ch, effectiveRanges()); err == nil {
+					} else if an, err = agingAnalog(cal.Ch, x.srv.cfgs().Ranges); err == nil {
 						lines = append(lines, an...)
 					}
 				}
 			}
 		}
 	}
-	secs := agingSecs()
+	secs := agingSecs(x.srv.cfgs())
 	cmds := append([]string{fmt.Sprintf("pt.age begin secs=%d", secs)}, prefixed("pt.age add ", lines)...)
 	cmds = append(cmds, "pt.age commit")
 	if x.view().Sim {
@@ -656,7 +871,7 @@ func (x *lineStation) writeAging(i int) {
 		}
 	})
 	if t := x.view(); !t.Sim {
-		saveLine(t.UID, t.Passed, t.Records)
+		saveLine(t.UID, t.Passed, t.Records, t.Tpl)
 	}
 	x.set(func(t *lineTile) { t.Step = i + 1 })
 	x.enter(lnAgeGo, m("line.why.age_written", "items", len(lines), "hours", float64(secs)/3600))

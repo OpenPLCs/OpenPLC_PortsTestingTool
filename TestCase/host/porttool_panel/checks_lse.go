@@ -13,7 +13,7 @@ import (
 // under the default limits (decision 164) both items pass.
 func checkLsePage(p *Page) {
 	Section("R&D crystal page: frequency and start-up margin")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	if !check(p.L(lport("rtc")).Count() == 1, "the port list has the clock (crystal) port") {
 		return
 	}

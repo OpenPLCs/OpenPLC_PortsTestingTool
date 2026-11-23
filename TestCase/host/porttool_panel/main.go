@@ -425,7 +425,7 @@ func run() int {
 	// The bench's own configurations and page memory are put back afterwards;
 	// the run starts from the defaults.
 	restore := keepAside(filepath.Join(filepath.Dir(exe), "porttool_stagecfg.json"),
-		filepath.Join(filepath.Dir(exe), "porttool_pagememo.json"))
+		filepath.Join(filepath.Dir(exe), "porttool_pagememo.json"), filepath.Join(filepath.Dir(exe), "stations.json"))
 
 	Section("panel")
 	proc, base, logPath := startPanel(exe)
@@ -433,7 +433,7 @@ func run() int {
 	fmt.Printf("  panel log %s\n", logPath)
 
 	err = try(func() {
-		page.Goto(base)
+		page.Goto(base + "/index.html") // "/" is the line page (decision 190)
 		runChecks(page, *port)
 		checkRemembered(saved, *port)
 		// Leave the page first so its SSE connection is dropped.
@@ -501,12 +501,12 @@ func checkConfigsSurviveRestart(exe string) {
 		_ = json.Unmarshal(b, &v)
 		got = J{v}
 	}()
-	aging := got.K("aging")
-	items := aging.K("items")
+	user := got.K("user")
+	items := user.K("items")
 	fn := got.K("func").K("items")
 	shown := cut(got.String(), 300)
-	check(aging.K("duration").S() == "2", "the aging duration survived", shown)
-	check(aging.K("ports_off").K("temp").B(), "the unticked port survived", shown)
+	check(user.K("duration").S() == "1", "the user-level duration survived", shown)
+	check(user.K("ports_off").K("temp").B(), "the unticked port survived", shown)
 	check(items.K("can.peer").K("peer").S() == "pc", "the chosen peer survived", shown)
 	pts := items.K("aout.out1").K("points")
 	check(pts.Len() == 3 && pts.I(0).N() == 2500 && pts.I(1).N() == 5000 && pts.I(2).N() == 9000,

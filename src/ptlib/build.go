@@ -47,8 +47,8 @@ const (
 	ReasonHoldEnded   = "hold_ended"
 	ReasonNoFrames    = "no_frames"
 	ReasonNoRef       = "no_ref" // the item needs the reference board and none is connected
-	// ReasonBadPeer: R&D was asked for the reference board, which only the
-	// fixture tests use (decision 133).
+	// ReasonBadPeer: the loop-back harness outside R&D, or with the reference
+	// board in one run (decision 191).
 	ReasonBadPeer = "bad_peer"
 )
 
@@ -114,6 +114,7 @@ type job struct {
 	dinWalk   bool          // a person applies 24 V input by input, the board judges (dinwalk.go)
 	relay     bool          // relays switched to their counts (relay.go)
 	chain     bool          // DOs read through the relays by the reference DI (chain.go)
+	loop      bool          // the board is its own reference board (decision 191, Engine.loopBack)
 	relayRan  []RelayChan   // the relays as runRelay left them, for relayVerdict
 	load      bool          // AO under load, read per channel (aoload.go)
 	recover   bool          // pulled and plugged back by a person (recover.go)
@@ -301,6 +302,10 @@ func build(items []ptitems.Item, plan ptplan.Plan, caps ptproto.Caps, picks []Pi
 		if j.peer == "" && len(it.Peers) > 0 {
 			j.peer = it.Peers[0]
 		}
+		// The loop-back harness runs the reference board's way on this board.
+		if j.peer == ptitems.PeerSelf {
+			j.loop, j.peer = true, ptitems.PeerRef
+		}
 		// A live item with no criteria is live whatever its peer: the CAN
 		// analyser window's peer is this PC (decision 111). A person's DI walk
 		// is R&D's (decisions 128, 133).
@@ -340,7 +345,9 @@ func build(items []ptitems.Item, plan ptplan.Plan, caps ptproto.Caps, picks []Pi
 			j.relay = true
 			continue
 		}
-		if onChain(it, j.peer) {
+		// On the harness DO n reaches DI n through relay n, so a DI is read
+		// by walking the DOs (PORTTOOL-FLOW.md C.3.8).
+		if onChain(it, j.peer) || (j.loop && it.ID == "din.level") {
 			j.chain = true
 			continue
 		}
@@ -574,15 +581,36 @@ func startLine(st ptplan.Step) string {
 	return cmd
 }
 
-// CheckRD refuses an R&D pick that names the reference board: R&D is done by
-// hand (decision 133).
-func CheckRD(picks []Pick) error {
+// CheckPeers refuses peers a run cannot take: the loop-back harness outside
+// R&D (decisions 135, 191), or the harness and the reference board in one run,
+// which has a single reference side.
+func CheckPeers(rd bool, picks []Pick) error {
+	self, ref := "", ""
 	for _, p := range picks {
-		if p.On && p.Peer == ptitems.PeerRef {
+		switch {
+		case !p.On:
+		case p.Peer == ptitems.PeerSelf && !rd:
 			return &PickError{Code: ReasonBadPeer, Item: p.ID}
+		case p.Peer == ptitems.PeerSelf:
+			self = p.ID
+		case p.Peer == ptitems.PeerRef:
+			ref = p.ID
 		}
 	}
+	if self != "" && ref != "" {
+		return &PickError{Code: ReasonBadPeer, Item: self, Other: ref}
+	}
 	return nil
+}
+
+// loopRun says a run uses the loop-back harness.
+func loopRun(picks []Pick) bool {
+	for _, p := range picks {
+		if p.On && p.Peer == ptitems.PeerSelf {
+			return true
+		}
+	}
+	return false
 }
 
 // Check refuses picks the way Run would, without running anything: unknown

@@ -149,6 +149,10 @@ type Engine struct {
 	// than leaving it unjudged (decision 129).
 	RD bool
 
+	// SelfWire wires the simulated board onto itself as the loop-back harness
+	// and returns the undo; nil on a real board, whose harness is real wire.
+	SelfWire func() func()
+
 	// Cut breaks a port of the simulated board for ms and lets it come back
 	// (sim.cut), standing in for a person's hands on a recover item; nil on a
 	// real board, which also means the recover items open their PC ends.
@@ -167,8 +171,8 @@ type Engine struct {
 	lives   map[string]chan liveMsg // running live items, by id
 }
 
-// withDefaultPeers fills the peer of every pick that names none; R&D never
-// defaults to the reference board (decision 133).
+// withDefaultPeers fills the peer of every pick that names none; R&D defaults
+// to a person (decision 191).
 func (e *Engine) withDefaultPeers(picks []Pick) []Pick {
 	out := make([]Pick, len(picks))
 	for i, p := range picks {
@@ -193,10 +197,11 @@ func (e *Engine) withDefaultPeers(picks []Pick) []Pick {
 // pick the run refused before touching the board.
 func (e *Engine) Run(ctx context.Context, picks []Pick, dur time.Duration) (ptreport.Report, error) {
 	picks = e.withDefaultPeers(picks)
-	if e.RD {
-		if err := CheckRD(picks); err != nil {
-			return ptreport.Report{}, err
-		}
+	if err := CheckPeers(e.RD, picks); err != nil {
+		return ptreport.Report{}, err
+	}
+	if loopRun(picks) {
+		defer e.loopBack()()
 	}
 	jobs, err := build(e.Items, e.Plan, e.Caps, picks)
 	if err != nil {

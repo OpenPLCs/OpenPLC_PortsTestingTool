@@ -55,9 +55,12 @@ func TestPageMemoSurvivesARestartPerTestType(t *testing.T) {
 	if got["full"]["step|2"] != "1" || got["rd"]["step|2"] != "" {
 		t.Errorf("sections mixed: %v", got)
 	}
-	// R&D has no reference board (decision 133).
-	if code, _ := postMemo(t, "rd", map[string]string{"peer|dout.load": "ref"}); code != 400 {
-		t.Errorf("an R&D peer of the reference board was kept: %d", code)
+	// R&D takes every peer the item offers (decision 191), and only those.
+	if code, _ := postMemo(t, "rd", map[string]string{"peer|dout.load": "self"}); code != 200 {
+		t.Errorf("the loop-back harness was refused as an R&D peer: %d", code)
+	}
+	if code, _ := postMemo(t, "rd", map[string]string{"peer|dout.load": "pc"}); code != 400 {
+		t.Errorf("a peer dout.load does not offer was kept: %d", code)
 	}
 }
 
@@ -222,27 +225,33 @@ func TestPageMemoKeepsEachBoardsSnapshotApart(t *testing.T) {
 	}
 }
 
-// The "ui" section keeps the connection column's width and the Bluetooth tick;
-// anything else, or a width the page cannot drag to, is refused (decision 162).
+// The "ui" section keeps the connection and log column widths and the
+// Bluetooth tick; anything else, or a width the page cannot drag to, is
+// refused (decisions 162, 190).
 func TestPageMemoUISection(t *testing.T) {
 	memoServer(t)
-	if code, out := postMemo(t, "ui", map[string]string{"leftw": "320", "bt": "1"}); code != 200 {
+	good := func() map[string]string { return map[string]string{"leftw": "320", "logw": "400", "bt": "1"} }
+	if code, out := postMemo(t, "ui", good()); code != 200 {
 		t.Fatalf("good ui cells refused: %d %v", code, out)
 	}
-	for cell, v := range map[string]string{"leftw": "199", "bt": "2", "leftw|x": "300", "lang": "en"} {
+	for cell, v := range map[string]string{"leftw": "199", "logw": "239", "bt": "2", "leftw|x": "300", "lang": "en"} {
 		// The page always sends its whole state: the good cells ride along.
-		cells := map[string]string{"leftw": "320", "bt": "1"}
+		cells := good()
 		cells[cell] = v
 		if code, _ := postMemo(t, "ui", cells); code != 400 {
 			t.Errorf("ui %s=%s kept: %d", cell, v, code)
 		}
 	}
-	if code, _ := postMemo(t, "ui", map[string]string{"leftw": "641", "bt": "1"}); code != 400 {
-		t.Errorf("a width above 640 was kept: %d", code)
+	for cell, v := range map[string]string{"leftw": "641", "logw": "901"} {
+		cells := good()
+		cells[cell] = v
+		if code, _ := postMemo(t, "ui", cells); code != 400 {
+			t.Errorf("a width above the drag range was kept: %s=%s %d", cell, v, code)
+		}
 	}
 	got := getMemo(t)["ui"]
-	if got["leftw"] != "320" || got["bt"] != "1" {
-		t.Errorf("ui = %v, want the last good leftw=320 bt=1", got)
+	if got["leftw"] != "320" || got["logw"] != "400" || got["bt"] != "1" {
+		t.Errorf("ui = %v, want the last good leftw=320 logw=400 bt=1", got)
 	}
 }
 

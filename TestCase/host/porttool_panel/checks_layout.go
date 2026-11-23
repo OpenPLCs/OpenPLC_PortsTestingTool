@@ -13,20 +13,34 @@ import (
 )
 
 func runChecks(p *Page, com string) {
-	// ---------------------------------------------------- before connecting
-	Section("before a control port is chosen")
-	// Step one is a dropdown, the simulated board its last option (decision 128).
-	p.WaitSelState("#ctlport option[data-port]", "attached", 0)
+	// ---------------------------------------------------- before registering
+	Section("before a control port is registered")
+	// R&D is station 1: the control port comes from its wiring registration (C.3.6 「左 · 接线」).
+	p.WaitSel("#ctlrow .crow", 0)
 	check(p.L("#connbox .step").First().Text() == "第一步：连接控制口（RS232 串口）",
 		"step one says to connect the control port (decision 162)", p.L("#connbox .step").First().Text())
-	check(p.L("#showbt").Count() == 1, "a 「显示蓝牙串口」 box sits under the control port dropdown (decision 162)")
-	opts := p.L("#ctlport option[data-port]")
-	var names, texts []string
+	check(strings.Contains(p.L("#ctlrow").Text(), "没登记"), "with nothing registered, step one says to register it", p.L("#ctlrow").Text())
+	check(strings.Contains(p.L("header #typechip").Text(), "研发测试"), "the top bar starts with the test type: R&D", p.L("header #typechip").Text())
+	// The whole rest of the page is inert: everything on it is a reading that
+	// arrives over the control port.
+	gate := p.L("#afterconn")
+	check(!strings.Contains(gate.Attr("class"), "live"), "the rest of the page is gated off before connecting")
+
+	// ---------------------------------------------------- register and connect
+	Section("registering the control port")
+	p.L("#connbox .step").Click()
+	if try(func() { p.WaitSel(`#lnbox button[data-gear="control"]`, 5000) }) != nil {
+		check(false, "clicking the wiring column opens station 1's wiring registration")
+		return
+	}
+	check(p.L("#lnbox h2").Text() == "工位 1 接线登记", "clicking the wiring column opens station 1's wiring registration", p.L("#lnbox h2").Text())
+	p.L(`#lnbox button[data-gear="control"]`).Click()
+	p.WaitSel(".popmenu div", 3000)
+	opts := p.L(".popmenu div")
+	var texts []string
 	for i := 0; i < opts.Count(); i++ {
-		names = append(names, opts.Nth(i).Attr("data-port"))
 		texts = append(texts, strings.TrimSpace(opts.Nth(i).Text()))
 	}
-	check(opts.Count() > 0, "the control port is picked from a dropdown", fmt.Sprintf("%d options", opts.Count()))
 	// R4-03: a port name alone does not say which adapter it is. An option with
 	// USB ids must also say what the device calls itself or which driver took it.
 	var unnamed []string
@@ -36,36 +50,32 @@ func runChecks(p *Page, com string) {
 		}
 	}
 	check(len(unnamed) == 0, "every USB port option says what the adapter is", strings.Join(unnamed, "; "))
-	check(p.L("#connect").Disabled(), "connect is refused until a port is picked")
-	check(p.L("#ctlport").Value() == "", "nothing is preselected on a first run")
-	if slices.Contains(names, "sim") {
-		// It is invented data: last, after every real port, and marked as such.
-		check(names[len(names)-1] == "sim", "the simulated board is the last option", show(names))
-		check(strings.Contains(texts[len(texts)-1], "模拟板"), "and says it is the simulated board", texts[len(texts)-1])
-	} else {
-		check(true, "no simulated board built on this machine - nothing to check")
+	pick := -1
+	for i, t := range texts {
+		if (isSim(com) && t == "模拟板") || (!isSim(com) && (t == com || strings.HasPrefix(t, com+" "))) {
+			pick = i
+		}
 	}
-	check(!strings.Contains(p.L("#menus").Attr("class"), "live"), "the test types are gated off before connecting too")
-
-	// The whole rest of the page is inert: everything on it is a reading that
-	// arrives over the control port.
-	gate := p.L("#afterconn")
-	check(!strings.Contains(gate.Attr("class"), "live"), "the rest of the page is gated off before connecting")
-
-	// ---------------------------------------------------- pick and connect
-	Section("choosing the control port")
-	if !check(slices.Contains(names, com), "the control port "+com+" is in the dropdown", show(names)) {
+	if !check(pick >= 0, "the control port "+com+" is offered", show(texts)) {
 		return
 	}
-	p.L("#ctlport").Select(com)
-	check(!p.L("#connect").Disabled(), "connect becomes available once a port is picked")
-	check(strings.Contains(p.L("#connhint").Text(), com), "the hint names the port that was picked")
-
-	p.L("#connect").Click()
-	p.WaitSel("#afterconn.live", 0)
-	check(true, "connecting opens the rest of the page")
-	check(p.L("#ctlport").Disabled() && p.L("#disconnect").Visible() && strings.Contains(p.L("#menus").Attr("class"), "live"),
-		"connected: the dropdown is locked, 断开 is offered, the test types open up")
+	if isSim(com) {
+		// It is invented data: after every real port, only 「没登记」 below it.
+		check(pick == len(texts)-2, "the simulated board comes after every real port", show(texts))
+	}
+	opts.Nth(pick).Click()
+	if try(func() { p.WaitSel("#afterconn.live", 20000) }) != nil {
+		check(false, "registering the control port connects by itself")
+		return
+	}
+	check(true, "registering the control port connects by itself")
+	p.Eval("() => closeModal()")
+	ctl := p.L("#ctlrow").Text()
+	name := com
+	if isSim(com) {
+		name = "模拟板"
+	}
+	check(strings.Contains(ctl, name) && strings.Contains(ctl, "UID"), "step one shows the registered port and the board on it", ctl)
 	status := p.L("#status").Text()
 	check(strings.Contains(strings.ToLower(status), "porttool") || regexp.MustCompile(`\d+\.\d+\.\d+`).MatchString(status),
 		"the header shows the firmware version the board reported", status)
@@ -112,14 +122,12 @@ func runChecks(p *Page, com string) {
 	checkLiveCards(p, com)
 	// Last: it rewires the simulated adapters and runs matching three times.
 	checkAdapterMatch(p, com)
-	// After every other check: it starts a run, whose sessions would show in the logs they read.
-	checkRDAgingRunLock(p)
 
 	// ---------------------------------------------------- disconnect
-	Section("disconnecting")
-	p.L("#disconnect").Click()
-	p.WaitSel("#afterconn:not(.live)", 0)
-	check(true, "disconnecting gates the page again")
+	Section("clearing the registration")
+	p.Eval("api('/api/stations/set', {n: 1, control: ''})")
+	ok := try(func() { p.WaitSel("#afterconn:not(.live)", 20000) }) == nil
+	check(ok, "clearing the control port in the registration drops the board and gates the page again")
 }
 
 func checkLogPane(p *Page) {
@@ -223,16 +231,11 @@ func checkWhichLimits(p *Page) {
 	check(p.L("#itemcards input[data-limit]").Count() == 0, "no limit is editable on the item cards")
 }
 
-// openSub opens sub-test k (decision 125) under its type menu: 研发老化测试
-// for aging / agingpc (decision 187), else 工装完整测试; then its tile.
+// openSub opens sub-test k (decision 125) under 工装完整测试, then its tile.
 func openSub(p *Page, k string) {
 	tile := `#subtiles .subtile[data-sub="` + k + `"]`
 	if p.L(tile).Count() == 0 {
-		menu := "full"
-		if k == "aging" || k == "agingpc" {
-			menu = "rdaging"
-		}
-		p.L(`.mi[data-menu="` + menu + `"]`).Click()
+		p.View("full")
 		p.WaitSel(tile, 0)
 	}
 	p.L(tile + " .nm").Click()
@@ -268,17 +271,13 @@ func eqStrings(a []string, b ...string) bool { return slices.Equal(a, b) }
 func checkFiveBlocks(p *Page) {
 	Section("layout (decision 128)")
 	check(p.L(".tab").Count() == 0, "no tab bar for the main flow")
-	for _, b := range [][2]string{{"#connzone", "connection"}, {"#menus", "test types"},
+	for _, b := range [][2]string{{"#connzone", "wiring"},
 		{"#mid", "port list"}, {"#right", "test items"}, {"#logcol", "log"}} {
 		check(p.L(b[0]).Visible(), "R&D: the "+b[1]+" block is on screen")
 	}
 	check(!p.L("#statcol").Visible(), "R&D: no run-status column")
-	check(eqStrings(attrs(p.L("#typemenu .mi"), "data-menu"), "rd", "rdaging", "full") && p.L(`.mi[data-menu="ref"]`).Count() == 0,
-		"three test types, R&D, R&D aging and the full fixture test; no separate 制作标准机 (decisions 128, 187)")
-	// The test types sit at the bottom of the left column, under the other connections.
-	mb, rb, cb := p.L("#menus").Box(), p.L("#connrows").Box(), p.L("#connzone").Box()
-	check(mb != nil && rb != nil && cb != nil && mb.Y >= rb.Y+rb.H-1 && cb.X <= mb.X && mb.X < cb.X+cb.W,
-		"the test types sit in the left column, under the other connections", show([]any{mb, rb, cb}))
+	// The test type is the top bar's chip; the fixture test is the big screen (C.3.6 「顶栏」).
+	check(p.L("#typemenu").Count() == 0 && p.L("#tolinelink").Count() == 0, "no test-type menu and no link back: the type is the top bar's chip")
 
 	// The connect-time address probe runs its own eth session (C.3.6 「网口」); a
 	// real board's reply can land after the clear, so it is let finish first.
@@ -287,19 +286,17 @@ func checkFiveBlocks(p *Page) {
 	})
 	p.Wait(300)
 	p.L("#clear").Click()
-	for _, k := range []string{"rd", "rdaging", "full", "rd"} {
-		p.L(`.mi[data-menu="` + k + `"]`).Click()
-		p.Wait(150)
-		check(strings.Contains(p.L(`.mi[data-menu="`+k+`"]`).Attr("class"), "cur"), "clicking "+k+" marks it as the current menu")
+	for _, k := range []string{"rd", "full", "rd"} {
+		p.View(k)
+		check(p.Eval("view").S() == k || (k == "full" && p.Eval("isFullSub(view)").B()), "switching to "+k+" shows it")
 	}
-	for _, k := range []string{"func", "safety", "user", "aging", "agingpc"} {
+	for _, k := range []string{"func", "safety", "user"} {
 		openSub(p, k)
-		menu := map[bool]string{true: "rdaging", false: "full"}[k == "aging" || k == "agingpc"]
 		check(strings.Contains(p.L(`#subtiles .subtile[data-sub="`+k+`"]`).Attr("class"), "cur") &&
-			strings.Contains(p.L(`.mi[data-menu="`+menu+`"]`).Attr("class"), "cur"),
-			"clicking the "+k+" tile shows it, under its menu "+menu)
+			p.Eval("isFullSub(view)").B(),
+			"clicking the "+k+" tile shows it, under its menu full")
 	}
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	p.WaitSel(".lport", 0)
 	rows := p.L(".lport:not(.dim)")
 	for i := 0; i < rows.Count(); i++ {
@@ -353,7 +350,7 @@ func checkFiveBlocks(p *Page) {
 	ids = attrs(p.L("#itemcards .item"), "data-item")
 	check(eqStrings(ids, "can.peer"), "the functional test offers only the production CAN item", show(ids))
 	checkSubTestPage(p)
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 
 	// Decision 133: R&D is done by hand; the DI card has no data source.
 	p.L(lport("din")).Click()
@@ -421,7 +418,7 @@ func checkSubTestPage(p *Page) {
 	check(starts.Count() == 1 && starts.First().Attr("id") == "shellstart" && p.L("#shellstart").Text() == "配置完成，开始测试",
 		"the only start button is 「配置完成，开始测试」 on top", strings.Join(st, " | "))
 	check(eqStrings(attrs(p.L("#subtiles .subtile"), "data-sub"), "func", "safety", "user"),
-		"layer 2 has the three sub-tests side by side; aging is under R&D aging (decision 187)")
+		"layer 2 has the three sub-tests side by side (decision 191)")
 	opts := func(k string) []string {
 		return p.Eval("k => [...document.querySelectorAll(`#subtiles select[data-subdur='${k}'] option`)].map(o => o.textContent)", k).Strings()
 	}
@@ -430,11 +427,6 @@ func checkSubTestPage(p *Page) {
 	check(len(opts("func")) == 0 && only.Count() == 1 && only.Text() == "单次",
 		"functional shows 单次 with no time picker (decision 139)", show(opts("func")))
 	check(eqStrings(opts("user"), "单次", "10 分钟", "30 分钟", "1 小时"), "user-level offers once / 10 min / 30 min / 1 h", show(opts("user")))
-	openSub(p, "aging")
-	check(eqStrings(attrs(p.L("#subtiles .subtile"), "data-sub"), "aging", "agingpc"), "R&D aging has its two side by side (decision 187)")
-	for _, k := range []string{"aging", "agingpc"} {
-		check(eqStrings(opts(k), "1 小时", "2 小时", "4 小时", "8 小时"), k+" offers 1 / 2 / 4 / 8 h", show(opts(k)))
-	}
 	openSub(p, "func")
 	check(p.L(`#subtiles select[data-subdur="safety"]`).Count() == 0 &&
 		strings.Contains(p.L(`#subtiles .subtile[data-sub="safety"]`).Text(), "扫码"),
@@ -468,7 +460,7 @@ var readItemRe = regexp.MustCompile(`^(ain\.read|aout\.out)\d$`)
 func checkCfgItemNotes(p *Page) {
 	Section("sub-test cards say what, peer, criteria and how each item runs")
 	order := []string{"eth", "usb", "sd", "sdram", "din", "ain", "aout", "rs232", "rs485", "can", "dout", "relay", "temp"}
-	for _, stage := range []string{"func", "aging", "user"} {
+	for _, stage := range []string{"func", "user"} {
 		openSub(p, stage)
 		for _, port := range order {
 			row := p.L(lport(port))
@@ -584,32 +576,14 @@ func checkCfgItemNotes(p *Page) {
 	p.Wait(250)
 	check(p.L(`#itemcards [data-cfginfo="relay.cycle"]`).Count() == 1, "relays: what, criterion and how it runs under the card")
 
-	openSub(p, "aging")
-	p.L(lport("eth")).Click()
-	p.Wait(250)
-	check(strings.Contains(run("eth.xfer"), "同时跑满") && strings.Contains(run("eth.link"), "在开头跑一遍"),
-		"aging: ETH data runs for the time, the link check once", run("eth.xfer"))
-	check(!strings.Contains(p.L("#itemcards").Text(), "只测一次"), "aging: no 「只测一次」 heading, badge or hint (decision 151)")
-	p.L(lport("aout")).Click()
-	p.Wait(250)
-	check(strings.Contains(run("aout.load"), "一直输出") && strings.Contains(run("aout.load"), "量一次并判"),
-		"aging: the AO load holds its current to the end and is read and judged once then (decision 128)", run("aout.load"))
-	crit := p.L(`#itemcards [data-cfginfo="aout.load"] table.crit`)
-	critText := ""
-	if crit.Count() > 0 {
-		critText = crit.Text()
-	} else {
-		critText = cut(p.L(`#itemcards [data-cfginfo="aout.load"]`).Text(), 200)
-	}
-	check(crit.Count() == 1 && crit.L("tr").Count() >= 3, "the AO load lists its criteria, one per channel, like AO output", critText)
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 }
 
 // checkRdHasCfgItems: R&D is the fullest test type: an item a configuration
 // offers is on its R&D card too, with the same parameters.
 func checkRdHasCfgItems(p *Page) {
 	Section("R&D has every configuration item, with the same parameters")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	p.L(lport("aout")).Click()
 	p.Wait(500)
 	// Decisions 137, 138: in R&D the AO load is part of 实测, output from its one 开始 / 停止.
@@ -658,7 +632,7 @@ func checkSharedRange(p *Page) {
 		allOver = allOver && err == nil && f > 20
 	}
 	check(got != "4, 12, 18" && allOver, "changing AI2 to voltage puts its test points back to the voltage defaults", got)
-	openSub(p, "aging")
+	openSub(p, "user")
 	p.L(lport("ain")).Click()
 	p.Wait(300)
 	other := p.L(`#itemcards select[data-cfgrange="AI2"]`)
@@ -666,7 +640,7 @@ func checkSharedRange(p *Page) {
 	if other.Count() > 0 {
 		otherText = other.Value()
 	}
-	check(other.Count() == 1 && other.Value() == "v", "the aging page shows the same AI2 range", otherText)
+	check(other.Count() == 1 && other.Value() == "v", "the user-level page shows the same AI2 range", otherText)
 	other.Select("i")
 	p.Wait(500)
 	openSub(p, "func")
@@ -678,19 +652,26 @@ func checkSharedRange(p *Page) {
 // (PORTTOOL-FLOW.md C.3.6 "连接区").
 func checkConnZone(p *Page) {
 	Section("connection block")
-	check(p.L("#connzone select#ctlport").Count() == 1 && p.L("#connzone #boardclock").Count() == 1,
-		"the control port chooser and the board time sit in the connection block")
+	check(p.L("#connzone #ctlrow .crow").Count() == 1 && p.L("#connzone #boardclock").Count() == 1,
+		"step one is one row, the registered control port, with the board time under it")
+	seen := p.L("#seenbox").Text()
+	check(strings.Contains(seen, "电脑上看到的板子") && p.L("#seenbox .seenrow").Count() >= 1,
+		"the column starts with the boards this PC sees, the connected one among them", seen)
 	p.WaitSel("#connrows .crow", 0)
 	keys := attrs(p.L("#connrows .crow"), "data-conn")
-	check(eqStrings(keys, "usb", "eth", "rs232", "rs485", "can", "ref", "knxusb", "stlink", "instrument"),
-		"USB, network, RS232 / RS485 / CAN, reference board (no adapter matching row, decision 170), KNX USB interface, ST-Link, instrument rows", show(keys))
+	check(eqStrings(keys, "usb", "eth", "rs485", "can", "ref", "knxusb", "stlink", "instrument"),
+		"USB, network, RS485 / CAN, reference board, KNX USB interface, ST-Link, instrument rows; no RS232 row, it is the control port", show(keys))
 	// Decision 163: grouped by machine - the board under test, the reference board, this PC.
 	check(eqStrings(attrs(p.L("#connrows .cgroup"), "data-cgroup"), "dut", "ref", "pc"),
 		"the rows are grouped: board under test, reference board, this PC's devices")
-	check(p.L("#connrows .cghead").Count() == 1 && p.L("#connrows .cgroup[data-cgroup=dut] .cghead select[data-connboard]").Count() == 1,
-		"only the board under test has a header, with a dropdown of the boards seen")
-	check(p.L(`.crow[data-conn="instrument"] select`).Disabled(), "the instrument row is reserved and cannot be picked")
-	check(p.L(`.crow[data-conn="ref"] button`).Count() >= 1, "the reference board row can be connected from here")
+	heads := p.L("#connrows .cghead")
+	var names []string
+	for i := 0; i < heads.Count(); i++ {
+		names = append(names, heads.Nth(i).Text())
+	}
+	check(eqStrings(names, "被测板", "标准机", "电脑上的设备"), "each group is headed by its name", show(names))
+	check(p.L(`#connrows select[data-pick]`).Count() == 0, "the rows show what the registration chose: no port dropdowns")
+	check(strings.Contains(p.L(`.crow[data-conn="instrument"]`).Text(), "预留"), "the instrument row is reserved")
 
 	clock := p.L("#boardclock")
 	_ = try(func() {
@@ -709,18 +690,21 @@ func checkConnZone(p *Page) {
 	ver := p.L("#toolver").Text()
 	check(regexp.MustCompile(`上位机 \d+\.\d+\.\d+`).MatchString(ver), "the header names the panel's own version (decision 112)", ver)
 	// The 网口 row finds the board's address without a network test; the
-	// simulated board's is this PC's 127.0.0.1 and says so (C.3.6 「网口」).
+	// simulated board's is this PC's 127.0.0.1 and says so on hover (C.3.6 「网口」,
+	// short values only, decision 190).
 	if realBoard {
 		ok := try(func() {
 			p.WaitFunc(`() => { const e = document.querySelector('#connrows .crow[data-conn="eth"] [data-ethip]');`+
 				` return !!e && /^\d+\.\d+\.\d+\.\d+$/.test(e.dataset.ethip) && e.dataset.ethip !== '127.0.0.1'; }`, nil, 20000)
 		}) == nil
-		eth := p.L(`#connrows .crow[data-conn="eth"]`).Text()
+		eth := p.L(`#connrows .crow[data-conn="eth"]`).Attr("title")
 		check(ok && !strings.Contains(eth, "模拟板"), "the network row shows the board's own address right after connecting", eth)
 	} else {
 		ok := try(func() { p.WaitSel(`#connrows .crow[data-conn="eth"] [data-ethip="127.0.0.1"]`, 20000) }) == nil
-		eth := p.L(`#connrows .crow[data-conn="eth"]`).Text()
-		check(ok && strings.Contains(eth, "模拟板"), "the network row shows the board's address right after connecting", eth)
+		row := p.L(`#connrows .crow[data-conn="eth"]`)
+		eth, tip := row.Text(), row.Attr("title")
+		check(ok && strings.Contains(eth, "127.0.0.1") && !strings.Contains(eth, ":") && strings.Contains(tip, "模拟板"),
+			"the network row shows the board's address right after connecting, the port and 模拟板 on hover", eth+" | "+tip)
 	}
 
 	log := p.L("#logcol").Box()

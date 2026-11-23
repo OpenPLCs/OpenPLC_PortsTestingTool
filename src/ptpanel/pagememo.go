@@ -36,8 +36,9 @@ type pageMemo map[string]map[string]string
 
 var memoSections = map[string]bool{"rd": true, "full": true, "ui": true}
 
-// The connection column's width in px, as the page lets it be dragged.
+// The connection and R&D log column widths in px, as the page lets them be dragged.
 const leftWMin, leftWMax = 200, 640
+const logWMin, logWMax = 240, 900
 
 func pageMemoPath() string {
 	if PageMemoFile != "" {
@@ -168,6 +169,11 @@ func memoCellBad(section, key, v string, all map[string]string, caps ptproto.Cap
 		case "leftw":
 			if x, err := strconv.Atoi(v); err != nil || x < leftWMin || x > leftWMax {
 				return bad(leftWMin, leftWMax)
+			}
+			return nil
+		case "logw":
+			if x, err := strconv.Atoi(v); err != nil || x < logWMin || x > logWMax {
+				return bad(logWMin, logWMax)
 			}
 			return nil
 		case "bt":

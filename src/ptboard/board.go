@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -74,7 +75,8 @@ type Event struct {
 
 // Board is a live connection. Safe for concurrent use.
 type Board struct {
-	rw io.ReadWriteCloser
+	rw       io.ReadWriteCloser
+	readDone chan struct{} // closed when readLoop has returned
 
 	mu       sync.Mutex
 	pending  *request
@@ -108,6 +110,7 @@ const keepaliveEvery = 500 * time.Millisecond
 type request struct {
 	lines []string
 	done  func(lines []string) bool
+	idle  bool // the reply gives no count and ends on idleGap (ExpectMany)
 	ch    chan []string
 	timer *time.Timer
 }
@@ -119,10 +122,11 @@ func New(rw io.ReadWriteCloser, ringCap int) *Board {
 		ringCap = 20000
 	}
 	b := &Board{
-		rw:      rw,
-		subs:    map[int]chan Event{},
-		ringCap: ringCap,
-		lost:    make(chan struct{}),
+		rw:       rw,
+		subs:     map[int]chan Event{},
+		ringCap:  ringCap,
+		lost:     make(chan struct{}),
+		readDone: make(chan struct{}),
 	}
 	go b.readLoop()
 	go b.keepalive()
@@ -178,6 +182,7 @@ func (b *Board) followLine(baud int) error {
 }
 
 func (b *Board) readLoop() {
+	defer close(b.readDone)
 	// SteadyReader, not the port directly: an idle port answers with zero
 	// bytes and no error, and a hundred of those make bufio give up.
 	sc := bufio.NewScanner(serialx.SteadyReader{R: b.rw})
@@ -277,7 +282,9 @@ func (r *request) stop() {
 // resetIdle restarts the "no more lines are coming" clock, for replies whose
 // length nothing declares.
 func (r *request) resetIdle(b *Board) {
-	if r.timer == nil {
+	// A reply that declares its length (pt.caps) ends on its count or the
+	// overall timeout: the board may pause longer than idleGap between lines.
+	if r.timer == nil || !r.idle {
 		return
 	}
 	r.timer.Reset(idleGap)
@@ -292,18 +299,35 @@ func ExpectOne(lines []string) bool { return len(lines) >= 1 }
 // ExpectCaps reads the count out of the header pt.caps sends, so the reply
 // ends exactly where the firmware says it does rather than on a guess.
 func ExpectCaps(lines []string) bool {
-	if len(lines) == 0 {
+	i := capsStart(lines)
+	if i < 0 {
 		return false
 	}
-	kind, body := ptproto.Classify(lines[0])
+	kind, body := ptproto.Classify(lines[i])
 	if kind != ptproto.LineOK {
 		return true // an ERR or something odd: do not wait for more
 	}
-	n, ok := ptproto.GetU32(ptproto.Fields(body), "lines")
-	if !ok {
-		return true
+	n, _ := ptproto.GetU32(ptproto.Fields(body), "lines")
+	return len(lines)-i >= int(n)+1
+}
+
+// capsStart is where the pt.caps reply begins: OK lines before its header are
+// late replies to an earlier command (a pt.run match the last connection
+// started finishes 3 s later), and the protocol has no request ids. -1: not yet.
+func capsStart(lines []string) int {
+	for i, l := range lines {
+		kind, body := ptproto.Classify(l)
+		if kind != ptproto.LineOK {
+			return i
+		}
+		f := ptproto.Fields(body)
+		_, v := ptproto.Get(f, "porttool")
+		_, n := ptproto.GetU32(f, "lines")
+		if v && n {
+			return i
+		}
 	}
-	return len(lines) >= int(n)+1
+	return -1
 }
 
 // ExpectMany never completes on its own, so the reply ends on the idle gap.
@@ -348,7 +372,8 @@ func (b *Board) Send(cmd string, expect Expect, timeout time.Duration) ([]string
 	b.sendLock.Lock()
 	defer b.sendLock.Unlock()
 
-	req := &request{done: expect, ch: make(chan []string, 1)}
+	req := &request{done: expect, ch: make(chan []string, 1),
+		idle: reflect.ValueOf(expect).Pointer() == reflect.ValueOf(ExpectMany).Pointer()}
 
 	b.mu.Lock()
 	if b.closed || b.readErr != nil {
@@ -428,6 +453,9 @@ func (b *Board) Caps() (ptproto.Caps, error) {
 	if err != nil {
 		return ptproto.Caps{}, err
 	}
+	if i := capsStart(lines); i > 0 {
+		lines = lines[i:]
+	}
 	return ptproto.ParseCaps(lines)
 }
 
@@ -497,5 +525,12 @@ func (b *Board) Close() error {
 		close(c)
 	}
 	b.mu.Unlock()
-	return b.rw.Close()
+	err := b.rw.Close()
+	// Windows keeps the port busy while a read is still pending: wait for the
+	// reader, so the port can be opened again at once (reads time out in 100 ms).
+	select {
+	case <-b.readDone:
+	case <-time.After(time.Second):
+	}
+	return err
 }

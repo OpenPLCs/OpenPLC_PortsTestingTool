@@ -1,8 +1,8 @@
 package ptpanel
 
-// The four configurations - functional (2), user-level (6), R&D aging with the
-// reference board (4) and with the PC (7) - and the executor that runs them.
-// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.6 "四种配置"; decisions 97, 102, 187.
+// The configurations - functional (2), the line's aging and user-level (6) -
+// and the executor that runs them.
+// $PROD/docs/modules/M4/PORTTOOL-FLOW.md C.3.6; decisions 97, 102, 190.
 
 import (
 	"context"
@@ -19,9 +19,9 @@ import (
 	"PortTool/src/ptitems"
 	"PortTool/src/ptlib"
 	"PortTool/src/ptproto"
-	"PortTool/src/refboard"
 	"PortTool/src/ptreport"
 	"PortTool/src/ptstages"
+	"PortTool/src/refboard"
 )
 
 // StageCfgFile overrides where the configurations are kept; tests set it.
@@ -50,9 +50,8 @@ type stageCfg struct {
 // stageCfgs is porttool_stagecfg.json.
 type stageCfgs struct {
 	Func  stageCfg `json:"func"`
-	Aging   stageCfg `json:"aging"`
-	AgingPC stageCfg `json:"agingpc"`
-	User    stageCfg `json:"user"`
+	Aging stageCfg `json:"aging"`
+	User  stageCfg `json:"user"`
 	// RefUnused is the connection zone's "reference board: unused".
 	RefUnused bool `json:"ref_unused"`
 	// Ranges are the AI / AO ranges all three test the board under test on,
@@ -61,10 +60,10 @@ type stageCfgs struct {
 }
 
 // cfgStages are the configurable test types, and their default durations (the prototype's).
-var cfgStages = map[ptitems.Stage]string{ptitems.Func: "once", ptitems.Aging: "4", ptitems.AgingPC: "4", ptitems.User: "once"}
+var cfgStages = map[ptitems.Stage]string{ptitems.Func: "once", ptitems.Aging: "4", ptitems.User: "once"}
 
 // cfgStageList is the configurations in a fixed order.
-var cfgStageList = []ptitems.Stage{ptitems.Func, ptitems.Aging, ptitems.AgingPC, ptitems.User}
+var cfgStageList = []ptitems.Stage{ptitems.Func, ptitems.Aging, ptitems.User}
 
 // durations are what R&D's timed group offers; forever is -1.
 var durations = map[string]time.Duration{
@@ -76,9 +75,8 @@ var durations = map[string]time.Duration{
 // test runs once only (decision 139).
 var stageDurations = map[ptitems.Stage][]string{
 	ptitems.Func:  {"once"},
-	ptitems.Aging:   {"1", "2", "4", "8"},
-	ptitems.AgingPC: {"1", "2", "4", "8"},
-	ptitems.User:    {"once", "10m", "30m", "1"},
+	ptitems.Aging: {"1", "2", "4", "8"},
+	ptitems.User:  {"once", "10m", "30m", "1"},
 }
 
 var cfgDurations = map[string]time.Duration{
@@ -101,8 +99,6 @@ func (f *stageCfgs) of(st ptitems.Stage) *stageCfg {
 		return &f.Func
 	case ptitems.Aging:
 		return &f.Aging
-	case ptitems.AgingPC:
-		return &f.AgingPC
 	case ptitems.User:
 		return &f.User
 	}
@@ -117,6 +113,26 @@ func stageCfgPath() string {
 		return filepath.Join(filepath.Dir(exe), "porttool_stagecfg.json")
 	}
 	return "porttool_stagecfg.json"
+}
+
+// cfgs is the configuration this station's steps run on: the template version
+// its board started with (set by the line), else the file being edited.
+func (s *Server) cfgs() stageCfgs {
+	s.tplMu.Lock()
+	o := s.tplCfg
+	s.tplMu.Unlock()
+	if o != nil {
+		return o.clone()
+	}
+	return loadStageCfgs()
+}
+
+// clone is a deep copy, so a caller's edits never reach the shared one.
+func (f stageCfgs) clone() stageCfgs {
+	var c stageCfgs
+	b, _ := json.Marshal(f)
+	_ = json.Unmarshal(b, &c)
+	return c
 }
 
 // loadStageCfgs reads the file; missing or unreadable means every default.
@@ -203,10 +219,6 @@ func (c stageCfg) on(st ptitems.Stage, it ptitems.Item, refUnused bool) bool {
 	if ic, ok := c.Items[it.ID]; ok && ic.On != nil {
 		return *ic.On
 	}
-	// R&D aging with the PC: the one-way items wait until an instrument is wired (decision 187).
-	if st == ptitems.AgingPC && it.Offers(ptitems.PeerExt) {
-		return false
-	}
 	// The reference board is only one test method: unused, what needs it starts
 	// unticked instead of greying the step (decision 188).
 	if refUnused && st != ptitems.Aging && fixedRef(it) && !it.Offers(ptitems.PeerExt) {
@@ -260,7 +272,7 @@ func (c stageCfg) peer(st ptitems.Stage, it ptitems.Item, refUnused, refConnecte
 
 // fixedRef says an item runs against the reference board in every
 // configuration, never a person: the fixture tests are unattended (decisions 129, 130).
-// The one-way items of R&D aging with the PC have only an outside instrument (decision 187).
+// The one-way items have only an outside instrument (decision 188).
 func fixedRef(it ptitems.Item) bool {
 	if onlyExt(it) {
 		return false
@@ -342,7 +354,7 @@ func (c stageCfg) check(st ptitems.Stage, caps ptproto.Caps, hasCaps bool) *msg 
 		}
 		if ic.Peer != "" {
 			allowed := false
-			for _, p := range it.Peers {
+			for _, p := range it.ConfigPeers() {
 				allowed = allowed || p == ic.Peer
 			}
 			if !allowed {
@@ -445,10 +457,7 @@ func (c stageCfg) picks(st ptitems.Stage, caps ptproto.Caps, refUnused, refConne
 			continue
 		}
 		p := ItemPick{Item: it, Peer: c.peer(st, it, refUnused, refConnected), Params: c.Items[it.ID].Params, Points: c.Items[it.ID].Points}
-		// R&D aging with the PC never uses the reference board (decision 187).
-		if st == ptitems.AgingPC {
-			p.Peer = ptitems.AgingPCPeer(it)
-		} else if p.Peer == ptitems.PeerRef && refUnused {
+		if p.Peer == ptitems.PeerRef && refUnused {
 			var note msg
 			p.Peer, note = substitute(it)
 			p.Note = note.English()
@@ -460,7 +469,7 @@ func (c stageCfg) picks(st ptitems.Stage, caps ptproto.Caps, refUnused, refConne
 
 func (s *Server) stageCfgJSON() map[string]any {
 	f := loadStageCfgs()
-	out := map[string]any{"func": f.Func, "aging": f.Aging, "agingpc": f.AgingPC, "user": f.User, "ref_unused": f.RefUnused,
+	out := map[string]any{"func": f.Func, "aging": f.Aging, "user": f.User, "ref_unused": f.RefUnused,
 		"ranges": f.Ranges, "channels": chanInfos(f.Ranges)}
 	// What the reference board as registered cannot test, per item (decisions 134, 135).
 	if !f.RefUnused && s.refBoard() != nil {
@@ -500,7 +509,7 @@ func (s *Server) stageCfgJSON() map[string]any {
 func (s *Server) handleStageCfg(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		var body struct {
-			Stage     ptitems.Stage `json:"stage"`
+			Stage     ptitems.Stage   `json:"stage"`
 			Cfg       *stageCfg       `json:"cfg"`
 			RefUnused *bool           `json:"ref_unused"`
 			Ranges    calstore.Ranges `json:"ranges"`
@@ -580,7 +589,7 @@ func (s *Server) configStep(st ptitems.Stage) ptstages.Func {
 		if s.RunItems == nil {
 			return fail("the item runner is not part of this build")
 		}
-		f := loadStageCfgs()
+		f := s.cfgs()
 		c := *f.of(st)
 		d := cfgDurations[c.Duration]
 		s.mu.Lock()

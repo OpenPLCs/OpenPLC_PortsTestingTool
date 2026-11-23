@@ -43,18 +43,21 @@ header #guidelink{font-size:12.5px;color:var(--accent,#1a73e8)}
 #status b{color:var(--ok)}
 #status.bad b{color:var(--err)}
 
-/* Layout (decision 128, PORTTOOL-FLOW.md C.3.6): connections and test types
-   on the left (drag its edge, decision 112). R&D: ports | cards | log. Full
-   test: sub-tests over ports | cards in the middle, run status on the right. */
+/* Layout (decision 128, PORTTOOL-FLOW.md C.3.6): the wiring on the left (drag
+   its edge, decision 112), then ports | cards | log, the log's edge dragged
+   too (decision 190). The full-test grid stays for the configurations. */
 main.shell{display:grid;gap:1px;background:var(--line);height:calc(100vh - 53px);grid-template-rows:auto 1fr}
-main.shell.rd{grid-template-columns:var(--leftw,320px) 6px 230px minmax(480px,1fr) minmax(320px,26%);
-  grid-template-areas:"conn grip mid head log" "conn grip mid right log"}
+main.shell.rd{grid-template-columns:var(--leftw,320px) 6px 230px minmax(480px,1fr) 6px var(--logw,minmax(320px,26%));
+  grid-template-areas:"conn grip mid head lgrip log" "conn grip mid right lgrip log"}
 main.shell.full{grid-template-columns:var(--leftw,320px) 6px 210px minmax(420px,1fr) 360px;
   grid-template-areas:"conn grip head head stat" "conn grip mid right stat"}
 main.shell>section,#afterconn>section,#afterconn>nav{background:var(--bg);overflow-y:auto;padding:12px 14px;min-height:0}
 #connzone{grid-area:conn}
-#leftgrip{grid-area:grip;cursor:col-resize;background:var(--line);touch-action:none}
-#leftgrip:hover,#leftgrip.drag{background:#9aa3b5}
+#leftgrip{grid-area:grip}
+#loggrip{grid-area:lgrip}
+#leftgrip,#loggrip{cursor:col-resize;background:var(--line);touch-action:none}
+#leftgrip:hover,#leftgrip.drag,#loggrip:hover,#loggrip.drag{background:#9aa3b5}
+main.shell.full #loggrip{display:none}
 #mid{grid-area:mid;background:#fbfbfd}
 #rhead{grid-area:head;max-height:60vh}
 main.shell.rd #rhead{padding-bottom:0}
@@ -65,14 +68,23 @@ main.shell.rd #right{padding-top:0}
 main.shell.rd #statcol{display:none}
 main.shell.full #logcol{display:none}
 #afterconn{display:contents}
+/* The big screen's template window: only the configuration (C.3.10). */
+body.embed-template>header,body.embed-template #connzone,body.embed-template #leftgrip,body.embed-template #statcol,
+  body.embed-template #loggrip,body.embed-template #logcol{display:none}
+body.embed-template main.shell{height:100vh;grid-template-columns:180px minmax(420px,1fr);grid-template-areas:"head head" "mid right"}
+body.embed-template #afterconn>*{opacity:1;pointer-events:auto}
+.tplblocks{display:grid;grid-template-columns:repeat(5,minmax(118px,1fr));gap:8px}
+.tplblk{background:#fff;border:1px solid var(--line);border-radius:6px;padding:7px 9px;cursor:pointer;font-size:13px}
+.tplblk.cur{border-color:var(--accent);background:var(--accent-bg)}
+.tplblk b{display:block;font-size:14px}
+.tplcard{background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 11px;margin-bottom:8px}
+.tplcard .gr{display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;font-size:13px;align-items:center;margin-top:4px}
+.tplcard label.off{opacity:.55}
+.tplcard .why{color:var(--ink3);font-size:12px}
 #afterconn:not(.live)>*{opacity:.35;pointer-events:none}
-#menus{margin-top:14px;padding-top:10px;border-top:2px solid var(--ink3)}
 @media(max-width:1100px){main.shell.rd,main.shell.full{grid-template-columns:1fr;grid-template-areas:"conn" "head" "mid" "right" "stat" "log";height:auto}
-  #leftgrip{display:none}}
+  #leftgrip,#loggrip{display:none}}
 
-/* Step one: the control port as a dropdown, the simulated board last. */
-#connbox .connrow{display:flex;gap:6px;align-items:center}
-#ctlport{flex:1;min-width:0}
 
 /* Full test, right column: a fixed-height status box (user 2026-10-14), then results and log. */
 #runstat{height:318px;flex:none;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:8px}
@@ -125,13 +137,6 @@ main.shell.full #logcol{display:none}
 #itemcards.locked input,#itemcards.locked select,#itemcards.locked button,#itemcards.locked textarea{pointer-events:none;opacity:.6}
 #itemcards .hl{border-color:var(--err)!important;box-shadow:0 0 0 2px var(--err-bg)}
 
-/* Left menus: they only choose what is shown (decision 97). */
-.mi{display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border-radius:6px;cursor:pointer;
-  border:1px solid transparent;margin-bottom:2px}
-.mi:hover{background:var(--line2)}
-.mi.cur{background:var(--accent-bg);border-color:var(--accent)}
-.mi .n{font-weight:600;font-size:13px}
-.mi .d{font-size:11.5px;color:var(--ink3);line-height:1.45}
 
 /* Middle: the catalogue's ports, one picked at a time. */
 .lport{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:5px;cursor:pointer}
@@ -152,6 +157,8 @@ main.shell.full #logcol{display:none}
 /* R&D port page header: name and terminals | stats, last test, log; the right half wraps below when narrow */
 #rtop .phl{flex:0 1 auto;max-width:40%;align-self:flex-start}
 #rtop .phl .sub{margin-left:8px}
+#rtop .phl .wirebox{margin-left:12px;display:inline-flex;gap:6px;align-items:center}
+#itemcards .wirehow{margin:0 0 8px 2px}
 #rtop .phr{flex:1 1 240px;min-width:0;border-left:1px solid var(--line);padding-left:16px;align-self:stretch}
 #rtop .phr .why{margin-bottom:6px;color:var(--ink2)}
 @media (max-width:760px){#rtop .phr{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:8px}}
@@ -237,34 +244,43 @@ table.crit tr.bad td{color:var(--err)}
 .l.echo{border-left-color:var(--off);color:var(--ink3)}
 .l.panel{border-left-color:#2f7a68;color:#2f7a68}
 
-/* Left column: pick the control port, then everything else. */
+/* Left column: the boards seen, the control port, then everything else; a
+   click opens station 1's wiring registration (connzone.js). */
+#connzone{cursor:pointer}
+#connzone button,#connzone select{cursor:default}
+#seenbox{padding:0 0 8px;margin-bottom:8px;border-bottom:1px solid var(--line2)}
+.seenrow{display:grid;grid-template-columns:10px max-content max-content 1fr auto;gap:6px;align-items:center;font-size:12px;padding:2px 0}
+.seenrow .dot{width:10px;height:10px;border-radius:50%;background:var(--ink3);opacity:.45}
+.seenrow .dot.ok{background:var(--ok);opacity:1}
+.seenrow .bad{color:var(--err)}
+.seenrow button{padding:1px 8px;font-size:11.5px}
 #connbox{padding:0 0 10px;margin-bottom:10px;border-bottom:2px solid var(--ink3)}
 .step{font:600 12px var(--sans);color:var(--ink2);margin:0 0 7px;letter-spacing:.3px}
 /* The three step headings stand out from the other headings (decision 170). */
 .step.stepn{font:700 14px var(--sans);color:var(--ink)}
-.connrow{display:flex;gap:6px;margin-top:7px}
 /* Connection block rows (js/connzone.js). */
 #boardclock{margin-top:4px}
 #boardclock.bad{color:var(--err)}
 #connrows{display:flex;flex-direction:column;gap:3px}
 .crow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:12px}
-.crow .cl{width:64px;color:var(--ink2)}
-.crow .cv{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:4px;min-width:0}
-.crow .cv select{max-width:120px;font-size:11.5px}
-.crow .cv button{padding:1px 8px;font-size:11.5px}
+/* One line per row, short values only; the full text is on hover and what
+   does not fit ends in an ellipsis (decision 190). */
+.crow .cl{min-width:64px;flex:none;white-space:nowrap;color:var(--ink2)}
+.crow .cv{flex:1;display:flex;flex-wrap:nowrap;align-items:center;gap:4px;min-width:0;overflow:hidden}
+.crow .cv .mono{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crow .cv select{max-width:120px;min-width:0;flex:0 1 auto;font-size:11.5px}
+.crow .cv button{flex:none;padding:1px 8px;font-size:11.5px;white-space:nowrap}
 /* Green connected, gray not; the reason is on hover (decision 170). */
-.crow .dot{width:10px;height:10px;border-radius:50%;background:var(--ink3);opacity:.45}
+.crow .dot{order:-1;width:10px;height:10px;border-radius:50%;background:var(--ink3);opacity:.45}
 .crow .dot.ok{background:var(--ok);opacity:1}
 .crow .ccount{flex-basis:100%;color:var(--ink2);font-size:11.5px}
 .crow.reserved{opacity:.6}
 /* A line between every row of the other connections (decision 162). */
 .crow+.crow{border-top:1px solid var(--line2);padding-top:3px}
-#btbox{display:flex;align-items:center;gap:5px;margin-top:4px}
 /* Grouped by machine, a thick line between groups (decision 163). */
 .cgroup{display:flex;flex-direction:column;gap:3px}
 .cgroup+.cgroup{border-top:1px solid var(--line2);padding-top:5px;margin-top:3px}
 .cghead{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--ink2)}
-.cghead select{max-width:170px;font-size:11.5px}
 /* One rule instead of disabled on every control, so a new control cannot miss the gate. */
 .gated{opacity:.35;pointer-events:none}
 .tgtres{font-size:11.5px;color:var(--ink3);margin-left:8px}
@@ -499,3 +515,22 @@ table.rltab .unit{color:var(--ink3);font-size:12px;margin-left:3px}
 
 .lseline{height:92px;overflow:hidden;color:var(--accent)}
 .lseline svg{display:block;max-width:100%;height:70px}
+/* Shared with the big screen: the test type chip, pop-up menus, the wiring registration window (gear.js). */
+.tchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:5px;padding:3px 10px;cursor:pointer;background:#fff;font-size:14px}
+.tchip:hover{border-color:var(--accent)}
+.tchip b{font-size:15px}
+.tchip .lab{color:var(--ink3);font-size:12px}
+.lnmodal{position:fixed;inset:0;background:rgba(20,28,38,.38);display:none;align-items:flex-start;justify-content:center;padding:24px 14px;z-index:9;overflow:auto}
+.lnmodal.open{display:flex}
+.lnbox{background:var(--bg);border-radius:8px;width:min(1180px,100%);box-shadow:0 8px 30px rgba(0,0,0,.25);padding:14px 18px}
+.lnbox.fit{width:auto;max-width:100%}
+.mhd{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.mhd h2{margin:0;font-size:17px} .mhd .x{margin-left:auto;border:none;background:none;font-size:18px;line-height:1;cursor:pointer;color:var(--ink2)}
+.reg{border-collapse:collapse;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:6px;width:auto}
+.reg td{padding:3px 8px;border-top:1px solid var(--line2);white-space:nowrap}
+.reg td.g{color:var(--ink3);font-size:12px} .reg tr.first td{border-top:1px solid var(--line)}
+.reg td.d{font-family:var(--mono);font-size:12px}
+.reg button{font-size:12px;padding:0 8px}
+.popmenu{position:absolute;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.12);z-index:10;padding:4px 0}
+.popmenu div{padding:6px 16px;cursor:pointer;font-size:14px}
+.popmenu div:hover{background:var(--bg)}

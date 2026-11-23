@@ -22,7 +22,7 @@
   <li><a href="#ask">When the panel asks you</a></li>
   <li><a href="#can">CAN analysis (advanced window)</a></li>
   <li><a href="#log">Log and commands</a></li>
-  <li><a href="#full">Full fixture test</a></li>
+  <li><a href="#full">Fixture test (line screen)</a></li>
   <li><a href="#notes">Things to keep in mind</a></li>
 </ol>
 
@@ -30,9 +30,9 @@
 <img src="shots/en/overview.png" alt="The whole panel">
 <ol>
   <li><b>User guide</b>: this page.</li>
-  <li><b>Step 1</b>: connect the control port; every reading comes over this cable.</li>
+  <li><b>Step 1</b>: the control port; every reading comes over this cable. It connects by itself as station 1's wiring registration says.</li>
   <li><b>Step 2</b>: connect the other ports; only what the ports you test need.</li>
-  <li><b>Step 3</b>: pick a test type: R&amp;D test, R&amp;D aging test or full fixture test.</li>
+  <li><b>Test type</b>: R&amp;D test, or back to the line screen for the fixture test.</li>
   <li><b>Port list</b>: click a port to see its test items on the right.</li>
   <li><b>Test item cards</b>: each card gives the goal, how to test and the peer; the measured values are on its right.</li>
   <li><b>Log</b>: every line between the board and the panel.</li>
@@ -41,16 +41,15 @@
 <h2 id="step1">2. Step 1: connect the control port</h2>
 <img src="shots/en/connect.png" alt="Connecting the control port">
 <ol>
-  <li>Pick the board's RS232 control port: usually the USB-to-serial adapter plugged into the PC, wired to terminals C05/C06. Without a board, pick “sim” to try the panel.</li>
-  <li>Press “Connect”. Steps 2 and 3 open once it is connected.</li>
-  <li>Bluetooth serial ports are hidden; tick “Show Bluetooth ports” to list them.</li>
+  <li>Click the “Wiring” column on the left to open station 1's wiring registration, and press “Change” on the “Control port RS232” line.</li>
+  <li>Pick the board's RS232 control port: usually the USB-to-serial adapter plugged into the PC, wired to terminals C05/C06; press “Find it” if you do not know which. Without a board, pick “Simulated board” to try the panel. Once picked, the panel connects by itself whenever the board is plugged in with the fixture firmware running; a board without the current fixture firmware gets “Flash” in “Boards this PC sees”.</li>
 </ol>
 
 <h2 id="step2">3. Step 2: connect the other ports</h2>
 <img src="shots/en/rows.png" alt="Connecting the other ports">
 <ol>
-  <li>Each row is one far end: board USB, network, RS485 / CAN adapters, reference board, KNX USB interface, ST-Link. RS485 and CAN are recognised by themselves after the control port connects; pick them by hand only if that fails.</li>
-  <li>The dot at the end: <b>green = connected</b>, <b>grey = not connected</b>. Hover over a grey row to see why.</li>
+  <li>Each row is one far end: board USB, network, RS485 / CAN adapters, reference board, KNX USB interface, ST-Link. RS485 and CAN are recognised by themselves after the control port connects; pick them in the wiring registration only if that fails.</li>
+  <li>The dot in front: <b>green = connected</b>, <b>grey = not connected</b>. Hover over a grey row to see why.</li>
   <li>A grey row has “Retry”: press it after fixing the wiring.</li>
 </ol>
 <p class="note">Ports you do not use can stay grey; everything else still runs.</p>
@@ -75,6 +74,7 @@
   <li>Press “Start (N items)”; the ticked items run together and stop at the first failure.</li>
 </ol>
 
+<p>A long run (aging) is an R&amp;D test with a time picked. On the DI, DO, AI, AO and relay pages pick the “Wiring” in the page header: loop-back (the loop-back harness), reference board, other instrument (for a temperature chamber or an EMC lab: DI and AI are judged against the values you set, DO, AO and relays only output the values you set for outside instruments to watch) or by hand. DI, DO and relays share one wiring, AI and AO another. Make sure DI and DO are good before testing the relays.</p>
 <h2 id="ask">6. When the panel asks you</h2>
 <p>Items that need a person to look or measure (a lamp, a multimeter, an oscilloscope) show a question marked 🍍 at the bottom.</p>
 <img src="shots/en/ask.png" alt="A question from the panel">
@@ -106,16 +106,8 @@
   <li><b>Send</b>: sends it; the board's reply appears in the log as it is.</li>
 </ol>
 
-<h2 id="full">9. Full fixture test</h2>
-<p>In step 3 pick “Full fixture test”: functional, safety and user-level blocks, configured once and run in one go.</p>
-<p>Aging is under “R&amp;D aging test”, a page with the same three layers: pick “With reference board” or “With PC” and a time, then start. “With PC” is for a temperature chamber or an EMC lab: DI and AI are judged against the values you set, DO, AO and relays only output the values you set for outside instruments to watch.</p>
-<img src="shots/en/full.png" alt="Full fixture test">
-<ol>
-  <li><b>Sub-tests</b>: tick the sub-tests to run and choose each one's time.</li>
-  <li><b>Ports</b>: tick the ports this sub-test covers; click one to see its items.</li>
-  <li><b>Test items</b>: tick items, pick peers, change parameters; the criteria are on the right.</li>
-  <li><b>Start</b> (“Configuration done, start test”): runs them in order and stops after the first failure. Each board's record is saved in the records folder next to the exe.</li>
-</ol>
+<h2 id="full">9. Fixture test (line screen)</h2>
+<p>Open “Test type” at the top left and pick “Fixture test” to go back to the line screen: one tile per board; each station finds its board by its own wiring registration and runs ① functional test, ② aging, ③ aging check, ④ safety and ⑤ user functions in turn. Which items, criteria and times are set in “Template” at the top left of the line screen. Each board's record is saved in the records folder next to the exe.</p>
 
 <h2 id="notes">10. Things to keep in mind</h2>
 <ul>

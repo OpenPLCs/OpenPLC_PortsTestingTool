@@ -14,7 +14,7 @@ func checkRecoverCards(p *Page, com string) {
 		check(true, "a real bench: these cards need a person at the cable - not clicked here")
 		return
 	}
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	for _, port := range []string{"eth", "usb", "rs232", "rs485", "can", "knx"} {
 		if p.L(lport(port)).Count() == 0 {
 			check(false, port+" is on the simulated board")

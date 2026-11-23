@@ -283,6 +283,13 @@ func timeoutOf(ms int) time.Duration {
 // Wait is page.wait_for_timeout.
 func (p *Page) Wait(ms int) { time.Sleep(time.Duration(ms) * time.Millisecond) }
 
+// View switches what the page shows (shell.js pickView); the R&D page has no
+// test-type menu any more, the configurations still live behind it.
+func (p *Page) View(k string) {
+	p.Eval("k => pickView(k)", k)
+	p.Wait(150)
+}
+
 // WaitSel waits for the first match of a CSS selector to be visible.
 func (p *Page) WaitSel(sel string, ms int) { p.WaitSelState(sel, "visible", ms) }
 

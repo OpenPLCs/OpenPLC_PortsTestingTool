@@ -2,11 +2,15 @@ package ptpanel
 
 import (
 	"net/http"
+	"sync"
 
+	"PortTool/src/ptboard"
 	"PortTool/src/ptcheck"
 	"PortTool/src/ptitems"
 	"PortTool/src/ptlib"
 	"PortTool/src/ptplan"
+	"PortTool/src/ptproto"
+	"PortTool/src/simboard"
 )
 
 // handleItems is the test-item catalogue as the connected board can run it,
@@ -18,8 +22,12 @@ func (s *Server) handleItems(w http.ResponseWriter, r *http.Request) {
 	connected := s.board != nil
 	s.mu.Unlock()
 	if !connected {
-		writeJSON(w, 200, map[string]any{"connected": false, "ports": []any{}, "items": []any{}})
-		return
+		if r.URL.Query().Get("all") != "1" {
+			writeJSON(w, 200, map[string]any{"connected": false, "ports": []any{}, "items": []any{}})
+			return
+		}
+		// The template window configures every port without a board (C.3.10).
+		caps = allPortsCaps()
 	}
 
 	steps := map[string][]ptcheck.Check{}
@@ -57,7 +65,7 @@ func (s *Server) handleItems(w http.ResponseWriter, r *http.Request) {
 			"id": it.ID, "port": it.Port, "channel": it.Channel,
 			"name": m(it.Name), "goal": m(it.Goal), "how": m(it.How),
 			"targets": it.Targets, "params": it.Params, "once": it.Once, "once_rd": it.OnceRD,
-			"stages": it.Stages, "peers": it.Peers, "rd_peers": it.RDPeers(), "asks": it.Asks(), "default_off": defaultOff(it),
+			"stages": it.Stages, "peers": it.ConfigPeers(), "rd_peers": it.RDPeers(), "asks": it.Asks(), "default_off": defaultOff(it),
 			"exclusive": it.Exclusive, "criteria": crit,
 			"ref": it.Ref, "human": it.Human, "live": it.Live, "load": it.Load, "watch_s": it.WatchS, "recover": it.Recover,
 			"choices": it.Choices, "limits": it.Limits, "ranges": it.Ranges,
@@ -82,3 +90,20 @@ var groupText = map[string][3]string{
 	"aout.out": {"lib.group.aout.out.name", "lib.group.aout.out.goal", "lib.group.aout.out.how"},
 	"aout.cal": {"lib.group.aout.cal.name", "lib.group.aout.cal.goal", "lib.group.aout.cal.how"},
 }
+
+// allPortsCaps is every port as the fixture firmware describes it, read once
+// from the simulated board (the firmware's host build); without one, the
+// catalogue's port names alone.
+var allPortsCaps = sync.OnceValue(func() ptproto.Caps {
+	if rw, err := simboard.OpenPort(simboard.PortName, 0); err == nil {
+		defer rw.Close()
+		if c, err := ptboard.New(rw, 64).Caps(); err == nil {
+			return c
+		}
+	}
+	var c ptproto.Caps
+	for _, p := range ptitems.Ports {
+		c.Ports = append(c.Ports, ptproto.Port{Name: p.Port})
+	}
+	return c
+})

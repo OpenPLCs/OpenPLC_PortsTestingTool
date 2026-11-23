@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -31,7 +32,7 @@ func anaDone(p *Page, item string, secs int) string {
 }
 
 func anaPick(p *Page, port string) {
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	p.L(lport(port)).Click()
 	p.Wait(300)
 }
@@ -70,7 +71,8 @@ func anaStarts(p *Page, port string) int {
 
 func checkAnalogCards(p *Page) {
 	Section("AI / AO card: calibration table, 实测 on both channels, 开始 / 停止 per block (decisions 117, 137, 138)")
-	base := strings.TrimRight(strings.SplitN(p.url, "#", 2)[0], "/")
+	u, _ := url.Parse(p.url)
+	base := u.Scheme + "://" + u.Host // the page may be /index.html, the API is at the root
 	sim := func(cmd string) {
 		b, _ := json.Marshal(map[string]string{"cmd": cmd})
 		c := http.Client{Timeout: 30 * time.Second}

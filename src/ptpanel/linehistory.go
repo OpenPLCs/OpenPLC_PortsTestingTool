@@ -30,6 +30,7 @@ type submission struct {
 	File    string    `json:"file"`
 	Step    string    `json:"step"`
 	Outcome string    `json:"outcome"`
+	Station int       `json:"station,omitempty"`
 	At      time.Time `json:"at"`
 }
 
@@ -47,7 +48,7 @@ func lineHistory(onTiles map[string]bool, max int) ([]ovenBoard, []submission) {
 		if _, err := calstore.ParseUID(uid); err != nil {
 			continue
 		}
-		passed, recs := loadLine(uid)
+		passed, recs, _ := loadLine(uid)
 		if passed[2] && !passed[3] && !onTiles[uid] {
 			b := ovenBoard{UID: uid}
 			if st, err := os.Stat(filepath.Join(ptrecord.BoardDir(uid), recs[2])); err == nil && recs[2] != "" {
@@ -74,7 +75,7 @@ func lineHistory(onTiles map[string]bool, max int) ([]ovenBoard, []submission) {
 	}
 	for i := range subs {
 		if r, err := readRecord(subs[i].UID, subs[i].File); err == nil && len(r.Steps) > 0 {
-			subs[i].Step, subs[i].Outcome = r.Steps[0].ID, string(r.Steps[0].Outcome)
+			subs[i].Step, subs[i].Outcome, subs[i].Station = r.Steps[0].ID, string(r.Steps[0].Outcome), r.Station
 		}
 	}
 	sort.Slice(oven, func(i, j int) bool { return oven[i].Since.Before(oven[j].Since) })

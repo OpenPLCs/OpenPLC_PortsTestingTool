@@ -22,8 +22,8 @@ func TestLineHistoryFindsTheOvenAndTheLatestRecords(t *testing.T) {
 		return f
 	}
 	t0 := time.Now().Add(-time.Hour)
-	saveLine(away, map[int]bool{1: true, 2: true}, map[int]string{2: base(write(away, "aging", ptreport.OutcomePass, t0))})
-	saveLine(done, map[int]bool{1: true, 2: true, 3: true}, map[int]string{3: base(write(done, "aging_check", ptreport.OutcomePass, t0.Add(time.Minute)))})
+	saveLine(away, map[int]bool{1: true, 2: true}, map[int]string{2: base(write(away, "aging", ptreport.OutcomePass, t0))}, tplRef{})
+	saveLine(done, map[int]bool{1: true, 2: true, 3: true}, map[int]string{3: base(write(done, "aging_check", ptreport.OutcomePass, t0.Add(time.Minute)))}, tplRef{})
 
 	oven, subs := lineHistory(map[string]bool{}, 10)
 	if len(oven) != 1 || oven[0].UID != away || oven[0].Since.IsZero() {

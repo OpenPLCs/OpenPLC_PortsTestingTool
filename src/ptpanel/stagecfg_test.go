@@ -282,8 +282,8 @@ func TestAgingRunsForTheConfiguredDuration(t *testing.T) {
 func TestConfigStepFromTheSavedConfig(t *testing.T) {
 	useTempStageCfg(t)
 	s := New()
-	if s.Stages[ptstages.Functional] == nil || s.Stages[ptstages.Aging] == nil {
-		t.Fatal("steps 2 and 4 are not registered")
+	if s.Stages[ptstages.Functional] == nil {
+		t.Fatal("step 2 is not registered")
 	}
 	s.RunItems = nil
 	if r := s.Stages[ptstages.Functional](context.Background()); r.Outcome != ptreport.OutcomeError || !strings.Contains(r.Reason, "runner") {
@@ -445,7 +445,7 @@ func TestTimedSubTestRunsRelaysByItsDuration(t *testing.T) {
 	if out := postCfg(t, s.Handler(), map[string]any{"stage": "aging", "cfg": cfg}); out["error"] != nil {
 		t.Fatal(out["error"])
 	}
-	if r := s.Stages[ptstages.Aging](context.Background()); r.Outcome != ptreport.OutcomePass {
+	if r := s.configStep(ptitems.Aging)(context.Background()); r.Outcome != ptreport.OutcomePass {
 		t.Fatalf("outcome %s %q", r.Outcome, r.Reason)
 	}
 	// 2 h: relay 1 two cycles of 1 h, relay 2 four of 30 min, each half closed.

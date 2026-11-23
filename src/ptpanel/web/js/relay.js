@@ -242,6 +242,8 @@ function relayInput(card, v, r, k, step, locked) {
   return i;
 }
 
+const RELAY_CRIT = { human: "relay.crit.rd", self: "relay.crit.self", ref: "relay.crit.ref", ext: "relay.crit.ext" };
+
 function relayCard(port) {
   const v = view, it = relayItemIn(v);
   if (!it) { return el("div"); }
@@ -353,7 +355,8 @@ function relayCard(port) {
   }
   body.appendChild(tbl);
 
-  if (!cfg) { body.appendChild(el("div", "hint", T("relay.crit.rd"))); }   // R&D's criterion: the person counts (decision 133)
+  // R&D's criterion follows the wiring (decision 191).
+  if (!cfg) { body.appendChild(el("div", "hint", T(RELAY_CRIT[wireOf("relay")]))); }
   const foot = el("div", "rlfoot");
   const copy = el("button", null, T("relay.copy")); copy.dataset.relaycopy = "1"; copy.disabled = locked;
   copy.onclick = () => {
@@ -374,6 +377,8 @@ function relayCard(port) {
       start.onclick = () => {
         relayStartErr = relayWhyNot(v);
         if (relayStartErr) { renderRight(); return; }
+        // The relays are judged through DO and DI: those first (decision 191).
+        if (!confirm(T("relay.confirm_dio"))) { return; }
         libStartOnly([RELAY_ID]);
       };
     }

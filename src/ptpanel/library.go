@@ -66,8 +66,17 @@ func (s *Server) pickedOr(boardPort string, find func() (string, error)) func() 
 }
 
 // errSimPeer keeps a run on the simulated board off every real serial port and
-// USB device on the bench: the simulated board plays its own peers.
+// USB device on the bench: the simulated board plays its own peers. TCP still
+// opens: it reaches the simulated board's own bridge on 127.0.0.1, as with
+// porttool run (PORTTOOL-FLOW.md C.3.6 「模拟板」).
 var errSimPeer = errors.New("the simulated board has no real peer on this bench")
+
+func simRunPeer(kind, addr string, baud int) (io.ReadWriteCloser, error) {
+	if kind == "tcp" {
+		return ptseq.RealPeerOpener(kind, addr, baud)
+	}
+	return nil, errSimPeer
+}
 
 // libRunner returns the executor factory for one board.
 func (s *Server) libRunner(b *ptboard.Board, port string) func() *ptseq.Runner {
@@ -76,7 +85,7 @@ func (s *Server) libRunner(b *ptboard.Board, port string) func() *ptseq.Runner {
 		r := &ptseq.Runner{Board: b, Ref: s.refBoard(), ToolVersion: s.Version, PortName: port,
 			SerialPeer: s.Ports.Peer}
 		if sim {
-			r.OpenPeer = func(string, string, int) (io.ReadWriteCloser, error) { return nil, errSimPeer }
+			r.OpenPeer = simRunPeer
 			r.FindCDC = func() (string, error) { return "", errSimPeer }
 			r.FindCAN = func() (string, error) { return "", errSimPeer }
 		} else {
@@ -312,6 +321,13 @@ func (s *Server) newEngine(b *ptboard.Board, port string, caps ptproto.Caps, pla
 			s.mu.Unlock()
 			return simboard.Cut(rw, p, ms)
 		}
+		// R&D's loop-back harness (decision 191).
+		eng.SelfWire = func() func() {
+			s.mu.Lock()
+			rw := s.ctrlRW
+			s.mu.Unlock()
+			return simboard.SelfLink(rw)
+		}
 	}
 	eng.Reconnect = func(ctx context.Context) (*ptboard.Board, error) {
 		nb, err := s.reconnect(eng.Board, port)
@@ -429,7 +445,7 @@ func (s *Server) handleLibStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if body.Stage == string(ptitems.RD) {
-		if err := ptlib.CheckRD(body.Items); err != nil {
+		if err := ptlib.CheckPeers(true, body.Items); err != nil {
 			writeJSON(w, 200, map[string]any{"error": pickMsg(err, byID)})
 			return
 		}
@@ -720,7 +736,7 @@ func (s *Server) runItems(ctx context.Context, picks []ItemPick, timed bool) ptr
 	eng := s.newEngine(b, port, caps, plan, items, true, stopWhy)
 	eng.NoLive = true // nobody is there to end a live card (decision 108)
 	// The board under test on the configurations' shared ranges (decision 139).
-	ranges := loadStageCfgs().Ranges
+	ranges := s.cfgs().Ranges
 	eng.Analog, eng.AnalogNominal = s.analogSourceOn(ranges), s.analogNominalOn(ranges)
 	// Every step of the run gets a number in the journal (decision 128).
 	if jr, stage := s.fullJournal(), s.fullStage(); jr != nil && stage != 0 {

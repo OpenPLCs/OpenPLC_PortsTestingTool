@@ -79,6 +79,7 @@ func (st *Stations) open(n int, sn, control string) {
 	s := st.New(n)
 	s.Ports = portmap.ForStation(n)
 	s.STLinkSN = sn
+	s.Station = n
 	h := s.Handler()
 	ln := &lineStation{n: n, srv: s, h: h, control: control, act: make(chan string, 4), stop: make(chan struct{})}
 	ln.tile = lineTile{N: n, State: lnEmpty}
@@ -126,6 +127,7 @@ func (st *Stations) Handler() http.Handler {
 	mux.HandleFunc("/api/line/act", st.handleLineAct)
 	mux.HandleFunc("/api/line/history", st.handleLineHistory)
 	mux.HandleFunc("/api/line/record", st.handleLineRecord)
+	mux.HandleFunc("/api/templates", st.handleTemplates)
 	mux.HandleFunc("/st/", st.handleStation)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" || r.URL.Path == "/line.html" {
@@ -160,11 +162,15 @@ func (st *Stations) handleStation(w http.ResponseWriter, r *http.Request) {
 }
 
 // stationView is one station as the list reports it.
-func stationView(n int, s *Server) map[string]any {
+func stationView(n int, x *station) map[string]any {
+	x.line.mu.Lock()
+	ctl := x.line.control
+	x.line.mu.Unlock()
+	s := x.srv
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return map[string]any{"n": n, "stlink": s.STLinkSN, "connected": s.board != nil,
-		"port": s.portNam, "uid": s.uid}
+		"port": s.portNam, "uid": s.uid, "control": ctl}
 }
 
 func (st *Stations) handleList(w http.ResponseWriter, r *http.Request) {
@@ -176,7 +182,7 @@ func (st *Stations) handleList(w http.ResponseWriter, r *http.Request) {
 	sort.Ints(ns)
 	out := make([]map[string]any, 0, len(ns))
 	for _, n := range ns {
-		out = append(out, stationView(n, st.list[n].srv))
+		out = append(out, stationView(n, st.list[n]))
 	}
 	st.mu.Unlock()
 	writeJSON(w, 200, map[string]any{"stations": out})

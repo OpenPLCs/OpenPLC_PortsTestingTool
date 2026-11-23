@@ -59,6 +59,26 @@ func Link(a, b io.ReadWriteCloser) bool {
 	return true
 }
 
+// SelfLink wires one simulated board onto itself as R&D's loop-back harness
+// (decisions 188, 191): DO1-6 through RY1-6 to DI1-6, DO7 / DO8 straight,
+// AOn -> AIn current only. A reference board linked to it is set aside until
+// the returned undo puts it back.
+func SelfLink(port io.ReadWriteCloser) func() {
+	w, ok := port.(*wired)
+	if !ok {
+		return func() {}
+	}
+	old := w.peer.Swap(w)
+	w.drive(w)
+	return func() {
+		w.peer.Store(old)
+		w.inject("sim.din 0x00")
+		for ai := 1; ai <= 2; ai++ {
+			w.inject(fmt.Sprintf("sim.ain %d 0", ai))
+		}
+	}
+}
+
 // relayMask is the DOs under test that reach the reference DI through a
 // relay: 1-6; DO7 / DO8 go straight (decision 133).
 const relayMask = 0x3F

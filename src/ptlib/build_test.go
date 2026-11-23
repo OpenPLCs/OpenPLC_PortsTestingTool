@@ -86,7 +86,7 @@ func TestCriteriaPeersFollowBuild(t *testing.T) {
 		{"can.peer", "can-peer", "ref"},
 		{"can.peer", "can-pc", "pc"},
 		{"dout.load", "high-side-drop", "human"},
-		{"aout.out1", "ao1-out", "ref,human"},
+		{"aout.out1", "ao1-out", "ref,human,self"},
 		{"eth.link", "eth-link", "pc"},
 	} {
 		if g := got(c.id, c.step); g != c.want {

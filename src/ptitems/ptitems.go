@@ -16,11 +16,8 @@ type Stage string
 const (
 	RD    Stage = "rd"
 	Func  Stage = "func"
-	Aging Stage = "aging" // R&D aging with the reference board (decision 187)
+	Aging Stage = "aging" // the line's aging, written into the board (decision 190)
 	User  Stage = "user"
-	// AgingPC is R&D aging with only this PC and outside instruments: DI / AI /
-	// AO / DO / relays one way each (decision 187, PORTTOOL-FLOW.md C.3.8).
-	AgingPC Stage = "agingpc"
 )
 
 // Peer is what sits on the other end of an item.
@@ -32,8 +29,11 @@ const (
 	PeerRef   Peer = "ref" // the reference board
 	PeerHuman Peer = "human"
 	// PeerExt is an outside instrument: outputs are only driven, inputs judged
-	// against set values; only in AgingPC (decision 187).
+	// against set values (decisions 187, 191).
 	PeerExt Peer = "ext"
+	// PeerSelf is the loop-back harness: the board under test is its own
+	// reference board; R&D only (decision 191).
+	PeerSelf Peer = "self"
 )
 
 // Answer is what a person contributes to an item.
@@ -264,13 +264,32 @@ func HostParam(k string) bool {
 // run one by one before the timed part of a stage (decision 102).
 func (it Item) Asks() bool { return len(it.Peers) > 0 && it.Peers[0] == PeerHuman }
 
-// RDPeers are the peers an item offers in R&D: never the reference board, R&D
-// is done by hand (decision 133, PORTTOOL-FLOW.md C.3.6 「默认对端」); never an
-// outside instrument either, which only R&D aging with the PC uses (decision 187).
+// wiredPorts pick R&D's wiring: loop-back, reference board, other instrument
+// or by hand (decision 191, PORTTOOL-FLOW.md C.3.8).
+var wiredPorts = map[string]bool{"din": true, "dout": true, "relay": true, "ain": true, "aout": true}
+
+// RDPeers are the peers an item offers in R&D, a person first so R&D defaults
+// to doing it by hand: every peer on a wired port, elsewhere never the
+// reference board (decisions 133, 191).
 func (it Item) RDPeers() []Peer {
 	var out []Peer
+	if it.offers(PeerHuman) {
+		out = append(out, PeerHuman)
+	}
 	for _, p := range it.Peers {
-		if p != PeerRef && p != PeerExt {
+		if p != PeerHuman && (wiredPorts[it.Port] || p != PeerRef) {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// ConfigPeers are the peers a configuration offers: the loop-back harness is
+// R&D's alone (decisions 135, 191).
+func (it Item) ConfigPeers() []Peer {
+	var out []Peer
+	for _, p := range it.Peers {
+		if p != PeerSelf {
 			out = append(out, p)
 		}
 	}
@@ -294,21 +313,6 @@ func DefaultPeer(it Item, refConnected bool) Peer {
 		}
 	}
 	return it.Peers[0]
-}
-
-// AgingPCPeer is the peer an item runs with in R&D aging with the PC: an
-// outside instrument where it offers one, else its first peer that is not the
-// reference board (decision 187).
-func AgingPCPeer(it Item) Peer {
-	if it.offers(PeerExt) {
-		return PeerExt
-	}
-	for _, p := range it.Peers {
-		if p != PeerRef {
-			return p
-		}
-	}
-	return ""
 }
 
 // Offers says whether p is one of the item's peers.
@@ -350,11 +354,9 @@ var (
 	all3       = []Stage{RD, Func, Aging, User}
 	rdOnly     = []Stage{RD}
 	rdFuncUser = []Stage{RD, Func, User} // SDRAM retention: the board package sets its own refresh (decision 184)
-	// What R&D aging with the PC tests as the other configurations do (decision 187).
-	all4 = []Stage{RD, Func, Aging, User, AgingPC}
-	// The one-way items that use an outside instrument: with the PC in R&D
-	// aging, and as the other test method in the functional / user-level tests (decisions 187, 188).
-	extStages = []Stage{Func, User, AgingPC}
+	// The one-way items that use an outside instrument: R&D's 「其他机器」 wiring,
+	// and the other test method in the functional / user-level tests (decisions 188, 191).
+	extStages = []Stage{RD, Func, User}
 )
 
 func session(port string, kv ...string) Target {
@@ -440,7 +442,7 @@ func analog(port, readID, calID string, ch int) []Item {
 	peers := []Peer{PeerHuman}
 	// A reference AO drives an AI, a reference AI reads an AO; which one is
 	// registered on the reference board's settings page (decision 135).
-	peers = []Peer{PeerRef, PeerHuman}
+	peers = []Peer{PeerRef, PeerHuman, PeerSelf}
 	t := []Target{session(port, "ch", sfx)}
 	// No editable session parameter: AO outputs current only (decision 98), so
 	// the DAC mV follows from the card's mA points and the board's k, b (C.3.2).
@@ -462,17 +464,17 @@ func analog(port, readID, calID string, ch int) []Item {
 // Catalogue is every item, in the order cards are shown.
 var Catalogue = func() []Item {
 	none, pc, hum, ext := []Peer{PeerNone}, []Peer{PeerPC}, []Peer{PeerHuman}, []Peer{PeerExt}
-	refHum := []Peer{PeerRef, PeerHuman}
+	loop := []Peer{PeerRef, PeerHuman, PeerSelf} // R&D may also loop the board onto itself (decision 191)
 	items := []Item{
-		once(item("eth", "link", 0, []Target{run("eth.link")}, all4, pc, "eth-link")),
+		once(item("eth", "link", 0, []Target{run("eth.link")}, all3, pc, "eth-link")),
 		// Download, upload, then the mirror run: each direction's rate on its own (decision 151).
-		params(item("eth", "xfer", 0, []Target{session("eth", "mode", "mirror")}, all4, pc, "eth-down", "eth-up", "eth-throughput"), "port", "ip"),
-		excl(once(item("usb", "info", 0, []Target{session("usb", "mode", "info")}, all4, pc, "usb-enum")), "usb.mode"),
-		excl(item("usb", "xfer", 0, []Target{session("usb", "mode", "mirror")}, all4, pc, "usb-down", "usb-up", "usb-link"), "usb.mode"),
-		once(item("sd", "probe", 0, []Target{run("sd.probe")}, all4, none, "sd-card")),
-		item("sd", "rw", 0, []Target{run("sd.integrity"), run("sd.speed")}, all4, none, "sd-integrity", "sd-speed"),
-		once(item("sdram", "probe", 0, []Target{run("sdram.probe")}, all4, none, "sdram-buses")),
-		onceRD(item("sdram", "sweep", 0, []Target{run("sdram.sweep")}, all4, none, "sdram-stress")),
+		params(item("eth", "xfer", 0, []Target{session("eth", "mode", "mirror")}, all3, pc, "eth-down", "eth-up", "eth-throughput"), "port", "ip"),
+		excl(once(item("usb", "info", 0, []Target{session("usb", "mode", "info")}, all3, pc, "usb-enum")), "usb.mode"),
+		excl(item("usb", "xfer", 0, []Target{session("usb", "mode", "mirror")}, all3, pc, "usb-down", "usb-up", "usb-link"), "usb.mode"),
+		once(item("sd", "probe", 0, []Target{run("sd.probe")}, all3, none, "sd-card")),
+		item("sd", "rw", 0, []Target{run("sd.integrity"), run("sd.speed")}, all3, none, "sd-integrity", "sd-speed"),
+		once(item("sdram", "probe", 0, []Target{run("sdram.probe")}, all3, none, "sdram-buses")),
+		onceRD(item("sdram", "sweep", 0, []Target{run("sdram.sweep")}, all3, none, "sdram-stress")),
 		// The retention session, write / sit / read back (decision 151); the functional
 		// test runs one whole cycle (decision 139, ptlib holdFrames).
 		params(item("sdram", "hold", 0, []Target{session("sdram")}, rdFuncUser, none, "sdram-refresh"), "wait", "period"),
@@ -480,7 +482,7 @@ var Catalogue = func() []Item {
 		human(item("led", "blink", 0, []Target{run("led.blink")}, rdOnly, hum, "indicator-drive"), AnswerYesNo),
 		// A person walks it in R&D (decision 133); the fixture tests walk the
 		// reference DOs the registration wires to each DI (decision 135).
-		live(onRef(excl(params(item("din", "level", 0, []Target{session("din", "mode", "level")}, all3, refHum,
+		live(onRef(excl(params(item("din", "level", 0, []Target{session("din", "mode", "level")}, all3, loop,
 			"digital-in", "digital-in-2", "digital-in-3", "digital-in-4", "digital-in-5", "digital-in-6", "digital-in-7", "digital-in-8"), "ch", "period"), "din.mode"),
 			session("dout", "mode", "hold"))),
 		live(excl(item("din", "quad", 0, []Target{session("din", "mode", "quad")}, rdOnly, hum), "din.mode")),
@@ -492,19 +494,19 @@ var Catalogue = func() []Item {
 	items = append(items, analog("aout", "out2", "cal2", 2)...)
 	items = append(items,
 		group(live(item("aout", "manual", 0, []Target{session("aout")}, rdOnly, hum)), "aout.out"),
-		group(human(onRef(load(item("aout", "load", 0, []Target{session("aout")}, []Stage{RD, Aging, AgingPC}, []Peer{PeerRef, PeerHuman, PeerExt}, "ao1-out", "ao2-out")), session("ain", "ch", "1,2")), AnswerNumber), "aout.out"),
+		group(human(onRef(load(item("aout", "load", 0, []Target{session("aout")}, []Stage{RD, Aging}, []Peer{PeerRef, PeerHuman, PeerExt}, "ao1-out", "ao2-out")), session("ain", "ch", "1,2")), AnswerNumber), "aout.out"),
 		// baud switches the whole control line for the session (decision 104, PORTTOOL-FLOW.md B.7).
-		params(item("rs232", "peer", 0, []Target{session("rs232")}, all4, pc, "rs232-loopback"), "baud", "period"),
-		params(item("rs485", "peer", 0, []Target{session("rs485")}, all4, pc, "rs485"), "baud", "period"),
+		params(item("rs232", "peer", 0, []Target{session("rs232")}, all3, pc, "rs232-loopback"), "baud", "period"),
+		params(item("rs485", "peer", 0, []Target{session("rs485")}, all3, pc, "rs485"), "baud", "period"),
 		once(item("rs485", "pins", 0, []Target{run("rs485.pins")}, rdOnly, none, "rs485-pins")),
-		onRef(excl(params(item("can", "peer", 0, []Target{session("can", "mode", "normal")}, all4, []Peer{PeerRef, PeerPC}, "can-peer", "can-pc"), "baud", "period"), "can.mode"),
+		onRef(excl(params(item("can", "peer", 0, []Target{session("can", "mode", "normal")}, all3, []Peer{PeerRef, PeerPC}, "can-peer", "can-pc"), "baud", "period"), "can.mode"),
 			session("can", "mode", "echo")), // the reference board echoes each frame
 		excl(params(item("can", "loop", 0, []Target{session("can", "mode", "loopback")}, rdOnly, none), "baud"), "can.mode"),
 		excl(params(item("can", "ext", 0, []Target{session("can", "mode", "extloop")}, rdOnly, none, "can"), "baud"), "can.mode"),
 		// The CAN analyser window: board in mode=bus, this PC's CANable on the same bus (decision 111).
 		live(excl(params(item("can", "bus", 0, []Target{session("can", "mode", "bus")}, rdOnly, pc), "baud"), "can.mode")),
 		once(item("knx", "bus", 0, []Target{run("knx.pullup")}, rdOnly, none)),
-		excl(params(item("knx", "loop", 0, []Target{session("knx", "mode", "loopback")}, []Stage{RD, AgingPC}, none, "knx"), "period"), "knx.mode"),
+		excl(params(item("knx", "loop", 0, []Target{session("knx", "mode", "loopback")}, rdOnly, none, "knx"), "period"), "knx.mode"),
 		// ga / src / val only act in mode=frames ($BOOT TestCase/porttool/porttool_knx.c).
 		watch(excl(params(item("knx", "frames", 0, []Target{session("knx", "mode", "frames")}, rdOnly, none), "ga", "src", "val", "period"), "knx.mode"), 60),
 		// The KNX analyser window: board in mode=frames, this PC's KNX USB interface on the same bus (decision 151 #8).
@@ -512,7 +514,7 @@ var Catalogue = func() []Item {
 		// The reference DI the registration wires to each DO, direct or through a
 		// relay (decisions 133, 135, ptlib/chain.go), or a person's multimeter in R&D.
 		// drop_max's default is left to the plan so the limit has one source (ptlib.DropDefault).
-		human(onRef(excl(limit(params(item("dout", "load", 0, []Target{session("dout", "mode", "hold", "duty", "255")}, all3, []Peer{PeerRef, PeerHuman}, "high-side-drop"), "ch", "period"), ParamDropMax, ""), "dout.mode"),
+		human(onRef(excl(limit(params(item("dout", "load", 0, []Target{session("dout", "mode", "hold", "duty", "255")}, all3, loop, "high-side-drop"), "ch", "period"), ParamDropMax, ""), "dout.mode"),
 			session("din", "mode", "level")), AnswerNumber),
 		// Toggles are counted by a person; PWM is checked on a scope.
 		human(excl(params(item("dout", "blink", 0, []Target{session("dout", "mode", "blink", "duty", "255")}, rdOnly, hum, "dout-blink", "dout-blink-seen"), "period"), "dout.mode"), AnswerNumber),
@@ -521,10 +523,10 @@ var Catalogue = func() []Item {
 		// Every relay its own holds and count (decision 123); judged by the cycles
 		// its load fed back (decision 130): typed by a person in R&D, counted by
 		// the reference DI through DO -> relay in the fixture tests (decision 133).
-		human(onRef(params(item("relay", "cycle", 0, []Target{session("relay", "mode", "cycle")}, all4, []Peer{PeerRef, PeerHuman, PeerExt}),
+		human(onRef(params(item("relay", "cycle", 0, []Target{session("relay", "mode", "cycle")}, all3, []Peer{PeerRef, PeerHuman, PeerExt, PeerSelf}),
 			"ch", "close", "open", "count", ParamOrder, ParamBy, ParamMinutes), session("din", "mode", "level")), AnswerNumber),
-		params(item("temp", "read", 0, []Target{session("temp")}, all4, none, "temperature"), "period"),
-		// R&D aging with the PC, one way each (decision 187, PORTTOOL-FLOW.md C.3.8):
+		params(item("temp", "read", 0, []Target{session("temp")}, all3, none, "temperature"), "period"),
+		// With an outside instrument, one way each (decisions 188, 191, PORTTOOL-FLOW.md C.3.8):
 		// inputs judged against set values frame by frame (ptlib/expect.go), outputs only driven.
 		params(item("din", "expect", 0, []Target{session("din", "mode", "level")}, extStages, ext), "ch", "period", ParamHigh),
 		limit(params(item("ain", "expect", 0, []Target{session("ain")}, extStages, ext), "period", ParamIn1, ParamIn2), ParamTol, "1"),

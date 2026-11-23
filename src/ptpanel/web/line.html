@@ -7,13 +7,17 @@
 <link rel="stylesheet" href="line.css">
 </head>
 <body>
-<header>
-  <select id="lntype"></select>
-  <h1 id="lntitle"></h1>
+<div class="lntop">
+  <span class="tchip" id="typechip"></span>
+  <span class="tchip" id="tplchip"></span>
   <span class="sp"></span>
-  <span id="lnfw" class="hint"></span>
-</header>
-<div class="lnmain"><main id="lnwall"></main><aside id="lnside"></aside></div>
+  <span class="kv" id="subto"></span>
+</div>
+<div class="lnbody">
+  <aside id="lnside"></aside>
+  <div id="lngrip"></div>
+  <main id="lnpage"></main>
+</div>
 <div id="lnmodal" class="lnmodal"><div id="lnbox" class="lnbox"></div></div>
 <script>
 "use strict";
@@ -22,6 +26,9 @@ const STRINGS = /*STRINGS*/{};
 const DE_REVIEWED = /*DE_REVIEWED*/false;
 let LANG = /*LANG*/"zh";
 </script>
+<script src="js/linebase.js"></script>
+<script src="js/words.js"></script>
+<script src="js/gear.js"></script>
 <script src="js/line.js"></script>
 </body>
 </html>

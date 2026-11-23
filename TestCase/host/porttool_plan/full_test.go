@@ -144,7 +144,7 @@ func TestSafetyCardAnswersReachTheRecord(t *testing.T) {
 	for _, s := range steps {
 		row := s.(map[string]any)
 		if (row["step"].(float64) != 6) != (row["available"] == true) {
-			t.Fatalf("steps 2, 4 (from their configurations) and 5 run in the panel today: %v", row)
+			t.Fatalf("steps 2 (from its configuration) and 5 run in the panel today: %v", row)
 		}
 		if row["available"] == false && row["why"] == nil {
 			t.Fatalf("a step that cannot be picked must say why: %v", row)
@@ -269,33 +269,6 @@ func TestFullTestContinuesFromTheStepThatDidNotPass(t *testing.T) {
 	}
 	postJSON(t, srv, "/api/full/stop", map[string]any{})
 	waitFull(t, srv, "the third run to stop", finished)
-}
-
-// R&D aging runs one of its two steps alone, writes a record and leaves the
-// full test's progress alone (decision 187, PORTTOOL-FLOW.md C.3.8).
-func TestRDAgingRunsAloneWithARecordAndNoProgress(t *testing.T) {
-	srv, records := fullPanel(t, nil, map[ptstages.Step]ptstages.Func{
-		ptstages.Functional: fixedStage(ptreport.OutcomePass),
-		ptstages.Aging:      fixedStage(ptreport.OutcomePass),
-		ptstages.AgingPC:    fixedStage(ptreport.OutcomePass),
-	})
-	postJSON(t, srv, "/api/connect", map[string]any{"port": "fake"})
-	for _, pick := range [][]int{{2, 4}, {4, 7}, {7, 2}} {
-		if r := postJSON(t, srv, "/api/full/start", map[string]any{"steps": pick}); r["started"] == true {
-			t.Fatalf("%v started: R&D aging runs alone", pick)
-		}
-	}
-	if r := postJSON(t, srv, "/api/full/start", map[string]any{"steps": []int{7}}); r["started"] != true {
-		t.Fatalf("start: %v", r)
-	}
-	waitFull(t, srv, "the run to finish", finished)
-	rep, _ := onlyReport(t, records)
-	if got := outcomesOf(rep); got != "7:PASS" || rep.Steps[0].ID != "aging_pc" {
-		t.Fatalf("%s %+v", got, rep.Steps)
-	}
-	if _, err := os.Stat(filepath.Join(records, fakeUID, "progress.json")); !os.IsNotExist(err) {
-		t.Fatal("R&D aging wrote the full test's progress")
-	}
 }
 
 func TestStopRecordsStoppedAndSkipsTheRest(t *testing.T) {
@@ -483,7 +456,7 @@ func TestFullTestRefusesChannelsWithoutCalibration(t *testing.T) {
 		ran.Add(1)
 		return ptreport.StepResult{Outcome: ptreport.OutcomePass}
 	}
-	stages := map[ptstages.Step]ptstages.Func{ptstages.Functional: counting, ptstages.Aging: counting}
+	stages := map[ptstages.Step]ptstages.Func{ptstages.Functional: counting}
 	srv, _, _ := flowPanel(t, blankArea(), stages)
 
 	r := postJSON(t, srv, "/api/full/start", map[string]any{"steps": []int{2}})
@@ -496,14 +469,13 @@ func TestFullTestRefusesChannelsWithoutCalibration(t *testing.T) {
 	}
 
 	// Only what the configuration tests is asked for.
-	cfg := map[string]any{"ports_off": map[string]any{"ain": true},
-		"items": map[string]any{"aout.load": map[string]any{"params": map[string]any{"out1": "20", "out2": "20"}}}}
-	if j := postJSON(t, srv, "/api/stagecfg", map[string]any{"stage": "aging", "cfg": cfg}); j["error"] != nil {
-		t.Fatalf("save aging config: %v", j)
+	cfg := map[string]any{"ports_off": map[string]any{"ain": true}}
+	if j := postJSON(t, srv, "/api/stagecfg", map[string]any{"stage": "func", "cfg": cfg}); j["error"] != nil {
+		t.Fatalf("save functional config: %v", j)
 	}
-	r = postJSON(t, srv, "/api/full/start", map[string]any{"steps": []int{4}})
+	r = postJSON(t, srv, "/api/full/start", map[string]any{"steps": []int{2}})
 	if got := strList(r["uncalibrated"]); got != "AO1,AO2" || r["cal_port"] != "aout" {
-		t.Fatalf("aging without AI needs only AO: %v", r)
+		t.Fatalf("a functional test without AI needs only AO: %v", r)
 	}
 	if ran.Load() != 0 {
 		t.Fatal("a refused start ran a step")
@@ -524,57 +496,6 @@ func TestFullTestStartsWithCalibrationOnBoard(t *testing.T) {
 		t.Fatalf("a calibrated board was refused: %v", r)
 	}
 	waitFull(t, srv, "the run to finish", finished)
-}
-
-// Decision 129: a configuration's target is filled in before the run; a ticked
-// AO load with no current keeps its step from being picked.
-func TestConfigStepNeedsItsTargets(t *testing.T) {
-	stages := map[ptstages.Step]ptstages.Func{ptstages.Aging: fixedStage(ptreport.OutcomePass)}
-	srv, _, _ := flowPanel(t, onBoardCal(t), stages)
-	step4 := func() map[string]any {
-		for _, s := range getJSON(t, srv, "/api/full")["steps"].([]any) {
-			if row := s.(map[string]any); row["step"] == float64(4) {
-				return row
-			}
-		}
-		t.Fatal("no step 4 row")
-		return nil
-	}
-	row := step4()
-	why, _ := row["why"].(map[string]any)
-	if row["available"] != false || why == nil || why["$t"] != "go.full.no_target" {
-		t.Fatalf("aging with the AO load current blank must be refused: %v", row)
-	}
-	if r := postJSON(t, srv, "/api/full/start", map[string]any{"steps": []int{4}}); r["started"] == true {
-		t.Fatal("started aging with a blank target")
-	}
-	load := func(params map[string]any) map[string]any {
-		return map[string]any{"items": map[string]any{"aout.load": map[string]any{"params": params}}}
-	}
-	// Each AO has its own target: one of the two is not enough.
-	if j := postJSON(t, srv, "/api/stagecfg", map[string]any{"stage": "aging", "cfg": load(map[string]any{"out1": "20"})}); j["error"] != nil {
-		t.Fatalf("save aging config: %v", j)
-	}
-	if row := step4(); row["available"] != false {
-		t.Fatalf("aging with AO2's target blank must be refused: %v", row)
-	}
-	// Outside every range of AO2 is never stored (C.3.6 「填数超量程」).
-	if j := postJSON(t, srv, "/api/stagecfg", map[string]any{"stage": "aging", "cfg": load(map[string]any{"out1": "20", "out2": "20000"})}); j["error"] == nil {
-		t.Fatalf("20000 on AO2 stored: %v", j)
-	}
-	// A page opened before each AO had its own target still sends the shared "ma": it fills both.
-	if j := postJSON(t, srv, "/api/stagecfg", map[string]any{"stage": "aging", "cfg": load(map[string]any{"ma": "20"})}); j["error"] != nil {
-		t.Fatalf("save aging config with the old ma: %v", j)
-	}
-	if row := step4(); row["available"] != true {
-		t.Fatalf("both targets filled in from ma, aging still refused: %v", row)
-	}
-	if j := postJSON(t, srv, "/api/stagecfg", map[string]any{"stage": "aging", "cfg": load(map[string]any{"out1": "20", "out2": "5000"})}); j["error"] != nil {
-		t.Fatalf("save aging config: %v", j)
-	}
-	if row := step4(); row["available"] != true {
-		t.Fatalf("both targets filled in, aging still refused: %v", row)
-	}
 }
 
 // Step 6 is tickable only with the delivery's three files and a real board.
@@ -625,12 +546,12 @@ func TestStep6NeedsTheDeliveryFiles(t *testing.T) {
 // step to blame gets a whole-step entry with its reason; safety is a step.
 func TestStepNumbersMatchBetweenPageLogAndReport(t *testing.T) {
 	srv, records := fullPanel(t, nil, map[ptstages.Step]ptstages.Func{
-		ptstages.Aging: func(ctx context.Context) ptreport.StepResult {
+		ptstages.Functional: func(ctx context.Context) ptreport.StepResult {
 			return ptreport.StepResult{Outcome: ptreport.OutcomeTimeout, Reason: "probe silent"}
 		},
 	})
 	postJSON(t, srv, "/api/connect", map[string]any{"port": "fake"})
-	if r := postJSON(t, srv, "/api/full/start", map[string]any{"steps": []int{4}}); r["started"] != true {
+	if r := postJSON(t, srv, "/api/full/start", map[string]any{"steps": []int{2}}); r["started"] != true {
 		t.Fatalf("start: %v", r)
 	}
 	j := waitFull(t, srv, "the run to finish", finished)

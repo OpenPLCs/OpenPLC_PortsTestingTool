@@ -1,8 +1,8 @@
 package testcase
 
 // The fixture tests' DO -> relay -> reference DI chain (decision 133,
-// PORTTOOL-FLOW.md C.3.6 「DO、继电器一条链」), and R&D refusing the
-// reference board.
+// PORTTOOL-FLOW.md C.3.6 「DO、继电器一条链」), and R&D taking the
+// reference board (decision 191).
 //
 // Bench: two simulated boards wired by simboard (reference DIn reads 1 while DOn
 // and RYn under test are both on, n = 1..6; DI7 / DI8 follow DO7 / DO8), two left
@@ -11,7 +11,6 @@ package testcase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -117,18 +116,16 @@ func TestRelayChainFailsWhenTheReferenceDICountsNothing(t *testing.T) {
 	}
 }
 
-// R&D is done by hand: the reference board is refused and never the default.
-func TestRDRefusesTheReferenceBoardAndDefaultsToAPerson(t *testing.T) {
-	b, fake := doutBoard(t)
+// R&D may pick the reference board (decision 191) and defaults to a person.
+func TestRDTakesTheReferenceBoardAndDefaultsToAPerson(t *testing.T) {
+	b, _ := doutBoard(t)
 	e := doutEngine(t, b, nil, "dout.load", func(ptlib.Question) ptlib.Answer { return ptlib.Answer{} })
 	e.RD, e.RefConnected = true, true
-	_, err := e.Run(context.Background(), []ptlib.Pick{{ID: "dout.load", On: true, Peer: ptitems.PeerRef}}, 0)
-	var pe *ptlib.PickError
-	if !errors.As(err, &pe) || pe.Code != ptlib.ReasonBadPeer {
-		t.Fatalf("R&D with the reference board: %v, want a %s refusal", err, ptlib.ReasonBadPeer)
+	if _, err := e.Run(context.Background(), []ptlib.Pick{{ID: "dout.load", On: true, Peer: ptitems.PeerRef, Params: map[string]string{"ch": "1"}}}, 0); err != nil {
+		t.Fatalf("R&D with the reference board was refused: %v", err)
 	}
-	if len(fake.commands()) != 0 {
-		t.Errorf("the board was touched: %v", fake.commands())
+	if st := chainState(e, "dout.load"); st.Reason != ptlib.ReasonNoRef {
+		t.Errorf("no reference board connected: %+v, want %s", st, ptlib.ReasonNoRef)
 	}
 	if _, err := e.Run(context.Background(), []ptlib.Pick{{ID: "dout.load", On: true, Params: map[string]string{"ch": "1"}}}, 0); err != nil {
 		t.Fatal(err)

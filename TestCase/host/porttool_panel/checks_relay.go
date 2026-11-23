@@ -16,7 +16,7 @@ func relayState(p *Page) J {
 // (decision 123).
 func checkRelayRd(p *Page) {
 	Section("relay card in R&D")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	p.Wait(200)
 	p.L(lport("relay")).Click()
 	p.Wait(300)
@@ -59,8 +59,15 @@ func checkRelayRd(p *Page) {
 		"101 shows the red note in R&D too")
 	p.L(`#itemcards [data-relayseg="order"] label:has(input[value="par"])`).Click()
 	p.Wait(200)
+	// Start first asks to make sure DI and DO are good (decision 191); a native
+	// confirm box would block the page, so it is answered here and its text kept.
+	p.Eval("() => { window.__asked = []; window.confirm = m => { window.__asked.push(m); return true; }; }")
+	defer p.Eval("() => { delete window.confirm; }")
 	start = p.L(`#itemcards .relaycard [data-startitem="relay.cycle"]`)
 	start.Click()
+	asked := p.Eval("window.__asked || []").Strings()
+	check(len(asked) == 1 && strings.Contains(asked[0], "先确认 DI、DO 是好的"),
+		"Start first asks to make sure DI and DO are good (decision 191)", show(asked))
 	if try(func() { p.WaitFunc("() => libData.running", nil, 10000) }) == nil {
 		check(true, "with 101 cycles Start still runs")
 	} else {

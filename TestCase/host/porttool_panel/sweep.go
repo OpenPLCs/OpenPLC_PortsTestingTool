@@ -42,7 +42,7 @@ func autoPicks(p *Page, port string) []string {
 // verdict checked against what this bench should give - not merely that one appeared.
 func checkEveryPort(p *Page, com string) {
 	Section("every port, one Start on its R&D cards")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	type row struct{ port, verdict, note string }
 	var produced []row
 	for _, port := range p.Eval("catalog.ports.map(p => p.port)").Strings() {

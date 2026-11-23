@@ -175,12 +175,3 @@ func agingAnalog(cal map[string]kb, ranges calstore.Ranges) ([]string, error) {
 	}
 	return lines, nil
 }
-
-// effectiveRanges is the shared AI / AO ranges with the defaults filled in.
-func effectiveRanges() calstore.Ranges {
-	out := calstore.DefaultRanges()
-	for k, v := range loadStageCfgs().Ranges {
-		out[k] = v
-	}
-	return out
-}

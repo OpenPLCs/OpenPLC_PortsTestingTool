@@ -26,118 +26,12 @@ function localize(v) {
 
 let allPorts = [];
 
-let chosenPort = null;
-
-// Bluetooth serial ports are left out of every serial dropdown in the
-// connection area unless 「显示蓝牙串口」 is ticked; the one a dropdown has
-// chosen stays (decision 162). The server says which are Bluetooth (ptmatch).
-function btShown(list, keep) {
-  const on = typeof uiMemo !== "undefined" && uiMemo.bt === "1";   // memo.js loads after this file
-  return on ? list : list.filter(p => !p.bt || (keep && p.name === keep));
-}
-
-$("#showbt").onchange = () => {
-  uiMemo.bt = $("#showbt").checked ? "1" : "0";
-  memoSoon();
-  loadPorts();
-  refreshConnRows(true);
-};
-
-// A hint, never a choice: the label is all there is, and adapters can share a VID/PID.
-function looksLikeRs232(label) {
-  return /pl2303|prolific|ft232|ftdi|cp210|ch343|usb-serial ch34/i.test(label);
-}
-
+// The serial ports this PC has, for the connection rows (connzone.js). The
+// control port itself comes from station 1's wiring registration (C.3.6).
 async function loadPorts() {
   const j = await api("/api/ports");
   allPorts = j.ports || [];
-  const sel = $("#ctlport"); sel.textContent = "";
-  const note = $("#ctlnote"); note.textContent = "";
-
-  if (j.error || !j.ports || !j.ports.length) {
-    sel.appendChild(new Option(j.error || T("ui.loadPorts.1"), ""));
-    $("#connect").disabled = true;
-    return;
-  }
-
-  // What was chosen last time. Offered as the selection rather than connected
-  // to automatically: opening a serial port is a side effect.
-  if (!chosenPort && state && state.saved && state.saved.control &&
-      j.ports.some(p => p.name === state.saved.control)) {
-    chosenPort = state.saved.control;
-  }
-
-  // The simulated board goes last: every reading it gives is invented (decision 128).
-  const shown = btShown(j.ports, (state && state.connected && state.port) || chosenPort);
-  const ports = shown.filter(p => p.name !== "sim").concat(shown.filter(p => p.name === "sim"));
-  sel.appendChild(new Option(T("html.ctl_pick"), ""));
-  for (const p of ports) {
-    let text = p.label;
-    if (looksLikeRs232(p.label)) { text += T("ui.loadPorts.2"); }
-    if (p.name === "sim") { text += T(p.unavailable ? "ui.loadPorts.3" : "ui.loadPorts.5"); }
-    if (state && state.saved && state.saved.control === p.name) { text += T("ui.loadPorts.6"); }
-    const o = new Option(text, p.name);
-    // Machines find a port by its name, not by the words on screen.
-    o.dataset.port = p.name;
-    o.title = p.unavailable || p.label;
-    if (p.unavailable) {
-      o.disabled = true;
-      // Missing is said, not hidden: "there is none" and "not built" look the same otherwise.
-      if (p.name === "sim") { note.appendChild(richText("div", "sub", T("ui.loadPorts.4"))); }
-    }
-    sel.appendChild(o);
-  }
-
-  // A port that went away between refreshes must not stay selected.
-  if (chosenPort && !ports.some(p => p.name === chosenPort && !p.unavailable)) { chosenPort = null; }
-  sel.value = chosenPort || "";
-  sel.disabled = !!(state && state.connected);
-  $("#connect").disabled = !chosenPort;
 }
-
-$("#ctlport").onchange = () => {
-  if (state && state.connected) { return; }
-  chosenPort = $("#ctlport").value || null;
-  $("#connect").disabled = !chosenPort;
-  $("#connhint").innerHTML = chosenPort ? T("ui.loadPorts.7", {name: chosenPort}) : T("ui.applyState.2");
-};
-
-$("#refresh").onclick = loadPorts;
-
-// Finds the control port by asking every candidate for pt.caps, then connects
-// to the one fixture that answered (decision 146).
-$("#ctlauto").onclick = async () => {
-  if (state && state.connected) { return; }
-  const b = $("#ctlauto");
-  b.disabled = true;
-  b.textContent = T("html.ctl_auto_busy");
-  const j = await api("/api/match/control", {});
-  b.disabled = false;
-  b.textContent = T("html.ctl_auto");
-  if (j.error) {
-    const tried = (j.tried || []).map(t => t.com + ": " + t.why).join("; ");
-    showMessage(tried ? T("html.ctl_auto_tried", { error: j.error, tried: tried }) : j.error, true);
-    return;
-  }
-  chosenPort = j.found;
-  await loadPorts();
-  $("#connect").click();
-};
-
-$("#connect").onclick = async () => {
-  if (!chosenPort) { return; }
-  $("#connect").disabled = true;
-  const j = await api("/api/connect", {port: chosenPort});
-  $("#connect").disabled = false;
-  if (j.error) { showMessage(j.error, true); return; }
-  applyState(j);
-  startEvents();
-};
-
-$("#disconnect").onclick = async () => {
-  if (evtSource) { evtSource.close(); evtSource = null; }
-  applyState(await api("/api/disconnect", {}));
-};
 
 function startEvents() {
   if (evtSource) evtSource.close();
@@ -162,13 +56,11 @@ function startEvents() {
 function applyState(j) {
   const st = j.state || j;
   if (!st.connected && typeof rdForgetUid === "function") { rdForgetUid(); }
+  const was = state && state.connected;
   state = st;
-  $("#disconnect").hidden = !st.connected;
-  $("#connect").hidden = !!st.connected;
-  $("#ctlauto").hidden = !!st.connected;
-  $("#ctlport").disabled = !!st.connected;
-  if (st.connected && st.port) { $("#ctlport").value = st.port; }
-  $("#menus").classList.toggle("live", !!st.connected);
+  // Station 1 connects by itself (line.go rdAttach): the log stream follows it.
+  if (st.connected && !was) { startEvents(); }
+  if (!st.connected && evtSource) { evtSource.close(); evtSource = null; }
 
   $("#toolver").textContent = st.tool ? T("html.toolver", {version: st.tool}) : "";
   // Readings belong to one board: a switch straight to another control port
@@ -176,9 +68,6 @@ function applyState(j) {
   if (st.port !== readsPort) { reads = {}; readsPort = st.port; }
   // One gate for the rest of the page: all of it comes over the control port.
   $("#afterconn").classList.toggle("live", !!st.connected);
-  $("#connhint").innerHTML = st.connected
-    ? T("ui.applyState.1", {port: st.port})
-    : T("ui.applyState.2");
 
   const s = $("#status");
   if (st.connected && st.linkError) {

@@ -2,7 +2,12 @@
 
 // A station's panel lives under /st/<n>/; its API calls carry the same prefix.
 const API_BASE = (location.pathname.match(/^\/st\/\d+(?=\/)/) || [""])[0];
-function apiURL(p) { return p.startsWith("/api") ? API_BASE + p : p; }
+// The stations, the line and the templates are one per PortTool, not per station.
+const GLOBAL_API = /^\/api\/(stations|line|templates)(\/|$)/;
+function apiURL(p) { return p.startsWith("/api") && !GLOBAL_API.test(p) ? API_BASE + p : p; }
+// The big screen's template window shows only the configuration (C.3.10 「模板」).
+const EMBED = new URLSearchParams(location.search).get("embed") || "";
+if (EMBED) { document.body.classList.add("embed-" + EMBED); }
 
 function T(key, args) {
   const e = STRINGS[key];
@@ -30,30 +35,38 @@ document.title = T("html.title");
 for (const n of document.querySelectorAll("[data-t]")) { n.innerHTML = T(n.dataset.t); }
 for (const n of document.querySelectorAll("[data-t-placeholder]")) { n.placeholder = T(n.dataset.tPlaceholder); }
 
-// The connection column is as wide as it was last dragged (decisions 112, 162):
-// kept in the page memo's "ui" section (memo.js), applied when it loads.
-const LEFTW_MIN = 200, LEFTW_MAX = 640;
-function applyLeftWidth(w) {
+// The connection column and the R&D log column are as wide as they were last
+// dragged (decisions 112, 162, 190): kept in the page memo's "ui" section
+// (memo.js), applied when it loads.
+const COLW = {
+  leftw: { v: "--leftw", min: 200, max: 640 },
+  logw: { v: "--logw", min: 240, max: 900 },
+};
+function applyColWidth(key, w) {
   if (!w) { return; }
-  $("main.shell").style.setProperty("--leftw", Math.max(LEFTW_MIN, Math.min(LEFTW_MAX, w)) + "px");
+  const c = COLW[key];
+  $("main.shell").style.setProperty(c.v, Math.max(c.min, Math.min(c.max, w)) + "px");
 }
-{
-  const shell = $("main.shell"), grip = $("#leftgrip");
-  grip.title = T("html.leftgrip");
+// width(e) is the column's width with the pointer at e.
+function colGrip(key, sel, tip, width) {
+  const shell = $("main.shell"), grip = $(sel);
+  grip.title = T(tip);
   grip.onpointerdown = ev => {
     ev.preventDefault();
     grip.setPointerCapture(ev.pointerId);
     grip.classList.add("drag");
-    const left = shell.getBoundingClientRect().left;
-    grip.onpointermove = e => applyLeftWidth(e.clientX - left);
+    const box = shell.getBoundingClientRect();
+    grip.onpointermove = e => applyColWidth(key, width(e, box));
     grip.onpointerup = () => {
       grip.onpointermove = grip.onpointerup = null;
       grip.classList.remove("drag");
-      const w = parseInt(getComputedStyle(shell).getPropertyValue("--leftw"), 10);
-      if (w) { uiMemo.leftw = String(w); memoSave(); }   // at once: a reload right after must keep it
+      const w = parseInt(getComputedStyle(shell).getPropertyValue(COLW[key].v), 10);
+      if (w) { uiMemo[key] = String(w); memoSave(); }   // at once: a reload right after must keep it
     };
   };
 }
+colGrip("leftw", "#leftgrip", "html.leftgrip", (e, box) => e.clientX - box.left);
+colGrip("logw", "#loggrip", "html.loggrip", (e, box) => box.right - e.clientX);
 
 $("#guidelink").href = "guide/" + (LANG === "zh" ? "zh" : "en") + ".html";
 

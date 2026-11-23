@@ -62,7 +62,7 @@ function libPicks(kind) {
   return items.filter(it => !libPageItem(it) && (!kind || itemKind(it, view) === kind)).map(it => {
     const cfg = isCfgView(view);
     const params = cfg ? (cfgItem(view, it.id).params || {}) : (libEdits[it.id] || {});
-    const peer = cfg ? cfgPeer(view, it) : (itemPeer[view + "|" + it.id] || defaultPeer(it));
+    const peer = cfg ? cfgPeer(view, it) : WIRE_PAIR[it.port] ? wireOf(it.port) : (itemPeer[view + "|" + it.id] || defaultPeer(it));
     const pick = { id: it.id, on: itemOnIn(view, it), params, peer };
     const pts = cfg ? cfgItem(view, it.id).points : (ITEM_BODIES[it.id] ? anaPickPoints(it) : undefined);
     if (pts && pts.length) { pick.points = pts; }
@@ -70,7 +70,8 @@ function libPicks(kind) {
   });
 }
 
-const libPageItem = it => !!(ITEM_BODIES[it.id] && ITEM_BODIES[it.id].run);
+// A person's AI / AO walk runs on the page; any other wiring runs on the server (decision 191).
+const libPageItem = it => !!(ITEM_BODIES[it.id] && ITEM_BODIES[it.id].run) && (view !== "rd" || defaultPeer(it) === "human");
 let libPageBusy = false;   // a calibration walk is running on the page
 let libPageIds = [];       // which walks, so only their card's button turns to Stop
 

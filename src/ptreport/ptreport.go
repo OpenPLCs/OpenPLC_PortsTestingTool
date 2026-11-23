@@ -120,6 +120,10 @@ type ItemRun struct {
 	DurationMS int64     `json:"duration_ms"`
 	// Analog: as StepResult.Analog, for this step's channels.
 	Analog []AnalogUsed `json:"analog,omitempty"`
+	// Params and Checks are what the item ran with and how it was judged, for
+	// the big screen's board page (C.3.10).
+	Params map[string]string `json:"params,omitempty"`
+	Checks []ptcheck.Result  `json:"checks,omitempty"`
 }
 
 // Report is a whole run.
@@ -130,12 +134,14 @@ type Report struct {
 	Firmware     string `json:"firmware,omitempty"`
 	BoardUID     string `json:"board_uid,omitempty"`
 	// The reference board, when one was connected (decision 103).
-	RefFirmware string    `json:"ref_firmware,omitempty"`
-	RefUID      string    `json:"ref_uid,omitempty"`
-	SN          string    `json:"sn,omitempty"`
-	Port        string    `json:"port,omitempty"`
-	StartedAt   time.Time `json:"started_at"`
-	EndedAt     time.Time `json:"ended_at"`
+	RefFirmware string `json:"ref_firmware,omitempty"`
+	RefUID      string `json:"ref_uid,omitempty"`
+	SN          string `json:"sn,omitempty"`
+	Port        string `json:"port,omitempty"`
+	// Station is the fixture line's station that ran it (C.3.10); 0 outside the line.
+	Station   int       `json:"station,omitempty"`
+	StartedAt time.Time `json:"started_at"`
+	EndedAt   time.Time `json:"ended_at"`
 	// FailCodes: every fail_code below, in order, each once (decision 150).
 	FailCodes []string     `json:"fail_codes,omitempty"`
 	Steps     []StepResult `json:"steps"`

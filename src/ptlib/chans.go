@@ -25,8 +25,12 @@ func Channels(it ptitems.Item, peer ptitems.Peer, params map[string]string) []in
 	case it.ID == "din.level" && peer == ptitems.PeerHuman:
 		return WalkChannels(params)
 	case it.ID == "din.level" && peer == ptitems.PeerRef:
-		return []int{1, 2, 3, 4, 5, 6, 7, 8} // the plan walks all eight
-	case it.ID == "dout.load" && (peer == ptitems.PeerHuman || peer == ptitems.PeerRef):
+		// The ticked channels (the loop-back harness runs this way too, build.go);
+		// all eight when none are named.
+		return dropChannels(params)
+	case it.ID == "din.level" && peer == ptitems.PeerSelf:
+		return dropChannels(params) // walked as the DOs on the harness
+	case it.ID == "dout.load" && (peer == ptitems.PeerHuman || peer == ptitems.PeerRef || peer == ptitems.PeerSelf):
 		return dropChannels(params)
 	case cardSession[it.ID] && hasCh(params):
 		// An R&D card's session ended with ticked rows: only those (live.go liveTicked).

@@ -381,3 +381,25 @@ func (e *Engine) startChain(chans []RelayChan, held bool, att *ptreport.Attempt)
 	}
 	return c, stop, nil
 }
+
+// loopBack makes the board under test its own reference board for one run,
+// wired as refboard.Default (the harness of decision 188; decision 191), and
+// returns the undo.
+func (e *Engine) loopBack() func() {
+	runner, wiring, refAnalog := e.Runner, e.Wiring, e.RefAnalog
+	e.Runner = func() *ptseq.Runner {
+		r := runner()
+		r.Ref = r.Board
+		return r
+	}
+	e.Wiring = refboard.Default
+	e.RefAnalog = e.Analog
+	unwire := func() {}
+	if e.SelfWire != nil {
+		unwire = e.SelfWire()
+	}
+	return func() {
+		unwire()
+		e.Runner, e.Wiring, e.RefAnalog = runner, wiring, refAnalog
+	}
+}

@@ -10,8 +10,10 @@ $("#meterval").onkeydown = e => {
 
 
 /* ---------------- go ---------------- */
-// Page memo, then state, then the port list: each needs the one before for its first render (memo.js, last control port).
+// Page memo first: it sets the column widths and the test type; then the ports and the state for the wiring rows.
+// Being on this page is R&D: the line loops idle and station 1 connects by itself (C.3.10 「入口」).
 memoLoad()
-  .then(() => refreshState())
+  .then(() => { if (!EMBED && uiMemo.type !== "rd") { uiMemo.type = "rd"; return memoSave(); } })
   .then(() => loadPorts())
-  .then(() => { if (state.connected) startEvents(); });
+  .then(() => refreshState())
+  .then(() => pollConn());

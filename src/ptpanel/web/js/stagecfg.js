@@ -1,11 +1,11 @@
 "use strict";
 
-// The functional / user-level configurations and R&D aging's two (decisions 97, 187).
+// The functional / user-level configurations and the line's aging (decisions 97, 190).
 // Kept by the panel in porttool_stagecfg.json via /api/stagecfg;
 // every change is saved on the spot and sends nothing to the board.
 // PORTTOOL-FLOW.md C.3.6 "三种配置".
 
-const CFG_VIEWS = ["func", "aging", "agingpc", "user"];
+const CFG_VIEWS = ["func", "aging", "user"];
 let stageCfgs = null;     // the last /api/stagecfg reply
 let stageCfgLoading = false;
 
@@ -24,7 +24,6 @@ async function loadStageCfgs() {
 function cfgOn(v, it) {
   const c = cfgItem(v, it.id);
   if (c.on !== undefined) { return c.on; }
-  if (v === "agingpc" && it.peers.includes("ext")) { return false; }   // wired to an instrument first (stageCfg.on, decision 187)
   // Reference board unused: what needs it starts unticked, the step is not greyed (decision 188).
   if (cfgRefUnused() && v !== "aging" && cfgFixedRef(it) && !it.peers.includes("ext")) { return false; }
   if (it.default_off) { return false; }   // the reference board cannot test it as wired by default (defaultOff, decisions 129, 135)
@@ -34,11 +33,9 @@ const cfgRefUnused = () => !!(stageCfgs && stageCfgs.ref_unused);
 // AI / AO / DI / DO run against the reference board outside R&D, never a
 // person; one with no such route is refused at the start (decisions 129, 130; fixedRef in stagecfg.go).
 const cfgFixedRef = it => ["ain", "aout", "din", "dout", "relay"].includes(it.port);
-// R&D aging with the PC: an outside instrument where the item offers one, never the reference board (ptitems.AgingPCPeer).
 // Functional / user-level: an item offering both runs with the saved one, else an
 // outside instrument while the board is unused (stageCfg.peer, decision 188).
-const cfgPeer = (v, it) => v === "agingpc" ? (it.peers.includes("ext") ? "ext" : it.peers.find(p => p !== "ref"))
-  : cfgFixedRef(it) && v !== "aging" && it.peers.includes("ext") && it.peers.includes("ref")
+const cfgPeer = (v, it) => cfgFixedRef(it) && v !== "aging" && it.peers.includes("ext") && it.peers.includes("ref")
     ? (["ref", "ext"].includes(cfgItem(v, it.id).peer) ? cfgItem(v, it.id).peer : cfgRefUnused() ? "ext" : "ref")
   : cfgFixedRef(it) ? (it.peers.includes("ref") ? "ref" : it.peers[0])
   : cfgItem(v, it.id).peer || (cfgRefUnused() ? it.peers[0] : cfgDefaultPeer(it));

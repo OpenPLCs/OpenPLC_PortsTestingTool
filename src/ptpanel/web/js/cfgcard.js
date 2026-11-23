@@ -94,9 +94,8 @@ function cfgAnaNote(port, it) {
   return box;
 }
 
-// The card's test-method line: with the PC an outside instrument, the
-// reference board's aging the board, functional / user-level per item (decision 188).
-const cfgSrcKey = v => v === "agingpc" ? "cfg.src_ext" : v === "aging" ? "cfg.src_fixed" : "cfg.src_both";
+// The card's test-method line: aging the reference board, functional / user-level per item (decision 188).
+const cfgSrcKey = v => v === "aging" ? "cfg.src_fixed" : "cfg.src_both";
 
 function cfgOnBox(v, it) {
   const cb = el("input"); cb.type = "checkbox"; cb.dataset.pick = it.id;

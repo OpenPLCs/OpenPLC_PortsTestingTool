@@ -42,7 +42,7 @@ func trimmed(ss []string) []string {
 // The simulated board has no LEDs: the count typed is the board's own.
 func checkDoutBlink(p *Page) {
 	Section("DO card: ticked rows, one 输出 per table, no 开始 (decision 137)")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	p.L(lport("dout")).Click()
 	p.Wait(300)
 	card := p.L(`#itemcards [data-diocard="dout"]`)
@@ -114,7 +114,7 @@ func checkLiveCards(p *Page, com string) {
 		return
 	}
 
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	dinStarts := func() int { return strings.Count(p.L("#log").Text(), "> pt.start din") }
 	n0 := dinStarts()
 	p.L(lport("din")).Click()

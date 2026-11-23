@@ -143,9 +143,10 @@ function knxConnRow() {
   }
   if (devs.length && k.pick) {
     const i = devs.findIndex(d => d.path === k.pick);
-    const shown = el("span", "mono", (k.labels || [])[i] || k.pick);
+    const label = (k.labels || [])[i] || k.pick;
+    const shown = connShort(row, label);   // connzone.js; a long name ends in an ellipsis
+    shown.title = label;
     shown.dataset.knxusbPick = k.pick;
-    v.appendChild(shown);
   }
   if (devs.length > 1 || (devs.length && !k.pick)) {
     const sel = connSelect("knxusb", devs.map((d, i) => ({ name: d.path, label: (k.labels || [])[i] || d.path })), k.pick);

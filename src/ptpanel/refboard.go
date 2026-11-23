@@ -60,7 +60,7 @@ func (s *Server) refWiring() refboard.Wiring {
 // dutRanges is the ranges the fixture tests test the board under test on:
 // the configurations' shared set, not its R&D registration (decision 139).
 func (s *Server) dutRanges() calstore.Ranges {
-	return loadStageCfgs().Ranges
+	return s.cfgs().Ranges
 }
 
 // rangeNameKey is each range's name on the page (analog.js anaRangeName).
@@ -235,7 +235,7 @@ func canRow(w refboard.Wiring, step int, baud string) impactRow {
 // canRows are canRow for every configuration that runs the CAN exchange
 // against the reference board.
 func (s *Server) canRows(w refboard.Wiring) []impactRow {
-	f := loadStageCfgs()
+	f := s.cfgs()
 	s.mu.Lock()
 	caps := s.caps
 	s.mu.Unlock()
@@ -429,7 +429,7 @@ func (s *Server) refPortValues() map[string]map[string]string {
 }
 
 type refBoardBody struct {
-	Wiring refboard.Wiring  `json:"wiring"`
+	Wiring refboard.Wiring `json:"wiring"`
 	Ranges calstore.Ranges `json:"ranges"`
 }
 

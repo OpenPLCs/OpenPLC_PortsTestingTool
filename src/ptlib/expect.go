@@ -1,7 +1,7 @@
 package ptlib
 
-// R&D aging with the PC (decision 187, PORTTOOL-FLOW.md C.3.8): DI and AI are
-// judged frame by frame against values set on the configuration, the signal
+// With an outside instrument (decisions 188, 191, PORTTOOL-FLOW.md C.3.8): DI and AI are
+// judged frame by frame against values set on the card, the signal
 // coming from an outside source; the outputs (DO, AO, relays) only run.
 
 import (

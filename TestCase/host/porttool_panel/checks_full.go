@@ -18,7 +18,7 @@ import (
 func checkFullTest(p *Page, com string) {
 	sim := isSim(com)
 	Section("full fixture test")
-	p.L(`.mi[data-menu="full"]`).Click()
+	p.View("full")
 	p.WaitSel(`#subtiles input[data-fullstep="5"]`, 0)
 	// The tiles draw before /api/full answers, and until then every step looks pickable.
 	p.WaitFunc("() => !!(fullData && fullData.steps)", nil, 0)
@@ -77,11 +77,11 @@ func checkFullTest(p *Page, com string) {
 			gotoRd.Click()
 			p.Wait(300)
 			cur := p.L(".lport.cur")
-			check(strings.Contains(p.L(`.mi[data-menu="rd"]`).Attr("class"), "cur") && cur.Count() == 1 && cur.Attr("data-lport") == "ain",
+			check(p.Eval("view").S() == "rd" && cur.Count() == 1 && cur.Attr("data-lport") == "ain",
 				"which opens R&D test on the AI port")
 		}
 		sendRaw(p, "sim.cal 1")
-		p.L(`.mi[data-menu="full"]`).Click()
+		p.View("full")
 		p.WaitSel(`#subtiles input[data-fullstep="2"]`, 0)
 		step("2").Uncheck()
 	}
@@ -314,7 +314,7 @@ func checkFullTestRelay(p *Page) {
 	}
 	defer p.Eval(putStageCfg, kept.v)
 	if err := try(func() {
-		p.L(`.mi[data-menu="full"]`).Click()
+		p.View("full")
 		p.WaitSel(`#subtiles input[data-fullstep="2"]`, 0)
 		for _, st := range []string{"2", "5"} {
 			p.L(`#subtiles input[data-fullstep="` + st + `"]`).SetChecked(st == "2")
@@ -377,13 +377,15 @@ func checkFullTestRelay(p *Page) {
 }
 
 // checkFullTestPorts: the functional sub-test end to end on the simulated board
-// for ETH link, USB enumeration, SD, SDRAM, temperature and DI, DI driven by
-// the second simulated board as the reference, nobody asked (decision 129).
+// for ETH link and data transfer, USB enumeration, SD, SDRAM, temperature and
+// DI, DI driven by the second simulated board as the reference, nobody asked
+// (decision 129). ETH data transfer reaches the simulated board's TCP bridge
+// (PORTTOOL-FLOW.md C.3.6 「模拟板」).
 // The configuration is put back afterwards.
 func checkFullTestPorts(p *Page) {
 	Section("full fixture test: functional sub-test with the reference board, nobody asked")
 	kept, cfg := funcCfgWith(p, "eth", "usb", "sd", "sdram", "din", "temp")
-	cfg["items"] = map[string]any{"eth.xfer": map[string]any{"on": false}, "usb.info": map[string]any{"on": true},
+	cfg["items"] = map[string]any{"eth.xfer": map[string]any{"on": true}, "usb.info": map[string]any{"on": true},
 		"usb.xfer": map[string]any{"on": false}, "din.level": map[string]any{"on": true, "params": map[string]any{"ch": "1,2"}}}
 	cfg["duration"] = "once"
 	errv := p.Eval(putStageCfg, cfg)
@@ -392,7 +394,7 @@ func checkFullTestPorts(p *Page) {
 	}
 	defer p.Eval(putStageCfg, kept.v)
 	if err := try(func() {
-		p.L(`.mi[data-menu="full"]`).Click()
+		p.View("full")
 		p.WaitSel(`#subtiles input[data-fullstep="2"]`, 0)
 		for _, st := range []string{"2", "5"} {
 			p.L(`#subtiles input[data-fullstep="` + st + `"]`).SetChecked(st == "2")
@@ -415,7 +417,7 @@ func checkFullTestPorts(p *Page) {
 			rt = res.Text() + " " + rt
 		}
 		check(res.Count() == 1 && res.Text() == "通过",
-			"ETH link, USB enumeration, SD, SDRAM, temperature and DI (reference board) pass", rt)
+			"ETH link and data transfer, USB enumeration, SD, SDRAM, temperature and DI (reference board) pass", rt)
 		check(p.Eval("runLines.filter(l => l.kind === 'ask').length").N() == 0, "nobody was asked anything during the run (decision 129)")
 		heights[math.RoundToEven(p.L("#runstat").Box().H)] = true
 		check(len(heights) == 1, "「正在进行」 keeps one height during and after the run", show(sortedKeys(func() map[string]bool {

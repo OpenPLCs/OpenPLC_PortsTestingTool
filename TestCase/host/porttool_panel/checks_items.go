@@ -104,7 +104,7 @@ func runBothGroups(p *Page, ids []string) {
 // the simulated board, so what is checked is that verdicts appear, not which ones.
 func checkItemRunner(p *Page) {
 	Section("item runner: Start on the R&D cards")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	p.L(lport("sdram")).Click()
 	p.Wait(300)
 	ids := attrs(p.L("#itemcards .item"), "data-item")
@@ -175,7 +175,7 @@ func checkItemRunner(p *Page) {
 // whole run, and the network item says to check the subnet first (decision 106).
 func checkRunLogShown(p *Page) {
 	Section("a timed run shows where its log is written")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	if p.L(lport("eth")).Count() > 0 {
 		p.L(lport("eth")).Click()
 		p.Wait(200)
@@ -203,7 +203,7 @@ func checkRunLogShown(p *Page) {
 // round and the frames sit behind their own filter.
 func checkTimedReadable(p *Page) {
 	Section("a timed run says what, how long and which round")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	for _, port := range []string{"eth", "usb", "sd", "sdram"} {
 		if p.L(lport(port)).Count() > 0 {
 			p.L(lport(port)).Click()
@@ -257,7 +257,7 @@ var (
 // person should not meet (decision 82).
 func checkNothingInEnglish(p *Page) {
 	Section("no protocol words left on the cards")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	bad := map[string][]string{}
 	for _, port := range p.Eval("catalog.ports.map(p => p.port)").Strings() {
 		p.L(lport(port)).Click()
@@ -285,7 +285,7 @@ func checkNothingInEnglish(p *Page) {
 		}
 		raw[n][where] = true
 	}
-	for _, v := range []string{"rd", "func", "aging", "user"} {
+	for _, v := range []string{"rd", "func", "user"} {
 		for _, port := range p.Eval("catalog.ports.map(p => p.port)").Strings() {
 			names := p.Eval(`([v, p]) => { view = v; lport = p; renderShell();
                 return [...document.querySelectorAll('#itemcards table.crit tr td')].map(td => td.textContent); }`, []string{v, port}).Strings()
@@ -338,27 +338,38 @@ func checkPeerBinding(p *Page) {
 		check(row.L("select").Count() == 0, "RS485 was found by matching on the simulated board, so there is nothing to choose", found.First().Text())
 		return
 	}
-	sel := row.L(`select[data-pick="rs485"]`)
-	if !check(sel.Count() == 1, "the RS485 row is a chooser", row.Text()) {
-		return
+	// Chosen in station 1's wiring registration (C.3.6 「左 · 接线」).
+	choose := func(last bool) string {
+		p.L("#connbox .step").Click()
+		p.WaitSel(`#lnbox button[data-gear="rs485"]`, 5000)
+		p.L(`#lnbox button[data-gear="rs485"]`).Click()
+		p.WaitSel(".popmenu div", 3000)
+		opts := p.L(".popmenu div")
+		i := 0
+		if last || opts.Count() < 2 {
+			i = opts.Count() - 1
+		}
+		t := opts.Nth(i).Text()
+		opts.Nth(i).Click()
+		p.Wait(800)
+		p.Eval("() => closeModal()")
+		return t
 	}
-	opts := sel.First().L("option")
-	if opts.Count() < 2 {
-		check(strings.Contains(row.Text(), "不用"), "with no adapter to offer, the RS485 row offers 不用", row.Text())
-		return
-	}
-	com := opts.Nth(1).Attr("value")
-	sel.First().Select(com)
 	saved := func() string {
 		return p.Eval(`() => (((state.saved || {}).peers || {}).rs485 || {}).com || ""`).S()
 	}
-	ok := try(func() { p.WaitFunc(`(c) => (((state.saved || {}).peers || {}).rs485 || {}).com === c`, com, 5000) }) == nil
-	check(ok, "choosing "+com+" saves it", saved())
-	check(p.Eval(`() => !(state.links || {}).rs485`).Truthy(), "and does not open it")
-	sel = row.L(`select[data-pick="rs485"]`)
-	sel.First().Select("")
-	ok = try(func() { p.WaitFunc(`() => !(((state.saved || {}).peers || {}).rs485 || {}).com`, nil, 5000) }) == nil
-	check(ok, "不用 forgets the choice", saved())
+	if t := choose(false); t != "（没登记）" {
+		com := strings.Fields(t)[0]
+		ok := try(func() { p.WaitFunc(`(c) => (((state.saved || {}).peers || {}).rs485 || {}).com === c`, com, 5000) }) == nil
+		check(ok, "choosing "+com+" in the registration saves it", saved())
+		check(p.Eval(`() => !(state.links || {}).rs485`).Truthy(), "and does not open it")
+		check(strings.Contains(row.Text(), com), "the RS485 row shows it", row.Text())
+	} else {
+		check(true, "no adapter to offer - only 「没登记」")
+	}
+	choose(true)
+	ok := try(func() { p.WaitFunc(`() => !(((state.saved || {}).peers || {}).rs485 || {}).com`, nil, 5000) }) == nil
+	check(ok, "「没登记」 forgets the choice", saved())
 }
 
 // checkPeerErrorLine: a bound peer that failed turns its row's dot gray with
@@ -394,7 +405,7 @@ func checkAbsentField(p *Page) {
 // only: R&D uses no reference board (decision 133).
 func checkCanPeer(p *Page) {
 	Section("CAN: the far end on the R&D card")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	p.L(lport("can")).Click()
 	p.Wait(300)
 	check(p.L(`#itemcards select[data-peer="can.peer"]`).Count() == 0, "the R&D CAN card offers no reference board, so no choice of peer")
@@ -406,7 +417,7 @@ func checkCanPeer(p *Page) {
 // as the control port's, not this port's verdict (decision 9). Uses the sweep's results.
 func checkCtrlCounts(p *Page) {
 	Section("control-port counts are not a port verdict")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	hits := p.Eval(`() => Object.entries(libData.states || {}).filter(([id, s]) => {
         const it = catalog.items.find(x => x.id === id);
         const p = it && (state.ports || []).find(x => x.name === it.port);

@@ -30,6 +30,12 @@ var webFS embed.FS
 // Server holds the one board connection the panel is driving and the far ends
 // bound to its link ports.
 type Server struct {
+	// tplCfg is the template version the station's board runs on (C.3.10 「模板」).
+	tplMu sync.Mutex
+	// Station is this panel's station number on the fixture line.
+	Station int
+	tplCfg  *stageCfgs
+
 	// Open is how a serial port is obtained; tests put a fake board here.
 	Open func(name string, baud int) (io.ReadWriteCloser, error)
 
@@ -120,8 +126,6 @@ func New() *Server {
 	}
 	s.Stages = map[ptstages.Step]ptstages.Func{
 		ptstages.Functional: s.configStep(ptitems.Func),
-		ptstages.Aging:      s.configStep(ptitems.Aging),
-		ptstages.AgingPC:    s.configStep(ptitems.AgingPC),
 		ptstages.Safety:     s.safetyStep,
 	}
 	s.RunItems = s.runItems

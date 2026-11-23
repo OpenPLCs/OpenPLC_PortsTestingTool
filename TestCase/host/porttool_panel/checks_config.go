@@ -112,19 +112,19 @@ func checkRefPage(p *Page) {
 	check(p.L("#refpage").Count() == 0, "「关闭」 leaves the page")
 }
 
-// checkStageConfigs: functional / aging / user-level are configurations
+// checkStageConfigs: functional / user-level are configurations
 // (decision 97): every change is remembered at once, an exclusive pair
 // cannot both be ticked, and clicking any of it sends no pt.start.
 func checkStageConfigs(p *Page) {
 	Section("stage configurations")
 	p.L("#clear").Click()
-	openSub(p, "aging")
+	openSub(p, "user")
 	p.L(lport("temp")).Click()
 	p.Wait(300)
-	dur := p.L(`#subtiles select[data-subdur="aging"]`) // the time sits on the sub-test's tile
-	dur.Select("2")
+	dur := p.L(`#subtiles select[data-subdur="user"]`) // the time sits on the sub-test's tile
+	dur.Select("1")
 	p.Wait(400)
-	check(p.L(`#subtiles select[data-subdur="aging"]`).Value() == "2", "the aging duration stays as picked")
+	check(p.L(`#subtiles select[data-subdur="user"]`).Value() == "1", "the user-level duration stays as picked")
 	box := p.L(`.lport input[data-cfgport="temp"]`)
 	if check(box.Count() == 1, "a configuration page has a tick per port") {
 		box.Uncheck()
@@ -155,55 +155,34 @@ func checkStageConfigs(p *Page) {
 		check(warn.Count() == 1 && warn.Visible() && strings.Contains(warn.Text(), "5000"),
 			"a configured AO test point on the 5000 mV calibration point is pointed out", wt)
 	}
-	// Decision 129: outside R&D the AO load targets are filled in before the run;
-	// blank, step 4 cannot be picked and its tile says why. One per AO.
-	out1 := p.L(`#itemcards input[data-cfgparam="aout.load|out1"]`)
-	out2 := p.L(`#itemcards input[data-cfgparam="aout.load|out2"]`)
+	// Decision 134: AI1 on current against AO1 on voltage cannot test; without
+	// the reference board the step is refused (decision 129). Step 2 says so.
 	simRef := p.Eval("api('/api/ref', {port: 'sim'})").K("connected").Truthy()
 	tileHas := func(s string) {
 		_ = try(func() {
-			p.WaitFunc("() => (document.querySelector('#subtiles .subtile[data-sub=\"aging\"]') || {}).innerText.includes('"+s+"')", nil, 8000)
+			p.WaitFunc("() => (document.querySelector('#subtiles .subtile[data-sub=\"func\"]') || {}).innerText.includes('"+s+"')", nil, 8000)
 		})
 	}
-	step4 := p.L(`#subtiles input[data-fullstep="4"]`)
+	step2 := p.L(`#subtiles input[data-fullstep="2"]`)
 	if simRef {
-		// Decision 134: AI1 on current against AO1 on voltage cannot test.
+		openSub(p, "func")
 		setRefAI1(p, "i")
-		tile := p.L(`#subtiles .subtile[data-sub="aging"]`)
+		tile := p.L(`#subtiles .subtile[data-sub="func"]`)
 		tileHas("档位不匹配")
-		check(strings.Contains(tile.Text(), "档位不匹配") && step4.Disabled(),
-			"ranges that do not match: step 4 cannot be picked and says so (decision 134)", tile.Text())
+		check(strings.Contains(tile.Text(), "档位不匹配") && step2.Disabled(),
+			"ranges that do not match: step 2 cannot be picked and says so (decision 134)", tile.Text())
 		checkRefPage(p)
 		setRefAI1(p, "v")
-	}
-	if check(out1.Count() == 1 && out2.Count() == 1 && out1.Value() == "" && out2.Value() == "",
-		"aging: the AO load has one target per AO, both blank") && simRef {
-		tile := p.L(`#subtiles .subtile[data-sub="aging"]`)
-		tileHas("目标值没填")
-		check(strings.Contains(tile.Text(), "目标值没填") && step4.Disabled(),
-			"and step 4 cannot be picked, its tile saying the target is not filled in", tile.Text())
-		out1.Fill("20")
-		out1.Dispatch("change")
-		p.Wait(800)
-		check(step4.Disabled(), "with only AO1's target filled in, step 4 still cannot be picked", tile.Text())
-		out2.Fill("20")
-		out2.Dispatch("change")
-		_ = try(func() {
-			p.WaitFunc("() => !document.querySelector('#subtiles input[data-fullstep=\"4\"]').disabled", nil, 8000)
-		})
-		check(step4.Enabled(), "with both AO targets filled in, step 4 can be picked again", tile.Text())
-		// Decision 129: the reference board runs AI / AO / DI / DO here; without it the step is refused.
 		p.Eval("api('/api/ref', {port: ''})")
 		tileHas("要标准机")
-		check(strings.Contains(tile.Text(), "要标准机") && step4.Disabled(),
-			"without the reference board, step 4 cannot be picked and says it needs one", tile.Text())
+		check(strings.Contains(tile.Text(), "要标准机") && step2.Disabled(),
+			"without the reference board, step 2 cannot be picked and says it needs one", tile.Text())
 	}
 	if simRef {
 		p.Eval("api('/api/ref', {port: ''})")
 		p.Eval("api('/api/analog/ranges', {ranges: {AI1: 'v'}})") // the shared UID back to the product default
 	}
 	checkRelayConfigs(p)
-	checkRDAging(p)
 
 	openSub(p, "func")
 	p.L(lport("usb")).Click()
@@ -225,7 +204,7 @@ func checkStageConfigs(p *Page) {
 
 	// Decision 135: with the reference board set to unused there is no self-loop;
 	// a card that needed it says it cannot run in the fixture tests.
-	flip := "async u => { await api('/api/stagecfg', {ref_unused: u}); stageCfgs = null; await loadStageCfgs(); }"
+	flip := "async u => { await api('/api/stagecfg', {ref_unused: u}); stageCfgs = null; await loadStageCfgs(); await loadFull(); }"
 	p.Eval(flip, true)
 	p.L(lport("din")).Click()
 	p.Wait(300)
@@ -250,7 +229,7 @@ func checkStageConfigs(p *Page) {
 	openSub(p, "user")
 	starts := startedLines(p.L("#log").Text())
 	check(len(starts) == 0, "configuration pages send no pt.start", cut(strings.Join(starts, " "), 200))
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	stageCfgChanged = true
 }
 
@@ -272,7 +251,7 @@ func relayFill(p *Page, ch int, k, v string) {
 // empty until filled; above 100 cycles a red note right of the box (decision 123).
 func checkRelayConfigs(p *Page) {
 	Section("relay card on the configuration pages")
-	for _, stage := range []string{"func", "aging", "user"} {
+	for _, stage := range []string{"func", "user"} {
 		openSub(p, stage)
 		p.L(lport("relay")).Click()
 		p.Wait(300)
@@ -284,9 +263,9 @@ func checkRelayConfigs(p *Page) {
 			stage+": the total count starts empty and says it is required")
 		checkRelayAll(p, stage)
 	}
-	// Aging is set to 2 h above: with a duration the relays run by it and only
-	// the count is typed, so they cannot overrun (decision 123).
-	openSub(p, "aging")
+	// User-level is set to 1 h above: with a duration the relays run by it and
+	// only the count is typed, so they cannot overrun (decision 123).
+	openSub(p, "user")
 	p.L(lport("relay")).Click()
 	p.Wait(300)
 	p.L(`#itemcards [data-relaytick="1"]`).Check()
@@ -296,12 +275,12 @@ func checkRelayConfigs(p *Page) {
 	if by.Count() > 0 {
 		byText = by.Text()
 	}
-	check(by.Count() == 1 && strings.Contains(by.Text(), "2 小时") && p.L(`#itemcards [data-relayseg="by"]`).Count() == 0 &&
+	check(by.Count() == 1 && strings.Contains(by.Text(), "1 小时") && p.L(`#itemcards [data-relayseg="by"]`).Count() == 0 &&
 		relayCell(p, 1, "closeS").Count() == 0 && relayCell(p, 1, "minutes").Count() == 0,
-		"aging 2 h: the relays run by the test's time, only the count is typed", byText)
+		"user-level 1 h: the relays run by the test's time, only the count is typed", byText)
 	relayFill(p, 1, "count", "2")
 	derived := p.L(`#itemcards [data-relayderived="1"]`).Text()
-	check(strings.Contains(derived, "1800.0"), "2 cycles in 2 h: 1800 s closed and 1800 s open each", derived)
+	check(strings.Contains(derived, "900.0"), "2 cycles in 1 h: 900 s closed and 900 s open each", derived)
 	check(p.L("#itemcards [data-relayover]").Count() == 0, "and there is no over-time note any more")
 	relayFill(p, 1, "count", "")
 	p.L(`#itemcards [data-relaytick="1"]`).Uncheck()

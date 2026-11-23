@@ -33,7 +33,7 @@ func lineOnSim(t *testing.T, fail *atomic.Bool) (*Stations, *lineStation) {
 	PlanDir = plans
 	t.Cleanup(func() { PlanDir = "" })
 	oldSecs := agingSecs
-	agingSecs = func() int { return 2 }
+	agingSecs = func(stageCfgs) int { return 2 }
 	t.Cleanup(func() { agingSecs = oldSecs })
 	old := fixtureImage
 	fixtureImage = func() (string, string) { return "", "" }

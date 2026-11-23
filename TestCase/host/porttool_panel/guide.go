@@ -39,18 +39,23 @@ const guideW, guideH = 1440, 900
 func guideScenes() []scene {
 	card := `#itemcards .item[data-item="sdram.probe"]`
 	return []scene{
+		// Step one is station 1's wiring registration (C.3.6 「左 · 接线」).
 		{name: "connect", setup: func(p *Page) {
-			p.L("#ctlport").Select("sim")
-		}, marks: []mark{{"#ctlport", 1}, {"#connect", 2}, {"#showbt", 3}}, clip: "#connzone"},
+			p.L("#connbox .step").Click()
+			p.WaitSel(`#lnbox button[data-gear="control"]`, 0)
+			p.L(`#lnbox button[data-gear="control"]`).Click()
+			p.WaitSel(".popmenu div", 0)
+		}, marks: []mark{{`#lnbox button[data-gear="control"]`, 1}, {".popmenu", 2}}},
 
 		{name: "overview", setup: func(p *Page) {
-			p.L("#connect").Click()
+			p.Eval(`() => { const d = [...document.querySelectorAll(".popmenu div")].find(x => x.textContent === T("line.set.sim")); d.click(); }`)
 			p.WaitSel("#afterconn.live", 0)
+			p.Eval("() => closeModal()")
 			p.Wait(4500) // converter matching runs 3 s after connecting and holds Start
-			p.L(`.mi[data-menu="rd"]`).Click()
+			p.View("rd")
 			p.L(lport("sdram")).Click()
 			p.Wait(500)
-		}, marks: []mark{{"#guidelink", 1}, {"#connbox", 2}, {"#connrows", 3}, {"#menus", 4},
+		}, marks: []mark{{"#guidelink", 1}, {"#connbox", 2}, {"#connrows", 3}, {"#typechip", 4},
 			{"#lports", 5}, {"#itemcards", 6}, {"#logcol", 7}}},
 
 		{name: "rows", marks: []mark{{`#connrows .crow[data-conn="usb"]`, 1}, {`#connrows .crow .dot`, 2},
@@ -94,11 +99,6 @@ func guideScenes() []scene {
 				p.Wait(300)
 			}
 		}, marks: []mark{{"#logwrap .filt", 1}, {"#pause", 2}, {"#save", 3}, {"#raw", 4}, {"#send", 5}}, clip: "#logcol"},
-
-		{name: "full", setup: func(p *Page) {
-			p.L(`.mi[data-menu="full"]`).Click()
-			p.Wait(800)
-		}, marks: []mark{{"#subtiles", 1}, {"#lports", 2}, {"#itemcards", 3}, {"#shellstart", 4}}},
 	}
 }
 
@@ -154,14 +154,13 @@ func runGuide(p *Page, base string) {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			throw("%v", err)
 		}
-		p.Goto(base)
+		p.Goto(base + "/index.html")
 		p.Eval(`l => fetch("/api/settings", {method: "POST", body: JSON.stringify({lang: l})})`, lang)
 		p.Wait(300)
-		if p.L("#disconnect").Visible() {
-			p.L("#disconnect").Click()
-			p.Wait(500)
-		}
-		p.Goto(base)
+		// Every language starts unregistered, so the first scene shows registering.
+		p.Eval(`() => api("/api/stations/set", {n: 1, control: ""})`)
+		p.WaitSel("#afterconn:not(.live)", 20000)
+		p.Goto(base + "/index.html")
 		p.Wait(800)
 		for _, s := range guideScenes() {
 			if s.setup != nil {

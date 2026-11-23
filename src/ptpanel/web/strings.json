@@ -1402,13 +1402,6 @@
    "de": "Leeren",
    "de_of": "84fcd70d"
   },
-  "html.connect": {
-   "zh": "连接",
-   "en": "Connect",
-   "en_of": "7328deeb",
-   "de": "Verbinden",
-   "de_of": "7328deeb"
-  },
   "html.criteria": {
    "zh": "判据",
    "en": "Criteria",
@@ -1422,13 +1415,6 @@
    "en_of": "15683f6c",
    "de": "Anleitung (englisch)",
    "de_of": "15683f6c"
-  },
-  "html.disconnect": {
-   "zh": "断开",
-   "en": "Disconnect",
-   "en_of": "28fb7ced",
-   "de": "Trennen",
-   "de_of": "28fb7ced"
   },
   "html.filter.caps": {
    "zh": "板子自述",
@@ -1485,6 +1471,13 @@
    "en_of": "7725c208",
    "de": "Sprache der Oberfläche (Logs und Dateien immer Englisch)",
    "de_of": "7725c208"
+  },
+  "html.loggrip": {
+   "zh": "拖动这条线调整日志一栏的宽度，松手后记住",
+   "en": "Drag this line to change the width of the log column; it is remembered when you let go",
+   "en_of": "19f08e89",
+   "de": "Diese Linie ziehen, um die Log-Spalte breiter oder schmaler zu machen; die Breite bleibt gespeichert",
+   "de_of": "19f08e89"
   },
   "html.leftgrip": {
    "zh": "拖动这条线调整左边一栏的宽度，松手后记住",
@@ -1703,13 +1696,6 @@
    "de": "+ Arbeitsplatz hinzufügen",
    "de_of": "f16fd6a7"
   },
-  "line.age.hours": {
-   "zh": "老化时长",
-   "en": "Aging time",
-   "en_of": "1de9b0fc",
-   "de": "Alterungsdauer",
-   "de_of": "1de9b0fc"
-  },
   "line.age.hours_n": {
    "zh": "{n} 小时",
    "en": "{n} h",
@@ -1773,27 +1759,6 @@
    "de": "Temperatur: beide Sensoren im Bereich",
    "de_of": "d4a10f51"
   },
-  "line.age.save": {
-   "zh": "保存",
-   "en": "Save",
-   "en_of": "fadf24db",
-   "de": "Speichern",
-   "de_of": "fadf24db"
-  },
-  "line.age.saved": {
-   "zh": "已保存，下一块板写任务时生效",
-   "en": "Saved; applies to the next task written",
-   "en_of": "6b4c6699",
-   "de": "Gespeichert; gilt für den nächsten Auftrag",
-   "de_of": "6b4c6699"
-  },
-  "line.age.title": {
-   "zh": "老化项（写进板子的任务）",
-   "en": "Aging items (the task written to the board)",
-   "en_of": "279fcdd7",
-   "de": "Alterungspunkte (der Auftrag auf der Platine)",
-   "de_of": "279fcdd7"
-  },
   "line.btn.cancelage": {
    "zh": "取消老化",
    "en": "Cancel aging",
@@ -1828,13 +1793,6 @@
    "en_of": "d558f34b",
    "de": "Weiter altern (zurück in den Wärmeschrank)",
    "de_of": "d558f34b"
-  },
-  "line.btn.open_panel": {
-   "zh": "打开这个工位的面板",
-   "en": "Open this station's panel",
-   "en_of": "7afba7df",
-   "de": "Panel dieses Arbeitsplatzes öffnen",
-   "de_of": "7afba7df"
   },
   "line.btn.pause": {
    "zh": "暂停",
@@ -1948,54 +1906,12 @@
    "de": "Hinweis: {r}",
    "de_of": "75a8edea"
   },
-  "line.detail.record": {
-   "zh": "记录：{file}",
-   "en": "Record: {file}",
-   "en_of": "7066a533",
-   "de": "Protokoll: {file}",
-   "de_of": "7066a533"
-  },
-  "line.detail.ship": {
-   "zh": "出厂单",
-   "en": "Shipping sheet",
-   "en_of": "5bd2b75f",
-   "de": "Versandblatt",
-   "de_of": "5bd2b75f"
-  },
   "line.detail.ship_ok": {
    "zh": "五步全过，可以出厂",
    "en": "All five steps passed: ready to ship",
    "en_of": "836ee148",
    "de": "Alle fünf Schritte bestanden: versandbereit",
    "de_of": "836ee148"
-  },
-  "line.detail.show": {
-   "zh": "看这份记录",
-   "en": "Show this record",
-   "en_of": "9344df4b",
-   "de": "Protokoll anzeigen",
-   "de_of": "9344df4b"
-  },
-  "line.detail.title": {
-   "zh": "工位 {n} · 板子 {uid}",
-   "en": "Station {n} · board {uid}",
-   "en_of": "d3d959dc",
-   "de": "Arbeitsplatz {n} · Platine {uid}",
-   "de_of": "d3d959dc"
-  },
-  "line.detail.value": {
-   "zh": "读数",
-   "en": "Reading",
-   "en_of": "ea4965c2",
-   "de": "Messwert",
-   "de_of": "ea4965c2"
-  },
-  "line.detail.where": {
-   "zh": "位置",
-   "en": "Where",
-   "en_of": "88c34452",
-   "de": "Ort",
-   "de_of": "88c34452"
   },
   "line.fw.blank": {
    "zh": "空片",
@@ -2017,20 +1933,6 @@
    "en_of": "700c6c19",
    "de": "{v} (alt)",
    "de_of": "700c6c19"
-  },
-  "line.fw_none_shipped": {
-   "zh": "没找到工装固件镜像，烧不了",
-   "en": "No fixture firmware image found, nothing to flash",
-   "en_of": "16d5671a",
-   "de": "Kein Fixture-Firmware-Image gefunden, Flashen nicht möglich",
-   "de_of": "16d5671a"
-  },
-  "line.fw_shipped": {
-   "zh": "本机带的工装固件：{v}",
-   "en": "Fixture firmware shipped here: {v}",
-   "en_of": "664f95be",
-   "de": "Hier mitgelieferte Fixture-Firmware: {v}",
-   "de_of": "664f95be"
   },
   "line.missing": {
    "zh": "还没认出：{list}",
@@ -2074,54 +1976,12 @@
    "de": "Bestanden",
    "de_of": "4fd078e9"
   },
-  "line.set.cancel": {
-   "zh": "取消",
-   "en": "Cancel",
-   "en_of": "4d0b4688",
-   "de": "Abbrechen",
-   "de_of": "4d0b4688"
-  },
-  "line.set.control": {
-   "zh": "控制口（RS232）",
-   "en": "Control port (RS232)",
-   "en_of": "e1c944b2",
-   "de": "Steueranschluss (RS232)",
-   "de_of": "e1c944b2"
-  },
-  "line.set.none": {
-   "zh": "（不用）",
-   "en": "(none)",
-   "en_of": "5a5d0a34",
-   "de": "(keiner)",
-   "de_of": "5a5d0a34"
-  },
-  "line.set.save": {
-   "zh": "保存",
-   "en": "Save",
-   "en_of": "fadf24db",
-   "de": "Speichern",
-   "de_of": "fadf24db"
-  },
   "line.set.sim": {
    "zh": "模拟板",
    "en": "Simulated board",
    "en_of": "674ea2c8",
    "de": "Simulierte Platine",
    "de_of": "674ea2c8"
-  },
-  "line.set.stlink": {
-   "zh": "ST-Link",
-   "en": "ST-Link",
-   "en_of": "47b9c89d",
-   "de": "ST-Link",
-   "de_of": "47b9c89d"
-  },
-  "line.set.title": {
-   "zh": "设置工位 {n}",
-   "en": "Station {n} settings",
-   "en_of": "d579edfc",
-   "de": "Arbeitsplatz {n} einstellen",
-   "de_of": "d579edfc"
   },
   "line.side.oven": {
    "zh": "在高温柜里",
@@ -2369,11 +2229,11 @@
    "de_of": "7fedb576"
   },
   "line.why.no_control": {
-   "zh": "没设控制口：点 ⋯ 里的「设置工位」",
-   "en": "No control port set: use ⋯ → Station settings",
-   "en_of": "f7c4ebcb",
-   "de": "Kein Steueranschluss gesetzt: ⋯ → Arbeitsplatz einstellen",
-   "de_of": "f7c4ebcb"
+   "zh": "没登记控制口：点左边这个工位登记接线",
+   "en": "No control port registered: click this station on the left to register its wiring",
+   "en_of": "91dc196e",
+   "de": "Kein Steuerport eingetragen: diesen Platz links anklicken und die Verkabelung eintragen",
+   "de_of": "91dc196e"
   },
   "line.why.no_fw": {
    "zh": "控制口没回答：板上没有工装固件",
@@ -2557,26 +2417,12 @@
    "de": "Was das Panel nicht kann, geht hier. Befehle gehen unverändert an die Platine, Antworten werden unverändert angezeigt.",
    "de_of": "f3683b02"
   },
-  "html.refresh": {
-   "zh": "重新找",
-   "en": "Search again",
-   "en_of": "57609118",
-   "de": "Neu suchen",
-   "de_of": "57609118"
-  },
   "html.save": {
    "zh": "导出",
    "en": "Export",
    "en_of": "18889679",
    "de": "Exportieren",
    "de_of": "18889679"
-  },
-  "html.searching": {
-   "zh": "正在找串口…",
-   "en": "Looking for serial ports…",
-   "en_of": "c2c79441",
-   "de": "Suche serielle Ports…",
-   "de_of": "c2c79441"
   },
   "html.send": {
    "zh": "发送",
@@ -2893,20 +2739,6 @@
    "de": "Das Panel-Programm ist nicht erreichbar: Es wurde vielleicht geschlossen, oder die Seite lädt gerade neu.",
    "de_of": "0e3cfde2"
   },
-  "ui.applyState.1": {
-   "zh": "控制口 <b>{port}</b> 已连上。要换口先点「断开」。",
-   "en": "Control port <b>{port}</b> is connected. To switch ports, click Disconnect first.",
-   "en_of": "2ead85e8",
-   "de": "Steuerport <b>{port}</b> ist verbunden. Zum Wechseln zuerst Trennen klicken.",
-   "de_of": "2ead85e8"
-  },
-  "ui.applyState.2": {
-   "zh": "先选一个口，再点连接。板子的控制口是端子 <b>C05 / C06</b>，要用 USB-RS232 适配器（端子是真 ±12 V）。",
-   "en": "Choose a port first, then click Connect. The board's control port is terminals <b>C05 / C06</b>; use a USB-RS232 adapter (the terminals carry real ±12 V).",
-   "en_of": "9f03c6de",
-   "de": "Zuerst einen Port wählen, dann Verbinden klicken. Der Steuerport der Platine sind die Klemmen <b>C05 / C06</b>; einen USB-RS232-Adapter verwenden (an den Klemmen liegen echte ±12 V).",
-   "de_of": "9f03c6de"
-  },
   "ui.applyState.3": {
    "zh": "控制口断了",
    "en": "Control port lost",
@@ -3019,54 +2851,12 @@
    "de": "Regression: die Punkte sind die Messpunkte, die Linie ist die Ausgleichsgerade y = k·x + b",
    "de_of": "842e50cc"
   },
-  "ui.loadPorts.1": {
-   "zh": "没找到串口 —— 插上 USB-RS232 适配器再点「重新找」",
-   "en": "No serial port found — plug in the USB-RS232 adapter, then click \"Search again\"",
-   "en_of": "288e7176",
-   "de": "Kein serieller Port gefunden — USB-RS232-Adapter einstecken, dann „Neu suchen“ klicken",
-   "de_of": "288e7176"
-  },
   "ui.loadPorts.2": {
    "zh": "  ← 像是 RS232",
    "en": "  ← looks like RS232",
    "en_of": "55997d7a",
    "de": "  ← sieht nach RS232 aus",
    "de_of": "55997d7a"
-  },
-  "ui.loadPorts.3": {
-   "zh": "  ← 没编，点不了",
-   "en": "  ← not built, cannot be used",
-   "en_of": "34934d75",
-   "de": "  ← nicht gebaut, nicht nutzbar",
-   "de_of": "34934d75"
-  },
-  "ui.loadPorts.4": {
-   "zh": "先编一个：`start.sh sim`",
-   "en": "Build one first: `start.sh sim`",
-   "en_of": "213f8aa4",
-   "de": "Zuerst bauen: `start.sh sim`",
-   "de_of": "213f8aa4"
-  },
-  "ui.loadPorts.5": {
-   "zh": "  ← 不用接板子",
-   "en": "  ← no board needed",
-   "en_of": "529f0859",
-   "de": "  ← keine Platine nötig",
-   "de_of": "529f0859"
-  },
-  "ui.loadPorts.6": {
-   "zh": "  ← 上次用的",
-   "en": "  ← used last time",
-   "en_of": "5a6666a4",
-   "de": "  ← zuletzt benutzt",
-   "de_of": "5a6666a4"
-  },
-  "ui.loadPorts.7": {
-   "zh": "已选 <b>{name}</b> —— 点「连接」继续。",
-   "en": "<b>{name}</b> selected — click Connect to continue.",
-   "en_of": "23f75c45",
-   "de": "<b>{name}</b> gewählt — Verbinden klicken, um fortzufahren.",
-   "de_of": "23f75c45"
   },
   "ui.renderCriteria.1": {
    "zh": "读不了：{criteria_problem}",
@@ -3655,13 +3445,6 @@
    "en_of": "a8a8f074",
    "de": "Funktionsprüfung",
    "de_of": "a8a8f074"
-  },
-  "ui.full.step4": {
-   "zh": "研发老化 · 接标准机",
-   "en": "R&D aging · with reference board",
-   "en_of": "9fb15ad6",
-   "de": "F&E-Alterung · mit Referenzgerät",
-   "de_of": "9fb15ad6"
   },
   "ui.full.step5": {
    "zh": "安规测试",
@@ -4867,33 +4650,12 @@
    "de": "„Start“ drücken\nDas Panel liest die zwei Sensoren: am Kurzschlussschutz und am High-Side-Schalter",
    "de_of": "798f1913"
   },
-  "shell.types": {
-   "zh": "第三步：选测试类型",
-   "en": "Step 3: pick a test type",
-   "en_of": "f63e6fa5",
-   "de": "Schritt 3: Prüfart wählen",
-   "de_of": "f63e6fa5"
-  },
   "shell.ports": {
    "zh": "端口",
    "en": "Ports",
    "en_of": "6cbb7335",
    "de": "Anschlüsse",
    "de_of": "6cbb7335"
-  },
-  "shell.type.rd": {
-   "zh": "研发测试",
-   "en": "R&D test",
-   "en_of": "6bca7e15",
-   "de": "Entwicklungsprüfung",
-   "de_of": "6bca7e15"
-  },
-  "shell.type.rd_d": {
-   "zh": "测试库：全部端口、全部测试项；AI / AO 的校准和档位登记也在这里",
-   "en": "Test library: every port and every test item; AI / AO calibration and range registration are here too",
-   "en_of": "4600f0d4",
-   "de": "Prüfbibliothek: alle Anschlüsse und alle Prüfpunkte; auch AI-/AO-Kalibrierung und Bereichseintrag",
-   "de_of": "4600f0d4"
   },
   "shell.type.func": {
    "zh": "功能测试",
@@ -4922,13 +4684,6 @@
    "en_of": "d36236aa",
    "de": "Vollständige Vorrichtungsprüfung",
    "de_of": "d36236aa"
-  },
-  "shell.entry.full_d": {
-   "zh": "功能 / 安规 / 用户级，在右侧勾选、配时间，一起开始",
-   "en": "Functional / safety / user-level: tick them and set their times on the right, then start them together",
-   "en_of": "ef22741f",
-   "de": "Funktion / Sicherheit / Anwenderebene: rechts ankreuzen, Zeiten einstellen und gemeinsam starten",
-   "de_of": "ef22741f"
   },
   "shell.safety.noports": {
    "zh": "安规不分端口",
@@ -5182,26 +4937,12 @@
    "de": "Gegenstelle für den Netzwerk-Datentest: dieser PC verbindet sich mit der IP, die die Platine meldet",
    "de_of": "27674841"
   },
-  "conn.rs232": {
-   "zh": "RS232",
-   "en": "RS232",
-   "en_of": "250d17ab",
-   "de": "RS232",
-   "de_of": "250d17ab"
-  },
   "conn.rs232_d": {
    "zh": "板上唯一一组 RS232 就是控制口",
    "en": "The board's only RS232 pair is the control port",
    "en_of": "bfddc8c1",
    "de": "Das einzige RS232-Paar der Platine ist der Steuerport",
    "de_of": "bfddc8c1"
-  },
-  "conn.rs232_ctl": {
-   "zh": "就是上面的控制口，不另接",
-   "en": "Same as the control port above, nothing else to connect",
-   "en_of": "f335dc51",
-   "de": "Das ist der Steuerport oben, nichts weiter anzuschließen",
-   "de_of": "f335dc51"
   },
   "conn.rs485": {
    "zh": "RS485",
@@ -5266,20 +5007,6 @@
    "de": "Quelle der Referenzwerte und Gegenstelle für DI und CAN; ihren Steuerport verbinden oder die simulierte Platine wählen",
    "de_of": "e2676f6b"
   },
-  "conn.connect": {
-   "zh": "连上",
-   "en": "Connect",
-   "en_of": "2c846319",
-   "de": "Verbinden",
-   "de_of": "2c846319"
-  },
-  "conn.disconnect": {
-   "zh": "断开",
-   "en": "Disconnect",
-   "en_of": "28fb7ced",
-   "de": "Trennen",
-   "de_of": "28fb7ced"
-  },
   "conn.stlink": {
    "zh": "ST-Link",
    "en": "ST-Link",
@@ -5300,6 +5027,13 @@
    "en_of": "55691884",
    "de": "Wird geprüft…",
    "de_of": "55691884"
+  },
+  "conn.stlink_in": {
+   "zh": "已插上",
+   "en": "Plugged in",
+   "en_of": "5fec8458",
+   "de": "Eingesteckt",
+   "de_of": "5fec8458"
   },
   "conn.stlink_none": {
    "zh": "没插 ST-Link",
@@ -9585,13 +9319,6 @@
    "de": "dieser Eingang wurde nie High gesehen",
    "de_of": "54b09e5f"
   },
-  "html.ctl_pick": {
-   "zh": "选一个串口…",
-   "en": "Pick a serial port…",
-   "en_of": "0086b84a",
-   "de": "Schnittstelle wählen…",
-   "de_of": "0086b84a"
-  },
   "full.ports_of": {
    "zh": "{sub} · 端口",
    "en": "{sub} · ports",
@@ -12161,26 +11888,12 @@
    "de": "Hoch",
    "de_of": "b096b3f5"
   },
-  "conn.fresh": {
-   "zh": "（刚插上）",
-   "en": " (just plugged in)",
-   "en_of": "668c91c2",
-   "de": " (gerade eingesteckt)",
-   "de_of": "668c91c2"
-  },
   "html.ctl_auto": {
    "zh": "自动找",
    "en": "Find it",
    "en_of": "260e889a",
    "de": "Automatisch suchen",
    "de_of": "260e889a"
-  },
-  "html.ctl_auto_busy": {
-   "zh": "正在找…",
-   "en": "Searching…",
-   "en_of": "21bf961d",
-   "de": "Suche…",
-   "de_of": "21bf961d"
   },
   "html.ctl_auto_tried": {
    "zh": "{error}（试过的口：{tried}）",
@@ -12407,25 +12120,11 @@
    "de_of": "fcc5ff7e"
   },
   "conn.title_hint": {
-   "zh": "只接要测的端口用到的，用不到的不用管。",
-   "en": "Connect only what the ports you test need; leave the rest.",
-   "en_of": "015c7d4c",
-   "de": "Nur anschließen, was die zu prüfenden Ports brauchen; den Rest weglassen.",
-   "de_of": "015c7d4c"
-  },
-  "html.show_bt": {
-   "zh": "显示蓝牙串口",
-   "en": "Show Bluetooth ports",
-   "en_of": "660ec0df",
-   "de": "Bluetooth-Ports anzeigen",
-   "de_of": "660ec0df"
-  },
-  "conn.grp.dut": {
-   "zh": "被测板",
-   "en": "The board under test",
-   "en_of": "c3c85c6f",
-   "de": "Die geprüfte Platine",
-   "de_of": "c3c85c6f"
+   "zh": "只接要测的端口用到的。圆点绿 = 认出来了。",
+   "en": "Connect only what the ports you test need. Green dot = recognised.",
+   "en_of": "9b9724ba",
+   "de": "Nur anschließen, was die zu prüfenden Ports brauchen. Grüner Punkt = erkannt.",
+   "de_of": "9b9724ba"
   },
   "go.link.usb_other_board": {
    "zh": "{com} 是另一块板（UID 末 6 位 {uid}）的 USB 口，不是这块被测板的。请选被测板自己的 USB 口。",
@@ -12538,27 +12237,6 @@
    "en_of": "0b465e01",
    "de": "Der Standardwert stammt aus dem Prüfplan; er wurde noch nicht an einer guten Platine gemessen und ist daher vorläufig. Leer lassen, um nur festzuhalten.",
    "de_of": "0b465e01"
-  },
-  "conn.board.uid": {
-   "zh": "UID 末 6 位 {uid}",
-   "en": "UID ending {uid}",
-   "en_of": "de1d4974",
-   "de": "UID endet auf {uid}",
-   "de_of": "de1d4974"
-  },
-  "conn.board.serial": {
-   "zh": "USB 序列号 {serial}",
-   "en": "USB serial {serial}",
-   "en_of": "66e97a25",
-   "de": "USB-Seriennummer {serial}",
-   "de_of": "66e97a25"
-  },
-  "conn.board.sim": {
-   "zh": "模拟板",
-   "en": "Simulated board",
-   "en_of": "674ea2c8",
-   "de": "Simulierte Platine",
-   "de_of": "674ea2c8"
   },
   "conn.board.none": {
    "zh": "没看到板子",
@@ -12777,20 +12455,6 @@
    "de": "Freigegeben: alle Tests sind gestoppt, alle vom Panel geöffneten Gegenstellen-Ports sind geschlossen.",
    "de_of": "beb11434"
   },
-  "conn.pick_none": {
-   "zh": "不用",
-   "en": "Not used",
-   "en_of": "78ac1ae0",
-   "de": "Nicht verwendet",
-   "de_of": "78ac1ae0"
-  },
-  "conn.pick_auto": {
-   "zh": "自动（按 USB 编号找）",
-   "en": "Automatic (found by USB id)",
-   "en_of": "5a5d06ce",
-   "de": "Automatisch (per USB-Kennung gefunden)",
-   "de_of": "5a5d06ce"
-  },
   "lib.release": {
    "zh": "强制释放端口",
    "en": "Force release ports",
@@ -12833,48 +12497,6 @@
    "de": "Prüfsumme des Zurückgelesenen",
    "de_of": "70ff8353"
   },
-  "shell.type.rdaging": {
-   "zh": "研发老化测试",
-   "en": "R&D aging test",
-   "en_of": "e0f35c68",
-   "de": "F&E-Alterungstest",
-   "de_of": "e0f35c68"
-  },
-  "shell.type.rdaging_d": {
-   "zh": "接标准机，或接上位机和外部仪器（高低温、EMC），二选一，带时长",
-   "en": "With the reference board, or with this PC and outside instruments (temperature chamber, EMC); one of the two, for a set time",
-   "en_of": "1c7c6938",
-   "de": "Mit Referenzgerät oder mit diesem PC und externen Messgeräten (Klimakammer, EMV); eines von beiden, mit fester Dauer",
-   "de_of": "1c7c6938"
-  },
-  "shell.type.aging_ref": {
-   "zh": "接标准机",
-   "en": "With reference board",
-   "en_of": "5459e551",
-   "de": "Mit Referenzgerät",
-   "de_of": "5459e551"
-  },
-  "shell.type.aging_pc": {
-   "zh": "接上位机",
-   "en": "With PC",
-   "en_of": "b5bc4366",
-   "de": "Mit PC",
-   "de_of": "b5bc4366"
-  },
-  "ui.full.step7": {
-   "zh": "研发老化 · 接上位机",
-   "en": "R&D aging · with PC",
-   "en_of": "3b8d0536",
-   "de": "F&E-Alterung · mit PC",
-   "de_of": "3b8d0536"
-  },
-  "ui.aging.what": {
-   "zh": "研发老化测试：在上面两块里选一种、选时间，点「配置完成，开始测试」。接标准机：和原来的老化一样由标准机陪测。接上位机：板子在高低温箱或 EMC 实验室里经 RS232 接这台电脑，DI、AI 按设定值判，DO、AO、继电器只按设定值输出、由外部仪器看。要测的 AI / AO 在板子上没有校准值时不让开始。每次跑完写一份记录，在 exe 旁边的 records 文件夹里按板子 UID 分；停下的不续跑。",
-   "en": "R&D aging test: pick one of the two boxes above and its time, then click “Configuration done, start test”. With reference board: the reference board tests alongside, as aging always did. With PC: the board sits in a temperature chamber or an EMC lab and talks to this PC over RS232; DI and AI are judged against the values you set, DO, AO and relays only output the values you set and outside instruments watch them. It does not start while an AI / AO to be tested has no calibration on the board. Each run writes one record in the records folder beside the exe, by board UID; a stopped run does not continue.",
-   "en_of": "e0490bdb",
-   "de": "F&E-Alterungstest: Oben eines der beiden Felder und die Dauer wählen, dann „Konfiguration fertig, Test starten“ klicken. Mit Referenzgerät: Das Referenzgerät prüft mit, wie bisher bei der Alterung. Mit PC: Die Platine steht in einer Klimakammer oder im EMV-Labor und ist über RS232 mit diesem PC verbunden; DI und AI werden gegen die eingestellten Werte geprüft, DO, AO und Relais geben nur die eingestellten Werte aus, externe Messgeräte beobachten sie. Startet nicht, solange ein zu prüfender AI / AO keine Kalibrierung auf der Platine hat. Jeder Lauf schreibt einen Bericht in den Ordner records neben der exe, nach Platinen-UID; ein gestoppter Lauf wird nicht fortgesetzt.",
-   "de_of": "e0490bdb"
-  },
   "lib.peer.ext": {
    "zh": "外部仪器",
    "en": "Outside instrument",
@@ -12909,13 +12531,6 @@
    "en_of": "b6670acb",
    "de": "Toleranz (% vom Endwert)",
    "de_of": "b6670acb"
-  },
-  "cfg.src_ext": {
-   "zh": "数据来源：外部仪器（输出只按设定值发，输入按设定值判）",
-   "en": "Data source: outside instruments (outputs only drive the set values, inputs are judged against them)",
-   "en_of": "79933cdf",
-   "de": "Datenquelle: externe Messgeräte (Ausgänge geben nur die Sollwerte aus, Eingänge werden gegen sie geprüft)",
-   "de_of": "79933cdf"
   },
   "cfg.run.expect_timed": {
    "zh": "和其他项同时跑满 {d}，每帧都按设定值判，第一次不符全停。",
@@ -13168,6 +12783,1119 @@
    "en_of": "58e5dbe7",
    "de": "Gegenstelle",
    "de_of": "58e5dbe7"
+  },
+  "wire.label": {
+   "zh": "接法",
+   "en": "Wiring",
+   "en_of": "51fa3186",
+   "de": "Verdrahtung",
+   "de_of": "51fa3186"
+  },
+  "wire.self": {
+   "zh": "互相连",
+   "en": "Loop-back",
+   "en_of": "8a9d9aeb",
+   "de": "Rückschleife",
+   "de_of": "8a9d9aeb"
+  },
+  "wire.ref": {
+   "zh": "标准机",
+   "en": "Reference board",
+   "en_of": "68d2a577",
+   "de": "Referenzplatine",
+   "de_of": "68d2a577"
+  },
+  "wire.ext": {
+   "zh": "其他机器",
+   "en": "Other instrument",
+   "en_of": "04869f97",
+   "de": "Anderes Gerät",
+   "de_of": "04869f97"
+  },
+  "wire.human": {
+   "zh": "人工",
+   "en": "By hand",
+   "en_of": "80212d35",
+   "de": "Von Hand",
+   "de_of": "80212d35"
+  },
+  "wire.shared.dio": {
+   "zh": "DI、DO、继电器共用",
+   "en": "shared by DI, DO and relays",
+   "en_of": "936c76fa",
+   "de": "gemeinsam für DI, DO und Relais",
+   "de_of": "936c76fa"
+  },
+  "wire.shared.aio": {
+   "zh": "AI、AO 共用",
+   "en": "shared by AI and AO",
+   "en_of": "74f10a35",
+   "de": "gemeinsam für AI und AO",
+   "de_of": "74f10a35"
+  },
+  "wire.shared_note": {
+   "zh": "（{who}）",
+   "en": " ({who})",
+   "en_of": "c46373bc",
+   "de": " ({who})",
+   "de_of": "c46373bc"
+  },
+  "wire.how.dio.self": {
+   "zh": "接回环线束：DO1–6 经继电器 1–6 → DI1–6，DO7→DI7，DO8→DI8",
+   "en": "Fit the loop-back harness: DO1–6 through relays 1–6 → DI1–6, DO7→DI7, DO8→DI8",
+   "en_of": "0d04ec80",
+   "de": "Rückschleifkabelbaum anschließen: DO1–6 über Relais 1–6 → DI1–6, DO7→DI7, DO8→DI8",
+   "de_of": "0d04ec80"
+  },
+  "wire.how.dio.ref": {
+   "zh": "按「标准机设置」登记的接：DO → 标准机 DI，DI ← 标准机 DO",
+   "en": "Wire as registered under Reference board settings: DO → reference DI, DI ← reference DO",
+   "en_of": "957f93c1",
+   "de": "Wie unter Referenzplatine-Einstellungen eingetragen verdrahten: DO → Referenz-DI, DI ← Referenz-DO",
+   "de_of": "957f93c1"
+  },
+  "wire.how.dio.ext": {
+   "zh": "DI 接外部信号源，DO、继电器接外部表或负载",
+   "en": "DI on an outside signal source, DO and relays on an outside meter or load",
+   "en_of": "e1750f9f",
+   "de": "DI an eine externe Signalquelle, DO und Relais an ein externes Messgerät oder eine Last",
+   "de_of": "e1750f9f"
+  },
+  "wire.how.dio.human": {
+   "zh": "人加 24 V、人量",
+   "en": "You apply 24 V and measure",
+   "en_of": "4d1d3237",
+   "de": "Sie legen 24 V an und messen",
+   "de_of": "4d1d3237"
+  },
+  "wire.how.aio.self": {
+   "zh": "AO1→AI1，AO2→AI2，两边同为电压档或同为电流档",
+   "en": "AO1→AI1, AO2→AI2, both ends on voltage or both on current",
+   "en_of": "c6cebdc9",
+   "de": "AO1→AI1, AO2→AI2, beide Seiten Spannung oder beide Strom",
+   "de_of": "c6cebdc9"
+  },
+  "wire.how.aio.ref": {
+   "zh": "按「标准机设置」登记的接：AO → 标准机 AI，AI ← 标准机 AO",
+   "en": "Wire as registered under Reference board settings: AO → reference AI, AI ← reference AO",
+   "en_of": "16674ec1",
+   "de": "Wie unter Referenzplatine-Einstellungen eingetragen verdrahten: AO → Referenz-AI, AI ← Referenz-AO",
+   "de_of": "16674ec1"
+  },
+  "wire.how.aio.ext": {
+   "zh": "AI 接外部信号源，AO 接外部表或负载",
+   "en": "AI on an outside signal source, AO on an outside meter or load",
+   "en_of": "2b5f797a",
+   "de": "AI an eine externe Signalquelle, AO an ein externes Messgerät oder eine Last",
+   "de_of": "2b5f797a"
+  },
+  "wire.how.aio.human": {
+   "zh": "人用信号源给、人用表量",
+   "en": "You feed from a signal source and measure with a meter",
+   "en_of": "688492bc",
+   "de": "Sie speisen mit einer Signalquelle ein und messen mit einem Messgerät",
+   "de_of": "688492bc"
+  },
+  "relay.crit.self": {
+   "zh": "每路本板 DI 数到的开合次数要等于设定次数。",
+   "en": "Each relay's cycles counted on this board's DI must equal the set number.",
+   "en_of": "584d92d2",
+   "de": "Die auf dem DI dieser Platine gezählten Schaltspiele jedes Relais müssen der eingestellten Zahl entsprechen.",
+   "de_of": "584d92d2"
+  },
+  "relay.crit.ref": {
+   "zh": "每路标准机 DI 数到的开合次数要等于设定次数。",
+   "en": "Each relay's cycles counted on the reference board's DI must equal the set number.",
+   "en_of": "cf477df4",
+   "de": "Die auf dem DI der Referenzplatine gezählten Schaltspiele jedes Relais müssen der eingestellten Zahl entsprechen.",
+   "de_of": "cf477df4"
+  },
+  "relay.crit.ext": {
+   "zh": "不判，只记录板子报的开合次数；外部仪器看结果。",
+   "en": "Not judged: only the board's own count is recorded; the outside instrument shows the result.",
+   "en_of": "cdc27ca6",
+   "de": "Nicht bewertet: nur die eigene Zählung der Platine wird festgehalten; das externe Gerät zeigt das Ergebnis.",
+   "de_of": "cdc27ca6"
+  },
+  "relay.confirm_dio": {
+   "zh": "继电器靠 DO 和 DI 判，DI、DO 有问题时结果不可信。先确认 DI、DO 是好的，再开始。",
+   "en": "Relays are judged through DO and DI, so a faulty DI or DO makes the result worthless. Make sure DI and DO are good, then start.",
+   "en_of": "164dcbd6",
+   "de": "Relais werden über DO und DI bewertet; ein fehlerhafter DI oder DO macht das Ergebnis wertlos. Erst DI und DO prüfen, dann starten.",
+   "de_of": "164dcbd6"
+  },
+  "line.chip.type": {
+   "zh": "测试类型",
+   "en": "Test type",
+   "en_of": "b5f61064",
+   "de": "Testart",
+   "de_of": "b5f61064"
+  },
+  "line.chip.tpl": {
+   "zh": "模板",
+   "en": "Template",
+   "en_of": "06d0f38d",
+   "de": "Vorlage",
+   "de_of": "06d0f38d"
+  },
+  "line.subto": {
+   "zh": "结果提交到：本地 records/（以后换服务器）",
+   "en": "Results go to: records/ on this PC (a server later)",
+   "en_of": "6996083d",
+   "de": "Ergebnisse gehen nach: records/ auf diesem PC (später ein Server)",
+   "de_of": "6996083d"
+  },
+  "line.side.wiring": {
+   "zh": "接线（按工位）",
+   "en": "Wiring (by station)",
+   "en_of": "16118f44",
+   "de": "Verkabelung (je Platz)",
+   "de_of": "16118f44"
+  },
+  "line.side.wiring_hint": {
+   "zh": "绿点 = 认出。点工位改接线。",
+   "en": "Green dot = found. Click a station to change its wiring.",
+   "en_of": "719483d8",
+   "de": "Grüner Punkt = erkannt. Platz anklicken, um die Verkabelung zu ändern.",
+   "de_of": "719483d8"
+  },
+  "line.side.empty": {
+   "zh": "空",
+   "en": "empty",
+   "en_of": "82ca4a6b",
+   "de": "leer",
+   "de_of": "82ca4a6b"
+  },
+  "line.gear.title": {
+   "zh": "工位 {n} 接线登记",
+   "en": "Station {n}: wiring",
+   "en_of": "4d455eb8",
+   "de": "Platz {n}: Verkabelung",
+   "de_of": "4d455eb8"
+  },
+  "line.gear.blk.dut": {
+   "zh": "被测板",
+   "en": "Board under test",
+   "en_of": "c3c85c6f",
+   "de": "Prüfling",
+   "de_of": "c3c85c6f"
+  },
+  "line.gear.blk.ref": {
+   "zh": "标准机",
+   "en": "Reference board",
+   "en_of": "68d2a577",
+   "de": "Referenzboard",
+   "de_of": "68d2a577"
+  },
+  "line.gear.blk.pc": {
+   "zh": "电脑上的设备",
+   "en": "Devices on the PC",
+   "en_of": "b2296f31",
+   "de": "Geräte am PC",
+   "de_of": "b2296f31"
+  },
+  "line.gear.control": {
+   "zh": "控制口 RS232",
+   "en": "Control port RS232",
+   "en_of": "8c3c24a5",
+   "de": "Steuerport RS232",
+   "de_of": "8c3c24a5"
+  },
+  "line.gear.usb": {
+   "zh": "板子 USB",
+   "en": "Board USB",
+   "en_of": "83ae98f6",
+   "de": "Board-USB",
+   "de_of": "83ae98f6"
+  },
+  "line.gear.usb_note": {
+   "zh": "按板子 UID 算出的序列号找",
+   "en": "found by the serial number worked out from the board's UID",
+   "en_of": "4f1dda20",
+   "de": "gefunden über die aus der UID des Boards berechnete Seriennummer",
+   "de_of": "4f1dda20"
+  },
+  "line.gear.eth": {
+   "zh": "网口",
+   "en": "Ethernet",
+   "en_of": "00b84a02",
+   "de": "Ethernet",
+   "de_of": "00b84a02"
+  },
+  "line.gear.eth_note": {
+   "zh": "交换机，板子报的 IP",
+   "en": "switch; the IP the board reports",
+   "en_of": "d3954004",
+   "de": "Switch; die IP, die das Board meldet",
+   "de_of": "d3954004"
+  },
+  "line.gear.rs485": {
+   "zh": "RS485 转换器",
+   "en": "RS485 adapter",
+   "en_of": "17ce7be3",
+   "de": "RS485-Adapter",
+   "de_of": "17ce7be3"
+  },
+  "line.gear.can": {
+   "zh": "CAN 转换器",
+   "en": "CAN adapter",
+   "en_of": "2e8936ba",
+   "de": "CAN-Adapter",
+   "de_of": "2e8936ba"
+  },
+  "line.gear.ref": {
+   "zh": "标准机",
+   "en": "Reference board",
+   "en_of": "68d2a577",
+   "de": "Referenzboard",
+   "de_of": "68d2a577"
+  },
+  "line.gear.stlink": {
+   "zh": "ST-Link",
+   "en": "ST-Link",
+   "en_of": "47b9c89d",
+   "de": "ST-Link",
+   "de_of": "47b9c89d"
+  },
+  "line.gear.safety": {
+   "zh": "安规仪",
+   "en": "Safety tester",
+   "en_of": "6eb1dcbe",
+   "de": "Sicherheitsprüfgerät",
+   "de_of": "6eb1dcbe"
+  },
+  "line.gear.scanner": {
+   "zh": "扫码枪",
+   "en": "Barcode scanner",
+   "en_of": "d53aee53",
+   "de": "Barcodescanner",
+   "de_of": "d53aee53"
+  },
+  "line.gear.reserved": {
+   "zh": "（预留）",
+   "en": "(reserved)",
+   "en_of": "0f3c4b0d",
+   "de": "(reserviert)",
+   "de_of": "0f3c4b0d"
+  },
+  "line.gear.none": {
+   "zh": "（没登记）",
+   "en": "(not registered)",
+   "en_of": "36137d0d",
+   "de": "(nicht eingetragen)",
+   "de_of": "36137d0d"
+  },
+  "line.gear.unseen": {
+   "zh": "未认出",
+   "en": "not found",
+   "en_of": "b9bf8d61",
+   "de": "nicht erkannt",
+   "de_of": "b9bf8d61"
+  },
+  "line.gear.change": {
+   "zh": "换",
+   "en": "Change",
+   "en_of": "19c7002c",
+   "de": "Ändern",
+   "de_of": "19c7002c"
+  },
+  "line.gear.serial_note": {
+   "zh": "转换器要有唯一序列号（FTDI、CP210x 有，部分 CH340 没有）。",
+   "en": "Adapters need a unique serial number (FTDI and CP210x have one, some CH340 do not).",
+   "en_of": "24471acb",
+   "de": "Adapter brauchen eine eindeutige Seriennummer (FTDI und CP210x haben eine, manche CH340 nicht).",
+   "de_of": "24471acb"
+  },
+  "line.wall.title": {
+   "zh": "产线大屏",
+   "en": "Line overview",
+   "en_of": "62f4afb7",
+   "de": "Linienübersicht",
+   "de_of": "62f4afb7"
+  },
+  "line.wall.hint": {
+   "zh": "一块板一个方块，点进去看详情。",
+   "en": "One tile per board; click it for the details.",
+   "en_of": "f3dd0249",
+   "de": "Eine Kachel je Board; anklicken für Details.",
+   "de_of": "f3dd0249"
+  },
+  "line.shipped": {
+   "zh": "已可出厂：{n}",
+   "en": "Ready to ship: {n}",
+   "en_of": "99a5c8a1",
+   "de": "Versandbereit: {n}",
+   "de_of": "99a5c8a1"
+  },
+  "line.del": {
+   "zh": "－ 删除工位",
+   "en": "− Remove station",
+   "en_of": "02b57654",
+   "de": "− Platz entfernen",
+   "de_of": "02b57654"
+  },
+  "line.del_none": {
+   "zh": "只有空工位能删：先把板子摘下来。1 号工位不删。",
+   "en": "Only an empty station can go: take its board off first. Station 1 stays.",
+   "en_of": "bf288da4",
+   "de": "Nur ein leerer Platz kann weg: erst das Board abnehmen. Platz 1 bleibt.",
+   "de_of": "bf288da4"
+  },
+  "line.del_one": {
+   "zh": "工位 {n}（空）",
+   "en": "Station {n} (empty)",
+   "en_of": "7f4406a2",
+   "de": "Platz {n} (leer)",
+   "de_of": "7f4406a2"
+  },
+  "line.tile.empty": {
+   "zh": "工位 {n}：空",
+   "en": "Station {n}: empty",
+   "en_of": "a831b8ef",
+   "de": "Platz {n}: leer",
+   "de_of": "a831b8ef"
+  },
+  "line.btn.menu_tip": {
+   "zh": "暂停、摘下板子、设置接线",
+   "en": "Pause, take the board off, wiring",
+   "en_of": "c2aa792d",
+   "de": "Pause, Board abnehmen, Verkabelung",
+   "de_of": "c2aa792d"
+  },
+  "line.led_tip": {
+   "zh": "板上 LED3",
+   "en": "LED3 on the board",
+   "en_of": "562ab3c3",
+   "de": "LED3 auf dem Board",
+   "de_of": "562ab3c3"
+  },
+  "line.items": {
+   "zh": "第 {k}/{n} 项",
+   "en": "item {k} of {n}",
+   "en_of": "76d861ee",
+   "de": "Punkt {k} von {n}",
+   "de_of": "76d861ee"
+  },
+  "line.items_cur": {
+   "zh": "：{cur}",
+   "en": ": {cur}",
+   "en_of": "c3ee7d09",
+   "de": ": {cur}",
+   "de_of": "c3ee7d09"
+  },
+  "line.time_est": {
+   "zh": " / 约 {e}",
+   "en": " / about {e}",
+   "en_of": "402aa822",
+   "de": " / etwa {e}",
+   "de_of": "402aa822"
+  },
+  "line.st.done_long": {
+   "zh": "五步全过，可以出厂",
+   "en": "All five passed: ready to ship",
+   "en_of": "836ee148",
+   "de": "Alle fünf bestanden: versandbereit",
+   "de_of": "836ee148"
+  },
+  "line.st.back": {
+   "zh": "从高温柜拿回：认出来了，马上验收",
+   "en": "Back from the oven: recognised, checking now",
+   "en_of": "dace64d3",
+   "de": "Zurück aus dem Ofen: erkannt, wird jetzt geprüft",
+   "de_of": "dace64d3"
+  },
+  "line.st.cancel": {
+   "zh": "老化已取消：这次不能出厂",
+   "en": "Aging cancelled: cannot ship this time",
+   "en_of": "fdc19d8f",
+   "de": "Alterung abgebrochen: diesmal nicht versandbereit",
+   "de_of": "fdc19d8f"
+  },
+  "line.side.oven_hint": {
+   "zh": "真正跑了多久，插回来读板子记录才知道。",
+   "en": "How long it really ran shows only when it is plugged back and its record read.",
+   "en_of": "5c81f67f",
+   "de": "Wie lange es wirklich lief, zeigt sich erst beim Wiedereinstecken.",
+   "de_of": "5c81f67f"
+  },
+  "line.col.station": {
+   "zh": "工位",
+   "en": "Station",
+   "en_of": "cfc221a1",
+   "de": "Platz",
+   "de_of": "cfc221a1"
+  },
+  "line.col.port": {
+   "zh": "端口",
+   "en": "Port",
+   "en_of": "6cbb7335",
+   "de": "Anschluss",
+   "de_of": "6cbb7335"
+  },
+  "line.col.item": {
+   "zh": "测试项",
+   "en": "Test",
+   "en_of": "9ee24b5a",
+   "de": "Prüfung",
+   "de_of": "9ee24b5a"
+  },
+  "line.col.params": {
+   "zh": "参数",
+   "en": "Settings",
+   "en_of": "749d7652",
+   "de": "Einstellungen",
+   "de_of": "749d7652"
+  },
+  "line.col.crit": {
+   "zh": "判据",
+   "en": "Pass if",
+   "en_of": "e18ed4da",
+   "de": "Bestanden wenn",
+   "de_of": "e18ed4da"
+  },
+  "line.col.reading": {
+   "zh": "读数",
+   "en": "Reading",
+   "en_of": "ea4965c2",
+   "de": "Messwert",
+   "de_of": "ea4965c2"
+  },
+  "line.col.record": {
+   "zh": "提交的记录",
+   "en": "Record submitted",
+   "en_of": "5738fcb0",
+   "de": "Abgegebener Bericht",
+   "de_of": "5738fcb0"
+  },
+  "line.res.run": {
+   "zh": "在测",
+   "en": "testing",
+   "en_of": "5ef3594f",
+   "de": "läuft",
+   "de_of": "5ef3594f"
+  },
+  "line.res.skip": {
+   "zh": "没跑",
+   "en": "not run",
+   "en_of": "d9b3263a",
+   "de": "nicht gelaufen",
+   "de_of": "d9b3263a"
+  },
+  "line.res.wait": {
+   "zh": "等着",
+   "en": "waiting",
+   "en_of": "42729591",
+   "de": "wartet",
+   "de_of": "42729591"
+  },
+  "line.res.notyet": {
+   "zh": "还没做",
+   "en": "not done yet",
+   "en_of": "7915d013",
+   "de": "noch nicht",
+   "de_of": "7915d013"
+  },
+  "line.tab.flash": {
+   "zh": "准备：烧工装固件",
+   "en": "Prep: flash fixture firmware",
+   "en_of": "1fc3538e",
+   "de": "Vorbereitung: Prüffirmware flashen",
+   "de_of": "1fc3538e"
+  },
+  "line.tab.wire": {
+   "zh": "准备：接端口线",
+   "en": "Prep: connect the cables",
+   "en_of": "cccff9d9",
+   "de": "Vorbereitung: Kabel anschließen",
+   "de_of": "cccff9d9"
+  },
+  "line.tab.ship": {
+   "zh": "出厂单",
+   "en": "Shipping sheet",
+   "en_of": "5bd2b75f",
+   "de": "Versandblatt",
+   "de_of": "5bd2b75f"
+  },
+  "line.bst.ok": {
+   "zh": "合格，已提交",
+   "en": "Passed, submitted",
+   "en_of": "791298fe",
+   "de": "Bestanden, abgegeben",
+   "de_of": "791298fe"
+  },
+  "line.bst.bad": {
+   "zh": "不合格，已暂停",
+   "en": "Failed, paused",
+   "en_of": "3bc464f5",
+   "de": "Nicht bestanden, angehalten",
+   "de_of": "3bc464f5"
+  },
+  "line.bst.wait": {
+   "zh": "等人动手",
+   "en": "Waiting for someone",
+   "en_of": "d25290b2",
+   "de": "Wartet auf jemanden",
+   "de_of": "d25290b2"
+  },
+  "line.bst.run": {
+   "zh": "进行中",
+   "en": "Running",
+   "en_of": "6f1972e4",
+   "de": "Läuft",
+   "de_of": "6f1972e4"
+  },
+  "line.bst.later": {
+   "zh": "还没到",
+   "en": "Not reached yet",
+   "en_of": "4faddad6",
+   "de": "Noch nicht erreicht",
+   "de_of": "4faddad6"
+  },
+  "line.bst.took": {
+   "zh": "用时 {t}",
+   "en": "took {t}",
+   "en_of": "4f1dee32",
+   "de": "Dauer {t}",
+   "de_of": "4f1dee32"
+  },
+  "line.note.flash": {
+   "zh": "自动：板子接上本工位的 ST-Link 和控制口，PortTool 用登记过的那个探针把工装固件烧进去，烧完经控制口问 pt.id，回了 UID 就算这一步过。",
+   "en": "Automatic: with the board on this station's ST-Link and control port, PortTool flashes the fixture firmware with the registered probe, then asks pt.id on the control port; a UID back passes this step.",
+   "en_of": "8ba0fb39",
+   "de": "Automatisch: Board an ST-Link und Steuerport dieses Platzes; PortTool flasht die Prüffirmware mit der eingetragenen Sonde und fragt dann pt.id am Steuerport; kommt eine UID zurück, ist der Schritt bestanden.",
+   "de_of": "8ba0fb39"
+  },
+  "line.note.wire": {
+   "zh": "人把本工位那套线接到板子上，软件一根一根认：控制口按转换器序列号认，板子 USB 按 UID 算出的序列号认，网口用板子报的 IP，标准机按它的 UID。认全了自动开始第 ① 步，不用点「接好了」。",
+   "en": "Connect this station's cables to the board; the software finds them one by one: the control port by the adapter's serial number, the board USB by the serial worked out from the UID, Ethernet by the IP the board reports, the reference board by its UID. Once all are found step ① starts by itself.",
+   "en_of": "3e52e094",
+   "de": "Die Kabel dieses Platzes an das Board stecken; die Software erkennt sie einzeln: Steuerport über die Adapter-Seriennummer, Board-USB über die aus der UID berechnete Seriennummer, Ethernet über die gemeldete IP, das Referenzboard über seine UID. Sind alle erkannt, startet Schritt ① von selbst.",
+   "de_of": "3e52e094"
+  },
+  "line.note.1": {
+   "zh": "按模板里勾的端口和测试项自动跑，一项接一项；全部合格就自动提交，第一项不合格就停、亮板上 LED3，后面的项记「没跑」。",
+   "en": "Runs the ports and tests ticked in the template, one after another; all passed submits by itself; the first failure stops, lights LED3 on the board, and the rest are marked not run.",
+   "en_of": "21a7d304",
+   "de": "Läuft die in der Vorlage angehakten Anschlüsse und Prüfungen nacheinander; alles bestanden wird von selbst abgegeben; der erste Fehler stoppt, LED3 auf dem Board leuchtet, der Rest gilt als nicht gelaufen.",
+   "de_of": "21a7d304"
+  },
+  "line.note.2": {
+   "zh": "第 ① 步一过，软件把老化项和时长写进板子、让它进入老化模式。人拔线放进高温柜；板子不接电脑，自己一轮一轮跑、自己计时，不合格按端口编号闪 LED3 并记在板子上。拿回来插到这个工位，软件认出 UID，接着做第 ③ 步。",
+   "en": "Once step ① passes, the software writes the aging items and time into the board and puts it into aging mode. Unplug it and put it in the oven; without a PC the board runs round after round, keeps its own time, flashes LED3 by port number on a failure and records it. Plug it back here and the software recognises the UID and goes on with step ③.",
+   "en_of": "31c7d769",
+   "de": "Nach Schritt ① schreibt die Software Alterungspunkte und Dauer ins Board und schaltet es in den Alterungsmodus. Abstecken und in den Ofen stellen; ohne PC läuft das Board Runde um Runde, misst selbst die Zeit, blinkt bei Fehlern LED3 nach Anschlussnummer und speichert es. Hier wieder einstecken: die Software erkennt die UID und macht mit Schritt ③ weiter.",
+   "de_of": "31c7d769"
+  },
+  "line.note.3": {
+   "zh": "自动：经控制口读出板子在老化时写的记录：有不合格就判不合格；跑满、没出错就合格并清掉板上的任务。",
+   "en": "Automatic: reads, on the control port, what the board recorded while aging: any failure fails; full time with no failure passes and clears the task on the board.",
+   "en_of": "644c103b",
+   "de": "Automatisch: liest am Steuerport, was das Board beim Altern aufgezeichnet hat: ein Fehler heißt nicht bestanden; volle Zeit ohne Fehler heißt bestanden, die Aufgabe auf dem Board wird gelöscht.",
+   "de_of": "644c103b"
+  },
+  "line.note.4": {
+   "zh": "安规还没定义，这一步暂时直接记合格。",
+   "en": "Safety is not defined yet; this step passes for now.",
+   "en_of": "abf91675",
+   "de": "Sicherheit ist noch nicht festgelegt; dieser Schritt gilt vorerst als bestanden.",
+   "de_of": "abf91675"
+  },
+  "line.note.5": {
+   "zh": "自动：用本工位的 ST-Link 烧 bootloader，经 USB 用 IAPTool 上传 demo，经用户程序测，最后恢复出厂。板子上从这里起跑的是 demo，不是工装固件。",
+   "en": "Automatic: flashes the bootloader with this station's ST-Link, uploads the demo over USB with IAPTool, tests through the user program, then restores factory state. From here the board runs the demo, not the fixture firmware.",
+   "en_of": "4d124f4a",
+   "de": "Automatisch: flasht den Bootloader mit dem ST-Link dieses Platzes, lädt die Demo per USB mit IAPTool hoch, prüft über das Anwenderprogramm und setzt auf Werkszustand zurück. Ab hier läuft auf dem Board die Demo, nicht die Prüffirmware.",
+   "de_of": "4d124f4a"
+  },
+  "line.age.big_go": {
+   "zh": "可以拔线拿去高温柜",
+   "en": "Unplug it and take it to the oven",
+   "en_of": "94f0ce4b",
+   "de": "Abstecken und in den Ofen bringen",
+   "de_of": "94f0ce4b"
+  },
+  "line.age.big_away": {
+   "zh": "在高温柜里：拔走 {t}",
+   "en": "In the oven: away {t}",
+   "en_of": "44168a7d",
+   "de": "Im Ofen: seit {t} weg",
+   "de_of": "44168a7d"
+  },
+  "line.age.big_back": {
+   "zh": "已拿回",
+   "en": "Back",
+   "en_of": "676fad4c",
+   "de": "Zurück",
+   "de_of": "676fad4c"
+  },
+  "line.age.leds_title": {
+   "zh": "LED3 闪法",
+   "en": "How LED3 blinks",
+   "en_of": "2d9fea20",
+   "de": "Wie LED3 blinkt",
+   "de_of": "2d9fea20"
+  },
+  "line.age.leds": {
+   "zh": "老化中亮 1 s 灭 1 s；通过常亮；不合格按第一个不过项的闪码快闪 N 下、停 2 s 反复：1 温度、2 SD、3 SDRAM、4 RTC、5 DO/继电器/DI、6 AO/AI、7 RS232、8 RS485、9 CAN、10 网口、11 KNX、12 USB",
+   "en": "Aging: on 1 s, off 1 s; passed: steady on; failed: N quick blinks, 2 s pause, repeated, N for the first failed item: 1 temperature, 2 SD, 3 SDRAM, 4 RTC, 5 DO/relay/DI, 6 AO/AI, 7 RS232, 8 RS485, 9 CAN, 10 Ethernet, 11 KNX, 12 USB",
+   "en_of": "cfd7be0c",
+   "de": "Alterung: 1 s an, 1 s aus; bestanden: dauernd an; nicht bestanden: N schnelle Blinker, 2 s Pause, wiederholt, N für den ersten Fehler: 1 Temperatur, 2 SD, 3 SDRAM, 4 RTC, 5 DO/Relais/DI, 6 AO/AI, 7 RS232, 8 RS485, 9 CAN, 10 Ethernet, 11 KNX, 12 USB",
+   "de_of": "cfd7be0c"
+  },
+  "line.board.back": {
+   "zh": "← 回大屏",
+   "en": "← Back to the overview",
+   "en_of": "507ee902",
+   "de": "← Zurück zur Übersicht",
+   "de_of": "507ee902"
+  },
+  "line.board.empty": {
+   "zh": "这个工位现在没有板子。",
+   "en": "There is no board on this station now.",
+   "en_of": "1f708a8b",
+   "de": "Auf diesem Platz ist gerade kein Board.",
+   "de_of": "1f708a8b"
+  },
+  "line.board.title": {
+   "zh": "工位 {n} · UID {uid}",
+   "en": "Station {n} · UID {uid}",
+   "en_of": "1240436b",
+   "de": "Platz {n} · UID {uid}",
+   "de_of": "1240436b"
+  },
+  "line.board.tpl": {
+   "zh": "模板 {tpl} v{v}",
+   "en": "Template {tpl} v{v}",
+   "en_of": "f2fe8203",
+   "de": "Vorlage {tpl} v{v}",
+   "de_of": "f2fe8203"
+  },
+  "line.board.paused": {
+   "zh": "已暂停：停在{at}，计时停住。点「继续」接着做。",
+   "en": "Paused at {at}; the clock stopped. Press Resume to go on.",
+   "en_of": "a0dc1ee6",
+   "de": "Angehalten bei {at}; die Uhr steht. Mit Fortsetzen geht es weiter.",
+   "de_of": "a0dc1ee6"
+  },
+  "line.board.log": {
+   "zh": "日志",
+   "en": "Log",
+   "en_of": "4de50894",
+   "de": "Protokoll",
+   "de_of": "4de50894"
+  },
+  "line.board.log_none": {
+   "zh": "这个工位还没跑过测试。",
+   "en": "This station has not run a test yet.",
+   "en_of": "7b591634",
+   "de": "Dieser Platz hat noch keine Prüfung laufen lassen.",
+   "de_of": "7b591634"
+  },
+  "line.board.form": {
+   "zh": "这一步提交的表单",
+   "en": "What this step submitted",
+   "en_of": "30888e0d",
+   "de": "Was dieser Schritt abgegeben hat",
+   "de_of": "30888e0d"
+  },
+  "line.ship.not_yet": {
+   "zh": "五步还没全部合格，不能出厂。现在在：{at}",
+   "en": "Not all five passed yet: cannot ship. Now at: {at}",
+   "en_of": "3cb770c1",
+   "de": "Noch nicht alle fünf bestanden: nicht versandbereit. Jetzt bei: {at}",
+   "de_of": "3cb770c1"
+  },
+  "line.ship.foot": {
+   "zh": "UID {uid}　模板 {tpl}　工位 {n}",
+   "en": "UID {uid}   template {tpl}   station {n}",
+   "en_of": "9ac6fc15",
+   "de": "UID {uid}   Vorlage {tpl}   Platz {n}",
+   "de_of": "9ac6fc15"
+  },
+  "line.tpl.title": {
+   "zh": "测试模板",
+   "en": "Test templates",
+   "en_of": "2fe67eb4",
+   "de": "Prüfvorlagen",
+   "de_of": "2fe67eb4"
+  },
+  "line.tpl.hint": {
+   "zh": "模板管每一步测什么、参数多少、怎么判；所有工位用同一个。换模板只影响之后接上的板子，正在测的板子按它开始时的模板跑完。",
+   "en": "A template says what each step tests, with which settings and how it is judged; all stations use the same one. A change applies to boards plugged in afterwards; a board under test finishes on the template it started with.",
+   "en_of": "fda355dd",
+   "de": "Eine Vorlage legt fest, was jeder Schritt prüft, mit welchen Einstellungen und wie bewertet wird; alle Plätze nutzen dieselbe. Eine Änderung gilt für danach eingesteckte Boards; ein Board in Prüfung läuft mit seiner Startvorlage zu Ende.",
+   "de_of": "fda355dd"
+  },
+  "line.tpl.default": {
+   "zh": "默认模板",
+   "en": "Default template",
+   "en_of": "2c1afed7",
+   "de": "Standardvorlage",
+   "de_of": "2c1afed7"
+  },
+  "line.tpl.none": {
+   "zh": "还没选",
+   "en": "none yet",
+   "en_of": "0f684cc5",
+   "de": "noch keine",
+   "de_of": "0f684cc5"
+  },
+  "line.tpl.new": {
+   "zh": "＋ 新建模板",
+   "en": "+ New template",
+   "en_of": "a843a352",
+   "de": "+ Neue Vorlage",
+   "de_of": "a843a352"
+  },
+  "line.tpl.new_name": {
+   "zh": "新模板 {n}",
+   "en": "New template {n}",
+   "en_of": "e306c77d",
+   "de": "Neue Vorlage {n}",
+   "de_of": "e306c77d"
+  },
+  "line.tpl.using": {
+   "zh": "，正在用",
+   "en": ", in use",
+   "en_of": "6e8a3608",
+   "de": ", in Verwendung",
+   "de_of": "6e8a3608"
+  },
+  "line.tpl.name": {
+   "zh": "模板名",
+   "en": "Template name",
+   "en_of": "d28fb247",
+   "de": "Vorlagenname",
+   "de_of": "d28fb247"
+  },
+  "line.tpl.save": {
+   "zh": "保存",
+   "en": "Save",
+   "en_of": "fadf24db",
+   "de": "Speichern",
+   "de_of": "fadf24db"
+  },
+  "line.tpl.use": {
+   "zh": "用这个模板",
+   "en": "Use this template",
+   "en_of": "274d0c6c",
+   "de": "Diese Vorlage verwenden",
+   "de_of": "274d0c6c"
+  },
+  "go.tpl.failed": {
+   "zh": "模板没存上：{detail}",
+   "en": "The template was not saved: {detail}",
+   "en_of": "3c61a66d",
+   "de": "Die Vorlage wurde nicht gespeichert: {detail}",
+   "de_of": "3c61a66d"
+  },
+  "tpl.age.grp.nowire": {
+   "zh": "不用接线",
+   "en": "No wiring needed",
+   "en_of": "ce38dd2f",
+   "de": "Ohne Verkabelung",
+   "de_of": "ce38dd2f"
+  },
+  "tpl.age.grp.harness": {
+   "zh": "要接回环线束",
+   "en": "Needs the loop-back harness",
+   "en_of": "0a48ede5",
+   "de": "Braucht den Rückschleifkabelbaum",
+   "de_of": "0a48ede5"
+  },
+  "tpl.age.grp.peer": {
+   "zh": "要对端（没回应，超时算不合格）",
+   "en": "Needs a far end (no answer in time fails)",
+   "en_of": "a375047f",
+   "de": "Braucht eine Gegenstelle (keine Antwort rechtzeitig = nicht bestanden)",
+   "de_of": "a375047f"
+  },
+  "tpl.age.eth_loop": {
+   "zh": "网口芯片内部回环：网口 PHY 自己发、自己收",
+   "en": "Ethernet chip loop-back: the PHY sends and receives by itself",
+   "en_of": "5ef441c2",
+   "de": "Ethernet-Chip-Rückschleife: der PHY sendet und empfängt selbst",
+   "de_of": "5ef441c2"
+  },
+  "tpl.age.knx": {
+   "zh": "KNX：接老化车上的 KNX 总线收发帧",
+   "en": "KNX: send and receive frames on the aging cart's KNX bus",
+   "en_of": "953f20e7",
+   "de": "KNX: Telegramme auf dem KNX-Bus des Alterungswagens senden und empfangen",
+   "de_of": "953f20e7"
+  },
+  "tpl.age.rs485_pair": {
+   "zh": "RS485：和相邻板对接，互发互收",
+   "en": "RS485: wired to the neighbouring board, both send and receive",
+   "en_of": "d8572ee9",
+   "de": "RS485: mit dem Nachbarboard verbunden, beide senden und empfangen",
+   "de_of": "d8572ee9"
+  },
+  "tpl.age.can_pair": {
+   "zh": "CAN：和相邻板对接（两端各 120 Ω），互发互收",
+   "en": "CAN: wired to the neighbouring board (120 Ω at each end), both send and receive",
+   "en_of": "4f64e612",
+   "de": "CAN: mit dem Nachbarboard verbunden (je 120 Ω an beiden Enden), beide senden und empfangen",
+   "de_of": "4f64e612"
+  },
+  "tpl.age.eth_rj45": {
+   "zh": "网口：插 RJ45 回环插头，自发自收",
+   "en": "Ethernet: an RJ45 loop-back plug, sends and receives itself",
+   "en_of": "e3889056",
+   "de": "Ethernet: RJ45-Rückschleifstecker, sendet und empfängt selbst",
+   "de_of": "e3889056"
+  },
+  "tpl.age.usb": {
+   "zh": "USB：电脑当主机，收发",
+   "en": "USB: the PC as host, send and receive",
+   "en_of": "581d7861",
+   "de": "USB: der PC als Host, senden und empfangen",
+   "de_of": "581d7861"
+  },
+  "tpl.age.dur": {
+   "zh": "老化时长",
+   "en": "Aging time",
+   "en_of": "1de9b0fc",
+   "de": "Alterungsdauer",
+   "de_of": "1de9b0fc"
+  },
+  "tpl.age.temp_max": {
+   "zh": "温度上限 (℃)",
+   "en": "Temperature limit (°C)",
+   "en_of": "7893c1d9",
+   "de": "Temperaturgrenze (°C)",
+   "de_of": "7893c1d9"
+  },
+  "tpl.note.aging": {
+   "zh": "板子不接电脑，按勾的项一轮轮跑；不合格按端口编号闪 LED3，并记在板子上。",
+   "en": "Without a PC the board runs the ticked items round after round; a failure blinks LED3 by port number and is recorded on the board.",
+   "en_of": "644fb501",
+   "de": "Ohne PC läuft das Board die angehakten Punkte Runde um Runde; ein Fehler blinkt LED3 nach Anschlussnummer und wird auf dem Board gespeichert.",
+   "de_of": "644fb501"
+  },
+  "tpl.why.plan": {
+   "zh": "限值取判据方案",
+   "en": "limits come from the criteria plan",
+   "en_of": "9e472c16",
+   "de": "Grenzwerte kommen aus dem Bewertungsplan",
+   "de_of": "9e472c16"
+  },
+  "tpl.why.fw": {
+   "zh": "固件还没做",
+   "en": "not in the firmware yet",
+   "en_of": "e703b7c3",
+   "de": "noch nicht in der Firmware",
+   "de_of": "e703b7c3"
+  },
+  "tpl.why.undef": {
+   "zh": "还没定义",
+   "en": "not defined yet",
+   "en_of": "5a641915",
+   "de": "noch nicht festgelegt",
+   "de_of": "5a641915"
+  },
+  "tpl.why.notyet": {
+   "zh": "还没做",
+   "en": "not done yet",
+   "en_of": "7915d013",
+   "de": "noch nicht umgesetzt",
+   "de_of": "7915d013"
+  },
+  "tpl.why.delivery": {
+   "zh": "由交付包定",
+   "en": "set by the delivery package",
+   "en_of": "863fa5f5",
+   "de": "durch das Lieferpaket festgelegt",
+   "de_of": "863fa5f5"
+  },
+  "tpl.why.check": {
+   "zh": "还没做：有一次不过就不合格，跑满才合格",
+   "en": "not done yet: one failure fails, full time passes",
+   "en_of": "5bf5cbdf",
+   "de": "noch nicht umgesetzt: ein Fehler = nicht bestanden, volle Zeit = bestanden",
+   "de_of": "5bf5cbdf"
+  },
+  "tpl.check.fails": {
+   "zh": "允许不合格次数",
+   "en": "Failures allowed",
+   "en_of": "e025c029",
+   "de": "Erlaubte Fehler",
+   "de_of": "e025c029"
+  },
+  "tpl.check.temp": {
+   "zh": "最高温度 (℃)",
+   "en": "Highest temperature (°C)",
+   "en_of": "321b26a3",
+   "de": "Höchsttemperatur (°C)",
+   "de_of": "321b26a3"
+  },
+  "tpl.check.rounds": {
+   "zh": "最少轮数",
+   "en": "Fewest rounds",
+   "en_of": "c9e6cba2",
+   "de": "Mindestrunden",
+   "de_of": "c9e6cba2"
+  },
+  "tpl.check.full": {
+   "zh": "跑满时长",
+   "en": "the full time",
+   "en_of": "a1cd0801",
+   "de": "die volle Zeit",
+   "de_of": "a1cd0801"
+  },
+  "tpl.safety.scan": {
+   "zh": "扫码",
+   "en": "Scan the code",
+   "en_of": "b8a8fe0d",
+   "de": "Code scannen",
+   "de_of": "b8a8fe0d"
+  },
+  "tpl.safety.code": {
+   "zh": "条码",
+   "en": "Barcode",
+   "en_of": "b1085310",
+   "de": "Barcode",
+   "de_of": "b1085310"
+  },
+  "tpl.safety.ins": {
+   "zh": "绝缘电阻",
+   "en": "Insulation resistance",
+   "en_of": "533103d9",
+   "de": "Isolationswiderstand",
+   "de_of": "533103d9"
+  },
+  "tpl.safety.hv": {
+   "zh": "耐压",
+   "en": "Withstand voltage",
+   "en_of": "25c4886c",
+   "de": "Spannungsfestigkeit",
+   "de_of": "25c4886c"
+  },
+  "tpl.safety.volt": {
+   "zh": "电压",
+   "en": "Voltage",
+   "en_of": "a561a61e",
+   "de": "Spannung",
+   "de_of": "a561a61e"
+  },
+  "tpl.safety.min": {
+   "zh": "下限 (MΩ)",
+   "en": "Lower limit (MΩ)",
+   "en_of": "1041bdc8",
+   "de": "Untergrenze (MΩ)",
+   "de_of": "1041bdc8"
+  },
+  "tpl.safety.secs": {
+   "zh": "时间 (s)",
+   "en": "Time (s)",
+   "en_of": "c1adcb0e",
+   "de": "Zeit (s)",
+   "de_of": "c1adcb0e"
+  },
+  "tpl.safety.leak": {
+   "zh": "漏电流上限 (mA)",
+   "en": "Leakage limit (mA)",
+   "en_of": "9f754dc3",
+   "de": "Ableitstromgrenze (mA)",
+   "de_of": "9f754dc3"
+  },
+  "tpl.user.title": {
+   "zh": "烧写和上传",
+   "en": "Flashing and upload",
+   "en_of": "7e4313c4",
+   "de": "Flashen und Hochladen",
+   "de_of": "7e4313c4"
+  },
+  "tpl.user.boot": {
+   "zh": "bootloader 版本",
+   "en": "Bootloader version",
+   "en_of": "ac8a19d7",
+   "de": "Bootloader-Version",
+   "de_of": "ac8a19d7"
+  },
+  "tpl.user.demo": {
+   "zh": "demo 程序",
+   "en": "Demo program",
+   "en_of": "d1191760",
+   "de": "Demoprogramm",
+   "de_of": "d1191760"
+  },
+  "conn.wiring": {
+   "zh": "接线",
+   "en": "Wiring",
+   "en_of": "7f12523d",
+   "de": "Verkabelung",
+   "de_of": "7f12523d"
+  },
+  "conn.seen": {
+   "zh": "电脑上看到的板子",
+   "en": "Boards this PC sees",
+   "en_of": "d9b42b18",
+   "de": "Boards, die dieser PC sieht",
+   "de_of": "d9b42b18"
+  },
+  "conn.seen.flash": {
+   "zh": "烧写",
+   "en": "Flash",
+   "en_of": "2868e2ef",
+   "de": "Flashen",
+   "de_of": "2868e2ef"
+  },
+  "conn.seen.flashing": {
+   "zh": "烧写中…",
+   "en": "Flashing…",
+   "en_of": "5e261d9b",
+   "de": "Wird geflasht…",
+   "de_of": "5e261d9b"
+  },
+  "conn.seen.flash_hint": {
+   "zh": "经 1 号工位的 ST-Link 烧写工装固件 {v}",
+   "en": "Flash fixture firmware {v} through station 1's ST-Link",
+   "en_of": "20f651ad",
+   "de": "Prüf-Firmware {v} über den ST-Link von Station 1 flashen",
+   "de_of": "20f651ad"
+  },
+  "conn.seen.usb_fw": {
+   "zh": "不是工装固件（bootloader 或用户程序）",
+   "en": "not the fixture firmware (bootloader or a user program)",
+   "en_of": "b02ecc72",
+   "de": "nicht die Prüf-Firmware (Bootloader oder Anwenderprogramm)",
+   "de_of": "b02ecc72"
+  },
+  "conn.ctl_unreg": {
+   "zh": "没登记：点这里登记",
+   "en": "Not registered: click here to register",
+   "en_of": "a6c4ea5f",
+   "de": "Nicht eingetragen: hier klicken zum Eintragen",
+   "de_of": "a6c4ea5f"
+  },
+  "conn.ctl_wait": {
+   "zh": "等板子回答：板子插上、工装固件在跑时自动连上",
+   "en": "Waiting for the board: it connects by itself once plugged in with the fixture firmware running",
+   "en_of": "b8f41374",
+   "de": "Warte auf das Board: verbindet sich selbst, sobald es eingesteckt ist und die Prüf-Firmware läuft",
+   "de_of": "b8f41374"
+  },
+  "conn.ctl_board": {
+   "zh": "板子 UID {uid}，工装固件 {fw}",
+   "en": "board UID {uid}, fixture firmware {fw}",
+   "en_of": "13d7b9ce",
+   "de": "Board-UID {uid}, Prüf-Firmware {fw}",
+   "de_of": "13d7b9ce"
+  },
+  "conn.zone_hint": {
+   "zh": "点这里改接线（1 号工位的接线登记）",
+   "en": "Click to change the wiring (station 1's wiring registration)",
+   "en_of": "4a6825ef",
+   "de": "Klicken, um die Verkabelung zu ändern (Verkabelung von Station 1)",
+   "de_of": "4a6825ef"
+  },
+  "conn.usb_unseen": {
+   "zh": "电脑上没看到板子的 USB 口：插上 USB 线后点「重试」",
+   "en": "The board's USB port is not on this PC: plug in the USB cable and press Retry",
+   "en_of": "33d6b0da",
+   "de": "Der USB-Port des Boards ist an diesem PC nicht zu sehen: USB-Kabel einstecken und „Erneut versuchen“ drücken",
+   "de_of": "33d6b0da"
   }
  }
 }

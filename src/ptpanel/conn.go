@@ -102,6 +102,8 @@ func (s *Server) handleConn(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	out["links"] = s.linksLocked()
 	out["boardIP"] = s.ipJSON()
+	// R&D connects by itself (line.go rdAttach); the page follows this.
+	out["connected"] = s.board != nil
 	s.mu.Unlock()
 	out["match"] = s.matchJSON()
 	out["usb"] = s.usbJSON()

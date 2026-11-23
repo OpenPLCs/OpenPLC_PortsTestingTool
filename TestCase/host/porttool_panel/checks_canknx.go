@@ -18,7 +18,7 @@ func checkCanWindow(p *Page, com string) {
 		check(true, "a real bench: needs the CANable - not run here")
 		return
 	}
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	p.L(lport("can")).Click()
 	p.Wait(300)
 	if !check(p.L(`#itemcards .item[data-item="can.bus"]`).Count() == 1, "the CAN port has the analyser card") {
@@ -170,7 +170,7 @@ func checkKnxWindow(p *Page, com string) {
 		check(true, "a real bench: needs the KNX USB interface - not run here")
 		return
 	}
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	if p.L(lport("knx")).Count() == 0 {
 		check(true, "no KNX on this board - nothing to check")
 		return
@@ -243,7 +243,7 @@ func checkKnxWindow(p *Page, com string) {
 // real installation is least likely to have assigned.
 func checkKnxFrames(p *Page) {
 	Section("KNX frames: the watched card")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	if p.L(lport("knx")).Count() == 0 {
 		check(true, "no KNX on this board - nothing to check")
 		return
@@ -279,7 +279,7 @@ func checkKnxFrames(p *Page) {
 // the keepalive, not that a USB-232 adapter runs at 19200.
 func checkRs232Baud(p *Page) {
 	Section("RS232: picking a baud rate")
-	p.L(`.mi[data-menu="rd"]`).Click()
+	p.View("rd")
 	p.L(lport("rs232")).Click()
 	p.Wait(200)
 	sel := p.L(`#itemcards select[data-libparam="rs232.peer.baud"]`)

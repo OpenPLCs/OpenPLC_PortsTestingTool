@@ -620,7 +620,7 @@ func (s *jStep) report() ptreport.ItemRun {
 	}
 	return ptreport.ItemRun{No: s.No, Where: s.where(), Item: s.Item, Port: s.Port, Channel: s.Ch,
 		Outcome: ptreport.Outcome(s.State), Value: s.value(), FailCode: s.failCode(), StartedAt: s.Started,
-		DurationMS: end.Sub(s.Started).Milliseconds(), Analog: s.Used}
+		DurationMS: end.Sub(s.Started).Milliseconds(), Analog: s.Used, Params: s.Params, Checks: s.Checks}
 }
 
 // failCode is the step's code in the report; a step with no item goes by its
@@ -693,8 +693,7 @@ func (j *journal) json(since uint64) map[string]any {
 
 // planTotal is how many numbered steps the picked sub-tests should take:
 // one per configured item, one per channel of a walked item, one for safety.
-func planTotal(steps []ptstages.Step, caps ptproto.Caps, refConnected bool) int {
-	f := loadStageCfgs()
+func planTotal(f stageCfgs, steps []ptstages.Step, caps ptproto.Caps, refConnected bool) int {
 	n := 0
 	for _, st := range steps {
 		if st == ptstages.Safety {

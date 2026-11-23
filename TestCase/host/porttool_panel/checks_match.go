@@ -51,7 +51,7 @@ func checkAdapterMatch(p *Page, com string) {
 	// Typed into the command line, as a person would.
 	typeSim := func(cmd string) {
 		if !p.L("#raw").Visible() {
-			p.L(`.mi[data-menu="rd"]`).Click()
+			p.View("rd")
 		}
 		p.L("#raw").Fill(cmd)
 		p.L("#send").Click()
@@ -91,8 +91,9 @@ func checkAdapterMatch(p *Page, com string) {
 	check(ok && strings.Contains(why("rs485"), "SIM-CAN 的暗号出现在 RS485 端子上"),
 		"crossed wiring: RS485's hover says whose code word it heard", why("rs485"))
 	check(strings.Contains(why("can"), "SIM-A 的暗号出现在 CAN 端子上"), "and CAN's says the same about SIM-A", why("can"))
-	check(!green("rs485") && matched("rs485") == "" && row("rs485").L("select").Count() == 1,
-		"a row that was not found is gray and falls back to a manual choice")
+	// The manual choice is the wiring registration's 「换」 (C.3.6 「左 · 接线」); the row has no dropdown.
+	check(!green("rs485") && matched("rs485") == "" && row("rs485").L("select").Count() == 0,
+		"a row that was not found is gray and shows no port")
 
 	// SIM-A's cable out: RS485 heard nothing.
 	typeSim("sim.wiring SIM-A=none SIM-CAN=can")

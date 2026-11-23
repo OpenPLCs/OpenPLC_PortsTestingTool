@@ -1,52 +1,79 @@
 "use strict";
 
-// The fixture line's big screen: one tile per station (decision 190,
-// PORTTOOL-FLOW.md C.3.10). Every word comes from strings.json.
+// The fixture line's big screen, as on the agreed demo page (decision 190,
+// PORTTOOL-FLOW.md C.3.10): stations' wiring on the left, one tile per
+// station, the oven and the records on the right, a board page per station
+// and the template window. Every word comes from strings.json.
 
-function T(key, args) {
-  const e = STRINGS[key];
-  let s = e ? (e[LANG] || e.zh) : key;
-  if (args) { s = s.replace(/\{([a-z0-9_]+)\}/g, (m, k) => (k in args ? args[k] : m)); }
-  return s;
-}
-function localize(v) {
-  if (Array.isArray(v)) { return v.map(localize); }
-  if (v && typeof v === "object") {
-    if ("$t" in v) { return T(v.$t, localize(v.args || {})); }
-    const o = {};
-    for (const k of Object.keys(v)) { o[k] = localize(v[k]); }
-    return o;
-  }
-  return v;
-}
-async function api(path, body) {
-  const opt = body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {};
-  try { const r = await fetch(path, opt); return localize(await r.json()); } catch (e) { return {}; }
-}
-const $ = s => document.querySelector(s);
-const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) { n.className = cls; } if (txt != null) { n.textContent = txt; } return n; };
-const add = (p, ...c) => { for (const x of c) { if (x) { p.appendChild(x); } } return p; };
-
+const NUMS = "①②③④⑤";
 const STEP_KEY = { 1: "line.step.1", 2: "line.step.2", 3: "line.step.3", 4: "line.step.4", 5: "line.step.5" };
 const STATE_KEY = { empty: "line.st.empty", needflash: "line.st.needflash", flashing: "line.st.flashing", wire: "line.st.wire",
-  run: "line.st.run", fail: "line.st.fail", blocked: "line.st.blocked", done: "line.st.done", agego: "line.st.agego", short: "line.st.short" };
-const STATE_CLS = { empty: "empty", needflash: "wait", flashing: "run", wire: "wait", run: "run", fail: "fail", blocked: "wait", done: "done", agego: "wait", short: "wait" };
-const NUMS = "①②③④⑤";
-// A record's first step id, as the line writes it, and the step it is.
+  run: "line.st.run", fail: "line.st.fail", blocked: "line.st.blocked", done: "line.st.done_long", agego: "line.st.agego",
+  short: "line.st.short", back: "line.st.back", cancel: "line.st.cancel" };
+const STATE_CLS = { needflash: "wait", flashing: "run", wire: "wait", run: "run", fail: "fail", blocked: "wait", done: "done",
+  agego: "wait", short: "wait", back: "run", cancel: "fail" };
+// Steps a person acts in: ② (unplug, carry to the oven) and the wiring.
+const MANUAL = { 2: true };
 const STEP_OF_ID = { functional: 1, aging: 2, aging_check: 3, safety: 4, user: 5 };
-// The aging items, in the order the task lists them (PORTTOOL-FLOW.md C.3.9).
-const AGE_ITEMS = [["temp", "line.age.item.temp"], ["sd", "line.age.item.sd"], ["sdram", "line.age.item.sdram"],
-  ["rtc", "line.age.item.rtc"], ["dout", "line.age.item.dout"], ["aout", "line.age.item.aout"],
-  ["rs232", "line.age.item.rs232"], ["can", "line.age.item.can"]];
-const AGE_HOURS = ["1", "2", "4", "8"];
 
 let tiles = [], now = Date.now();
+let hist = { oven: [], subs: [] }, histNow = Date.now();
+let tpls = { list: [], using: {} };
+let stations = {};           // n -> /api/stations row
+let conns = {};              // n -> { conn, state, ports } of the station's panel
+let view = { page: "wall", n: 0 }, boardTab = -1, boardFor = 0;
+const shippedUIDs = new Set();
 
 function fmt(ms) {
   const s = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60;
-  return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s % 60).padStart(2, "0");
+  const p = n => String(n).padStart(2, "0");
+  return h ? h + ":" + p(m) + ":" + p(s % 60) : p(m) + ":" + p(s % 60);
 }
 const since = t => (t && !t.startsWith("0001") ? now - Date.parse(t) : 0);
+function tplName(r) { return !r || !r.name ? T("line.tpl.none") : r.name === "default" ? T("line.tpl.default") : r.name; }
+
+function act(n, a) { return api("/api/line/act", { n, act: a }).then(refresh); }
+
+/* ---------------- top bar ---------------- */
+
+function topChips() {
+  typeChip("line");                                   // gear.js
+  const pc = $("#tplchip"); pc.textContent = "";
+  add(pc, el("span", "lab", T("line.chip.tpl")), el("b", null, tplName(tpls.using) + (tpls.using.ver ? " v" + tpls.using.ver : "")), el("span", "lab", "▾"));
+  pc.onclick = openTemplates;
+  $("#subto").textContent = T("line.subto");
+}
+
+/* ---------------- left: every station's wiring ---------------- */
+
+// The rows of one station's wiring (gear.js) from what the big screen keeps.
+function stationRows(n) {
+  const c = conns[n] || {};
+  return gearRows({ conn: c.conn, state: c.state, ports: c.ports, rec: stations[n], tile: tiles.find(t => t.n === n) });
+}
+function renderSide() {
+  const side = $("#lnside"); side.textContent = "";
+  add(side, el("h3", null, T("line.side.wiring")), el("div", "hint", T("line.side.wiring_hint")));
+  for (const t of tiles) {
+    const blk = el("div", "sblk"), hd = el("div", "st-hd");
+    blk.onclick = () => gearModal(t.n, refreshSlow);
+    add(hd, el("span", null, T("line.station", { n: t.n })), el("span", "mono", tail8(t.uid)), el("span", "sp"));
+    blk.appendChild(hd);
+    if (t.state === "empty") { add(blk, el("div", "hint", T("line.side.empty"))); }
+    else {
+      for (const r of stationRows(t.n)) {
+        if (r.reserved) { continue; }
+        const row = el("div", "srow");
+        add(row, el("span", "dot" + (r.on ? " on" : "")), el("span", null, T(r.name)), el("span", "d", r.on ? r.val : T("line.gear.unseen")));
+        row.title = r.val;
+        blk.appendChild(row);
+      }
+    }
+    side.appendChild(blk);
+  }
+}
+
+/* ---------------- middle: the wall ---------------- */
 
 function stepTitle(t) {
   if (t.state === "done") { return T("line.st.done"); }
@@ -54,286 +81,443 @@ function stepTitle(t) {
   if (t.state === "wire") { return T("line.prep.wire"); }
   return t.step ? T(STEP_KEY[t.step]) : "";
 }
-
-function fwText(t) {
-  if (t.fw === "blank") { return T("line.fw.blank"); }
-  if (!t.fw) { return T("line.fw.none"); }
-  if (t.want && t.fw !== t.want) { return T("line.fw.old", { v: t.fw }); }
-  return t.fw;
-}
-
-function act(n, a) { return api("/api/line/act", { n, act: a }).then(refresh); }
-
-function popMenu(anchor, items) {
-  document.querySelectorAll(".popmenu").forEach(x => x.remove());
-  const m = el("div", "popmenu"), r = anchor.getBoundingClientRect();
-  m.style.left = (r.left + scrollX) + "px"; m.style.top = (r.bottom + scrollY) + "px";
-  for (const [label, f] of items) { const d = el("div", null, label); d.onclick = e => { e.stopPropagation(); m.remove(); f(); }; m.appendChild(d); }
-  document.body.appendChild(m);
-  setTimeout(() => document.addEventListener("click", () => m.remove(), { once: true }));
-}
-
 function tileMenu(btn, t) {
   const items = [];
   if (t.state !== "empty" && t.state !== "done") { items.push([t.paused ? T("line.btn.resume") : T("line.btn.pause"), () => act(t.n, t.paused ? "resume" : "pause")]); }
   if (t.state !== "empty") { items.push([T("line.btn.remove_board"), () => { if (confirm(T("line.confirm.remove_board", { n: t.n }))) { act(t.n, "remove"); } }]); }
-  items.push([T("line.btn.settings"), () => settings(t)]);
-  items.push([T("line.btn.open_panel"), () => { location.href = "/st/" + t.n + "/"; }]);
-  if (t.state === "empty" && t.n !== 1) { items.push([T("line.btn.delete"), () => api("/api/stations/remove", { n: t.n }).then(r => { if (r.error) { alert(r.error); } refresh(); })]); }
+  items.push([T("line.btn.settings"), () => gearModal(t.n, refreshSlow)]);
+  if (t.state === "empty" && t.n !== 1) { items.push([T("line.btn.delete"), () => removeStation(t.n)]); }
   popMenu(btn, items);
 }
-
-function tileOf(t) {
-  const cls = t.paused ? "paused" : STATE_CLS[t.state] || "wait";
-  const box = el("div", "tile " + cls), h = el("div", "th");
-  add(h, el("b", null, T("line.station", { n: t.n })));
-  if (t.state !== "empty") {
-    add(h, el("span", "uid", t.uid ? "…" + t.uid.slice(-8) : T("line.uid_unknown")),
-      el("span", "uid" + (t.want && t.fw !== t.want ? " warn" : ""), fwText(t)));
-  }
-  add(h, el("span", "sp"));
-  if (t.state === "fail") { add(h, el("span", "led on")); }
-  const menu = el("button", "tmenu", "⋯");
-  menu.onclick = e => { e.stopPropagation(); tileMenu(menu, t); };
-  add(h, menu, null);
-  box.appendChild(h);
-  if (t.state === "empty") {
-    add(box, el("div", "st", T("line.st.empty")));
-    if (t.why) { add(box, el("div", "why", t.why)); }
-    return box;
-  }
-  box.onclick = () => detail(t);
-  add(box, el("div", "stepname", stepTitle(t)), el("div", "st", t.paused ? T("line.st.paused") : T(STATE_KEY[t.state])));
-  if (t.why) { add(box, el("div", "why", t.why)); }
-  if (t.missing && t.missing.length) { add(box, el("div", "miss", T("line.missing", { list: t.missing.join(", ").toUpperCase() }))); }
-  add(box, el("div", "time", T("line.time", { a: fmt(since(t.step_at)), b: fmt(since(t.since)) })));
-  const acts = el("div", "acts");
-  if (t.state === "needflash") {
-    const b = el("button", "act", t.fw && t.fw !== "blank" ? T("line.btn.upgrade", { v: t.want }) : T("line.btn.flash", { v: t.want }));
-    b.disabled = !t.want;
-    b.onclick = e => { e.stopPropagation(); act(t.n, "flash"); };
-    acts.appendChild(b);
-  }
-  if (t.state === "fail" || t.state === "blocked") {
-    { const c = el("button", "act", T("line.btn.continue")); c.onclick = e => { e.stopPropagation(); act(t.n, "continue"); }; acts.appendChild(c); }
-    const r = el("button", "act", T("line.btn.restart")); r.onclick = e => { e.stopPropagation(); act(t.n, "restart"); }; acts.appendChild(r);
-  }
-  if (t.state === "short") {
-    const k = el("button", "act", T("line.btn.keepaging")), r = el("button", "act", T("line.btn.reage")), c = el("button", "act", T("line.btn.cancelage"));
-    k.onclick = e => { e.stopPropagation(); act(t.n, "keepaging"); };
-    r.onclick = e => { e.stopPropagation(); act(t.n, "reage"); };
-    c.onclick = e => { e.stopPropagation(); if (confirm(T("line.confirm.cancelage"))) { act(t.n, "cancelage"); } };
-    add(acts, k, r, c);
-  }
-  if (acts.childNodes.length) { box.appendChild(acts); }
+function menuBtn(t) {
+  const b = el("button", "tmenu", "⋯"); b.title = T("line.btn.menu_tip");
+  b.onclick = e => { e.stopPropagation(); tileMenu(b, t); };
+  return b;
+}
+async function removeStation(n) {
+  const r = await api("/api/stations/remove", { n });
+  if (r.error) { alert(r.error); }
+  refresh();
+}
+function stopClick(f) { return e => { e.stopPropagation(); f(); }; }
+function chainOf(t) {
   const ch = el("div", "chain");
-  const prepDone = t.state !== "needflash" && t.state !== "flashing" && t.state !== "wire";
-  add(ch, el("span", prepDone ? "ok" : "cur", T("line.prep")));
+  const prepDone = !["needflash", "flashing", "wire"].includes(t.state);
+  add(ch, el("span", prepDone ? "ok" : "man", T("line.prep")));
   for (let i = 1; i <= 5; i++) {
     const r = (t.results || {})[i], passed = (t.passed || {})[i];
-    const c = el("span", passed ? "ok" : r && r !== "PASS" ? "bad" : t.step === i && t.state === "run" ? "cur" : "", NUMS[i - 1]);
+    const cur = t.step === i && !["done", "empty"].includes(t.state);
+    const c = el("span", passed ? "ok" : r && r !== "PASS" ? "bad" : cur ? (MANUAL[i] || t.state === "agego" ? "man" : "cur") : "", NUMS[i - 1]);
     c.title = T(STEP_KEY[i]);
     ch.appendChild(c);
   }
-  box.appendChild(ch);
+  return ch;
+}
+// curText is the running item, "port|item", in words.
+function curText(c) {
+  const [port, item] = c.split("|");
+  return portName(port) + " " + itemName(item);
+}
+function tileOf(t) {
+  if (t.state === "empty") {
+    const box = el("div", "tile empty"), h = el("div", "th");
+    h.style.alignSelf = "stretch";
+    add(h, el("span", "sp"), menuBtn(t));
+    add(box, h, el("div", null, T("line.tile.empty", { n: t.n })));
+    if (t.why) { add(box, el("div", "why", t.why)); }
+    return box;
+  }
+  const cls = t.paused ? "paused" : STATE_CLS[t.state] || "wait";
+  const box = el("div", "tile " + cls), h = el("div", "th");
+  box.onclick = () => go("board", t.n);
+  const warn = t.fw === "blank" || !t.fw || (t.want && t.fw !== t.want);
+  const led = el("span", "led" + (t.led ? " on" : "")); led.title = T("line.led_tip");
+  add(h, el("b", null, T("line.station", { n: t.n })), el("span", "uid", tail8(t.uid) || T("line.uid_unknown")),
+    el("span", "uid" + (warn ? " warn" : ""), fwText(t)), el("span", "sp"), led, menuBtn(t));
+  add(box, h, el("div", "stepname", stepTitle(t)), el("div", "st " + cls, t.paused ? T("line.st.paused") : T(STATE_KEY[t.state])));
+  if (t.why) { add(box, el("div", "why", t.why)); }
+  if (t.missing && t.missing.length) { add(box, el("div", "miss", T("line.missing", { list: t.missing.join(", ").toUpperCase() }))); }
+  if (t.state === "run" && !t.paused && t.total) {
+    add(box, el("div", "time", T("line.items", { k: Math.min(t.total, t.done + 1), n: t.total }) + (t.cur ? T("line.items_cur", { cur: curText(t.cur) }) : "")));
+  }
+  const est = t.est_ms ? T("line.time_est", { e: fmt(t.est_ms) }) : "";
+  add(box, el("div", "time", T("line.time", { a: fmt(since(t.step_at)) + est, b: fmt(since(t.since)) })));
+  if ((t.state === "run" || t.state === "flashing") && t.est_ms) {
+    const bar = el("div", "bar"), i = el("i");
+    i.style.width = Math.min(100, 100 * since(t.step_at) / t.est_ms) + "%";
+    add(box, add(bar, i));
+  }
+  const acts = el("div", "acts");
+  if (t.state === "needflash") {
+    const b = el("button", "act", t.fw && t.fw !== "blank" ? T("line.btn.upgrade", { v: t.want }) : T("line.btn.flash", { v: t.want }));
+    b.disabled = !t.want; b.onclick = stopClick(() => act(t.n, "flash"));
+    acts.appendChild(b);
+  }
+  if (t.state === "fail" || t.state === "blocked") {
+    const c = el("button", "act", T("line.btn.continue")), r = el("button", "act", T("line.btn.restart"));
+    c.onclick = stopClick(() => act(t.n, "continue")); r.onclick = stopClick(() => act(t.n, "restart"));
+    add(acts, c, r);
+  }
+  if (t.state === "short") {
+    const k = el("button", "act", T("line.btn.keepaging")), r = el("button", "act", T("line.btn.reage")), c = el("button", "act", T("line.btn.cancelage"));
+    k.onclick = stopClick(() => act(t.n, "keepaging")); r.onclick = stopClick(() => act(t.n, "reage"));
+    c.onclick = stopClick(() => { if (confirm(T("line.confirm.cancelage"))) { act(t.n, "cancelage"); } });
+    add(acts, k, r, c);
+  }
+  if (acts.childNodes.length) { box.appendChild(acts); }
+  box.appendChild(chainOf(t));
   return box;
 }
-
-function render() {
-  const w = $("#lnwall"); w.textContent = "";
-  for (const t of tiles) { w.appendChild(tileOf(t)); }
-  const a = el("div", "addtile"), b = el("button", null, T("line.add"));
-  b.onclick = () => api("/api/stations/add", {}).then(refresh);
-  add(w, add(a, b));
+function pageWall(pg) {
+  add(pg, el("h2", null, T("line.wall.title")), el("div", "hint", T("line.wall.hint")));
+  const r = el("div", "row"); r.style.margin = "8px 0";
+  add(r, el("span", "kv", T("line.shipped", { n: shippedUIDs.size })));
+  pg.appendChild(r);
+  const wg = el("div", "wallgrid"), grid = el("div", "grid");
+  for (const t of tiles) { grid.appendChild(tileOf(t)); }
+  const end = el("div", "wallend"), addb = el("button", null, T("line.add")), delb = el("button", null, T("line.del"));
+  addb.onclick = () => api("/api/stations/add", {}).then(refresh);
+  delb.onclick = () => {
+    const free = tiles.filter(t => t.state === "empty" && t.n !== 1);
+    if (!free.length) { alert(T("line.del_none")); return; }
+    popMenu(delb, free.map(t => [T("line.del_one", { n: t.n }), () => removeStation(t.n)]));
+  };
+  add(end, addb, delb);
+  const left = el("div"); add(left, grid, end);
+  add(wg, left, sideCards());
+  pg.appendChild(wg);
 }
 
+/* ---------------- right: oven and records ---------------- */
+
+function pill(o) { return el("span", "pill " + (o === "PASS" ? "ok" : "bad"), o === "PASS" ? T("line.res.pass") : T("line.res.fail")); }
+function stepName(id) { return STEP_OF_ID[id] ? T(STEP_KEY[STEP_OF_ID[id]]) : id; }
+function sideCards() {
+  const side = el("div");
+  const ov = el("div", "card"); add(ov, el("b", null, T("line.side.oven")));
+  if (!hist.oven.length) { add(ov, el("div", "hint", T("line.side.oven_none"))); }
+  else { add(ov, el("div", "hint", T("line.side.oven_hint"))); }
+  for (const o of hist.oven) {
+    add(ov, add(el("div", "th"), el("span", "mono", tail8(o.uid)), el("span", "time", T("line.side.oven_away", { t: fmt(histNow - Date.parse(o.since)) }))));
+  }
+  const sc = el("div", "card"); sc.style.marginTop = "12px"; add(sc, el("b", null, T("line.side.subs")));
+  if (!hist.subs.length) { add(sc, el("div", "hint", T("line.side.subs_none"))); }
+  else {
+    const tb = el("table");
+    add(tb, add(el("tr"), el("th", null, T("line.col.time")), el("th", null, T("line.col.station")), el("th", null, T("line.col.board")),
+      el("th", null, T("line.col.step")), el("th", null, T("line.detail.outcome"))));
+    for (const x of hist.subs) {
+      const tr0 = el("tr"), at = new Date(x.at);
+      add(tr0, el("td", "mono", [at.getHours(), at.getMinutes(), at.getSeconds()].map(v => String(v).padStart(2, "0")).join(":")),
+        el("td", null, x.station ? String(x.station) : "—"), el("td", "mono", tail8(x.uid)), el("td", null, stepName(x.step)), add(el("td"), pill(x.outcome)));
+      tr0.style.cursor = "pointer"; tr0.onclick = () => showRecord(x.uid, x.file);
+      tb.appendChild(tr0);
+    }
+    add(sc, add(el("div", "sub"), tb));
+  }
+  add(side, ov, sc);
+  return side;
+}
+async function showRecord(uid, file) {
+  const j = await api("/api/line/record?uid=" + encodeURIComponent(uid) + "&file=" + encodeURIComponent(file));
+  modal(b => {
+    const h = el("div", "mhd"), x = el("button", "x", "✕"); x.onclick = closeModal;
+    add(h, el("h2", null, tail8(uid) + " · " + stepName(((j.record || {}).steps || [{}])[0].id)), x);
+    add(b, h);
+    for (const st of (j.record || {}).steps || []) {
+      if (st.reason) { add(b, el("div", "hint", T("line.detail.reason", { r: st.reason }))); }
+      if ((st.items || []).length) { b.appendChild(itemTable(st.items, (j.record || {}).station)); }
+    }
+  });
+}
+
+/* ---------------- one board ---------------- */
+
+const PILL = { PASS: ["line.res.pass", "ok"], RUN: ["line.res.run", "run"], SKIPPED: ["line.res.skip", "off"], "": ["line.res.wait", "off"] };
+function resPill(o) {
+  const [k, c] = PILL[o] || ["line.res.fail", "bad"];
+  return el("span", "pill " + c, T(k));
+}
+function itemName(id) {
+  const k = "lib.item." + id + ".name";
+  return STRINGS[k] ? T(k) : id || "—";
+}
+function portName(p) { return PORT_NAME[p] || (p || "").toUpperCase(); }
+function paramsText(port, ps) {
+  return Object.entries(ps || {}).map(([k, v]) => paramCN(k) + " " + valueCN(v)).join(T("shell.list_sep")) || "—";
+}
+function readingText(r) {
+  const out = [];
+  for (const c of (r.checks || []).slice().sort((a, b) => (a.pass ? 1 : 0) - (b.pass ? 1 : 0)).slice(0, 3)) {
+    out.push(checkField(r.port, c.check || {}) + " " + (c.missing ? T("ui.failCN.3") : checkGot(c.check, c.got)));
+  }
+  if (!out.length && r.value) { out.push(r.value); }
+  if (!out.length && r.values) { for (const [k, v] of r.values.slice(0, 3)) { out.push(fieldLabel(r.port, k) + " " + valueCN(v)); } }
+  return out.join(T("shell.list_sep")) || "—";
+}
+// itemTable lists a step's numbered items: port, item, parameters, criterion, reading, result.
+function itemTable(rows) {
+  const tb = el("table");
+  add(tb, add(el("tr"), ...["line.col.port", "line.col.item", "line.col.params", "line.col.crit", "line.col.reading", "line.detail.outcome"].map(k => el("th", null, T(k)))));
+  for (const r of rows) {
+    const o = r.outcome || r.state || "";
+    const tr0 = el("tr", o === "RUN" ? "cur" : o && o !== "PASS" && o !== "SKIPPED" ? "bad" : "");
+    const crit = (r.checks || []).map(c => checkCN(r.port, c.check || {})).join(T("shell.list_sep")) || "—";
+    add(tr0, el("td", null, portName(r.port) + (r.ch || r.channel ? " " + (r.ch || r.channel) : "")), el("td", null, itemName(r.item)),
+      el("td", null, paramsText(r.port, r.params)), el("td", null, crit), el("td", "mono", readingText(r)), add(el("td"), resPill(o)));
+    tb.appendChild(tr0);
+  }
+  return tb;
+}
+
+const TABS = ["line.tab.flash", "line.tab.wire", "line.step.1", "line.step.2", "line.step.3", "line.step.4", "line.step.5", "line.tab.ship"];
+// tabOf is the tab a tile is on: 0 flash, 1 wiring, 2..6 steps ①..⑤, 7 shipping sheet.
+function tabOf(t) {
+  if (t.state === "done") { return 7; }
+  if (t.state === "needflash" || t.state === "flashing") { return 0; }
+  if (t.state === "wire") { return 1; }
+  return t.step ? t.step + 1 : 0;
+}
+function tabMark(t, i) {
+  if (i === 0) { return ["needflash", "flashing"].includes(t.state) ? "cur" : "ok"; }
+  if (i === 1) { return t.state === "wire" ? "cur" : ["needflash", "flashing"].includes(t.state) ? "" : "ok"; }
+  if (i === 7) { return t.state === "done" ? "ok" : ""; }
+  const s = i - 1, r = (t.results || {})[s];
+  if ((t.passed || {})[s]) { return "ok"; }
+  if (r && r !== "PASS") { return "bad"; }
+  return t.step === s ? "cur" : "";
+}
+let boardFull = null, boardRec = {};
+async function loadBoard(t) {
+  boardFull = await api("/st/" + t.n + "/api/full");
+  for (const [i, f] of Object.entries(t.records || {})) {
+    if (!boardRec[i + f] && t.uid) {
+      const j = await api("/api/line/record?uid=" + encodeURIComponent(t.uid) + "&file=" + encodeURIComponent(f));
+      boardRec[i + f] = j.record || {};
+    }
+  }
+}
+function statusLine(t, i) {
+  const m = tabMark(t, i), d = el("div", "row");
+  const waiting = ["needflash", "wire", "agego", "short", "blocked"].includes(t.state);
+  const [k, c] = m === "ok" ? ["line.bst.ok", "ok"] : m === "bad" ? ["line.bst.bad", "bad"] : m === "cur" ? (waiting ? ["line.bst.wait", "blue"] : ["line.bst.run", "run"]) : ["line.bst.later", "off"];
+  add(d, el("span", "pill " + c, T(k)));
+  if (m === "cur") { add(d, el("span", "time", T("line.bst.took", { t: fmt(since(t.step_at)) }))); }
+  if (m === "bad" && t.why) { add(d, el("span", "why", t.why)); }
+  return d;
+}
+function stepPage(p, t, i) {
+  add(p, el("h3", null, T(TABS[i])), statusLine(t, i));
+  const notes = ["line.note.flash", "line.note.wire", "line.note.1", "line.note.2", "line.note.3", "line.note.4", "line.note.5"];
+  add(p, el("div", "note", T(notes[i])));
+  if (i === 1) { p.appendChild(connZone(t.n)); return; }
+  if (i === 3) {
+    const o = hist.oven.find(x => x.uid === t.uid);
+    add(p, el("div", "big", t.state === "agego" ? T("line.age.big_go") : o ? T("line.age.big_away", { t: fmt(histNow - Date.parse(o.since)) }) : (t.passed || {})[2] ? T("line.age.big_back") : T("line.bst.later")));
+    add(p, el("h3", null, T("line.age.leds_title")), el("div", "hint", T("line.age.leds")));
+  }
+  const s = i - 1;
+  if (i >= 2) {
+    const run = boardFull && boardFull.run;
+    if (t.step === s && t.state === "run" && run && run.steps) { p.appendChild(itemTable(run.steps)); return; }
+    const f = (t.records || {})[s], rec = f && boardRec[s + f];
+    if (rec) {
+      for (const st of rec.steps || []) {
+        if (st.reason) { add(p, el("div", "hint", T("line.detail.reason", { r: st.reason }))); }
+        if ((st.items || []).length) { p.appendChild(itemTable(st.items)); }
+      }
+    } else if (i !== 3) { add(p, el("div", "hint", T("line.detail.none"))); }
+  }
+}
+function shipSheet(p, t) {
+  add(p, el("h3", null, T("line.tab.ship")));
+  if (t.state !== "done") { add(p, el("div", "warnbox", T("line.ship.not_yet", { at: stepTitle(t) }))); }
+  else { add(p, el("div", "big", T("line.detail.ship_ok"))); }
+  const tb = el("table");
+  add(tb, add(el("tr"), el("th", null, T("line.col.step")), el("th", null, T("line.detail.outcome")), el("th", null, T("line.col.record"))));
+  for (let s = 1; s <= 5; s++) {
+    const r = (t.results || {})[s], ok = (t.passed || {})[s];
+    add(tb, add(el("tr"), el("td", null, T(STEP_KEY[s])),
+      add(el("td"), el("span", "pill " + (ok ? "ok" : r ? "bad" : "off"), T(ok ? "line.res.pass" : r ? "line.res.fail" : "line.res.notyet"))),
+      el("td", "mono", (t.records || {})[s] || "")));
+  }
+  p.appendChild(tb);
+  add(p, el("div", "hint", T("line.ship.foot", { uid: t.uid || "—", tpl: tplName(t.tpl) + " v" + (t.tpl || {}).ver, n: t.n })));
+}
+// connZone is the station's wiring as rows, for the board page's wiring tab.
+function connZone(n) {
+  const z = el("div", "conn");
+  let blk = "";
+  for (const r of stationRows(n)) {
+    if (r.reserved) { continue; }
+    if (r.blk !== blk) { blk = r.blk; z.appendChild(el("div", "blkhd", T(blk))); }
+    const row = el("div", "crow");
+    add(row, el("span", "dot" + (r.on ? " on" : "")), el("span", "nm", T(r.name)), el("span", "mono", r.on ? r.val : T("line.gear.unseen")));
+    z.appendChild(row);
+  }
+  return z;
+}
+function logLines(run) {
+  return ((run || {}).log || []).map(l => {
+    const at = new Date(l.at);
+    const ts = [at.getHours(), at.getMinutes(), at.getSeconds()].map(v => String(v).padStart(2, "0")).join(":");
+    return ts + "  " + (l.msg ? (typeof l.msg === "string" ? l.msg : "") : l.text || "");
+  }).join("\n");
+}
+function pageBoard(pg, n) {
+  const t = tiles.find(x => x.n === n);
+  if (!t || t.state === "empty") { add(pg, el("div", "warnbox", T("line.board.empty"))); const b = el("button", null, T("line.board.back")); b.onclick = () => go("wall"); pg.appendChild(b); return; }
+  if (boardFor !== n) { boardFor = n; boardTab = tabOf(t); }
+  const back = el("button", null, T("line.board.back")); back.onclick = () => go("wall");
+  const h = el("div", "row");
+  const led = el("span", "led" + (t.led ? " on" : "")); led.title = T("line.led_tip");
+  add(h, back, el("h2", null, T("line.board.title", { n, uid: t.uid || T("line.uid_unknown") })), el("span", "kv", fwText(t)), el("span", "sp"),
+    el("span", "kv", T("line.board.tpl", { tpl: tplName(t.tpl), v: (t.tpl || {}).ver || "" })), led);
+  if (t.state !== "done") { const pz = el("button", t.paused ? "primary" : null, t.paused ? T("line.btn.resume") : T("line.btn.pause")); pz.onclick = () => act(n, t.paused ? "resume" : "pause"); h.appendChild(pz); }
+  const off = el("button", "stop", T("line.btn.remove_board"));
+  off.onclick = () => { if (confirm(T("line.confirm.remove_board", { n }))) { act(n, "remove"); go("wall"); } };
+  h.appendChild(off);
+  pg.appendChild(h);
+  if (t.paused) { add(pg, el("div", "warnbox", T("line.board.paused", { at: stepTitle(t) }))); }
+  const tabs = el("div", "tabs");
+  TABS.forEach((k, i) => {
+    const m = tabMark(t, i);
+    const b = el("button", (boardTab === i ? "on " : "") + (m === "ok" ? "ok" : m === "bad" ? "bad" : ""), T(k) + (m === "ok" ? " ✓" : m === "bad" ? " ✗" : m === "cur" ? " …" : ""));
+    b.onclick = () => { boardTab = i; route(); };
+    tabs.appendChild(b);
+  });
+  pg.appendChild(tabs);
+  const cols = el("div", "bcols"), left = el("div"), right = el("div");
+  if (boardTab === 7) { shipSheet(left, t); } else { stepPage(left, t, boardTab); }
+  add(right, el("b", null, T("line.board.log")));
+  const lg = el("div", "log", logLines(boardFull && boardFull.run) || T("line.board.log_none"));
+  right.appendChild(lg);
+  const s = boardTab - 1, f = (t.records || {})[s];
+  if (boardTab >= 2 && boardTab <= 6 && f) {
+    add(right, el("b", null, T("line.board.form")), el("div", "form", JSON.stringify(boardRec[s + f] || {}, null, 1)));
+  }
+  add(cols, left, right); pg.appendChild(cols);
+  setTimeout(() => { lg.scrollTop = lg.scrollHeight; });
+}
+
+/* ---------------- templates ---------------- */
+
+let tplEdit = "";
+async function openTemplates() {
+  tpls = await api("/api/templates");
+  tplEdit = tplEdit || (tpls.using || {}).id || ((tpls.list || [])[0] || {}).id;
+  await api("/api/templates", { act: "edit", id: tplEdit });
+  renderTemplates();
+}
+function renderTemplates() {
+  modal(box => {
+    const h = el("div", "row");
+    const close = el("button", null, T("line.detail.close")); close.onclick = () => { closeModal(); refresh(); };
+    add(h, el("h2", null, T("line.tpl.title")), el("span", "sp"), close);
+    add(box, h, el("div", "hint", T("line.tpl.hint")));
+    const wrap = el("div", "tplwrap"), list = el("div", "tpllist"), right = el("div");
+    for (const r of tpls.list || []) {
+      const d = el("div", r.id === tplEdit ? "on" : "");
+      add(d, el("span", null, tplName(r)), el("small", null, "v" + r.ver + ((tpls.using || {}).id === r.id ? T("line.tpl.using") : "")));
+      d.onclick = async () => { tplEdit = r.id; await api("/api/templates", { act: "edit", id: r.id }); renderTemplates(); };
+      list.appendChild(d);
+    }
+    const nw = el("div", "new", T("line.tpl.new"));
+    nw.onclick = async () => {
+      const j = await api("/api/templates", { act: "new", name: T("line.tpl.new_name", { n: (tpls.list || []).length + 1 }) });
+      if (j.error) { alert(j.error); return; }
+      tpls = j; tplEdit = j.id; renderTemplates();
+    };
+    list.appendChild(nw);
+    const cur = (tpls.list || []).find(r => r.id === tplEdit) || {};
+    const l1 = el("div", "layer1"), nm = el("input");
+    nm.value = tplName(cur); nm.style.width = "220px";
+    const sv = el("button", null, T("line.tpl.save")), use = el("button", "primary", T("line.tpl.use"));
+    sv.onclick = async () => {
+      const j = await api("/api/templates", { act: "save", id: tplEdit, name: nm.value === T("line.tpl.default") ? "default" : nm.value });
+      if (j.error) { alert(j.error); }
+      tpls = j.list ? j : tpls; renderTemplates();
+    };
+    use.onclick = async () => {
+      const j = await api("/api/templates", { act: "save", id: tplEdit, name: nm.value === T("line.tpl.default") ? "default" : nm.value });
+      if (j.error) { alert(j.error); return; }
+      const u = await api("/api/templates", { act: "use", id: tplEdit });
+      tpls = u.list ? u : tpls; closeModal(); refresh();
+    };
+    add(l1, el("b", null, T("line.tpl.name")), nm, el("span", "hint", "v" + (cur.ver || "")), el("span", "sp"), sv, use);
+    const fr = el("iframe", "tplframe"); fr.src = "/st/1/?embed=template";
+    add(right, l1, fr);
+    add(wrap, list, right); box.appendChild(wrap);
+  });
+}
+
+/* ---------------- data and routing ---------------- */
+
+function go(page, n) { view = { page, n: n || 0 }; boardFor = 0; boardRec = {}; route(); if (page === "board") { refreshBoard(); } }
+function route() {
+  topChips();
+  renderSide();
+  const pg = $("#lnpage"), keep = pg.scrollTop;
+  pg.textContent = "";
+  if (view.page === "board") { pageBoard(pg, view.n); } else { pageWall(pg); }
+  pg.scrollTop = keep;
+}
+async function refreshStations() {
+  const j = await api("/api/stations");
+  stations = {};
+  for (const s of j.stations || []) { stations[s.n] = s; }
+}
+async function refreshConn(n) {
+  const [conn, st, ports] = await Promise.all([api("/st/" + n + "/api/conn"), api("/st/" + n + "/api/state"), api("/st/" + n + "/api/ports")]);
+  conns[n] = { conn, state: st, ports: ports.ports || [] };
+}
 async function refresh() {
   const j = await api("/api/line");
   if (!j.tiles) { return; }
   tiles = j.tiles; now = Date.parse(j.now) || Date.now();
-  const want = (tiles.find(t => t.want) || {}).want;
-  $("#lnfw").textContent = want ? T("line.fw_shipped", { v: want }) : T("line.fw_none_shipped");
-  render();
+  for (const t of tiles) { if (t.state === "done" && t.uid) { shippedUIDs.add(t.uid); } }
+  if (!$("#lnmodal").classList.contains("open")) { route(); }
+}
+async function refreshSlow() {
+  const [h, tp] = await Promise.all([api("/api/line/history"), api("/api/templates")]);
+  if (h.oven) { hist = h; histNow = Date.parse(h.now) || Date.now(); }
+  if (tp.list) { tpls = tp; }
+  await refreshStations();
+  await Promise.all(tiles.map(t => refreshConn(t.n)));
+}
+async function refreshBoard() {
+  const t = tiles.find(x => x.n === view.n);
+  if (view.page === "board" && t) { await loadBoard(t); if (!$("#lnmodal").classList.contains("open")) { route(); } }
 }
 
-let history = { oven: [], subs: [] }, histNow = Date.now(), ageCfg = null, ageNote = "";
-
-async function refreshSide() {
-  const h = await api("/api/line/history");
-  if (h.oven) { history = h; histNow = Date.parse(h.now) || Date.now(); }
-  if (!ageCfg) { const c = await api("/api/stagecfg"); ageCfg = c.aging || { duration: "4" }; }
-  renderSide();
-}
-
-function pill(o) { return el("span", "pill " + (o === "PASS" ? "ok" : "bad"), o === "PASS" ? T("line.res.pass") : T("line.res.fail")); }
-function stepName(id) { return STEP_OF_ID[id] ? T(STEP_KEY[STEP_OF_ID[id]]) : id; }
-
-function renderSide() {
-  const side = $("#lnside"); side.textContent = "";
-  // Aging items: the template's aging part, saved to the "aging" configuration.
-  const ac = el("div", "card"); add(ac, el("h3", null, T("line.age.title")));
-  const off = (ageCfg && ageCfg.ports_off) || {};
-  for (const [port, key] of AGE_ITEMS) {
-    const r = el("label", "agerow"), cb = el("input"); cb.type = "checkbox"; cb.checked = !off[port];
-    cb.onchange = () => {
-      ageCfg.ports_off = Object.assign({}, ageCfg.ports_off || {});
-      if (cb.checked) { delete ageCfg.ports_off[port]; } else { ageCfg.ports_off[port] = true; }
-      ageNote = "";
+// Drag the left column's edge; the width is kept in the page memo (decision 190).
+function leftGrip() {
+  const g = $("#lngrip");
+  g.title = T("html.leftgrip");
+  g.onpointerdown = e => {
+    e.preventDefault(); g.setPointerCapture(e.pointerId); g.classList.add("drag");
+    g.onpointermove = m => { document.documentElement.style.setProperty("--leftw", Math.max(200, Math.min(640, m.clientX)) + "px"); };
+    g.onpointerup = async () => {
+      g.onpointermove = null; g.classList.remove("drag");
+      const w = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--leftw"), 10);
+      const ui = Object.assign({}, ((await api("/api/memo")) || {}).ui || {}, { leftw: String(w) });
+      api("/api/memo", { section: "ui", cells: ui });
     };
-    add(ac, add(r, cb, el("span", null, T(key))));
-  }
-  const hr = el("div", "agerow"), sel = el("select");
-  for (const h of AGE_HOURS) { const o = el("option", null, T("line.age.hours_n", { n: h })); o.value = h; sel.appendChild(o); }
-  sel.value = (ageCfg && ageCfg.duration) || "4";
-  sel.onchange = () => { ageCfg.duration = sel.value; ageNote = ""; };
-  const save = el("button", "act", T("line.age.save"));
-  save.onclick = async () => {
-    const r = await api("/api/stagecfg", { stage: "aging", cfg: ageCfg });
-    if (r.error) { alert(r.error); return; }
-    ageCfg = r.aging; ageNote = T("line.age.saved"); renderSide();
   };
-  add(ac, add(hr, el("span", null, T("line.age.hours")), sel, save));
-  if (ageNote) { add(ac, el("div", "hint", ageNote)); }
-  // Boards away in the oven.
-  const ov = el("div", "card"); add(ov, el("h3", null, T("line.side.oven")));
-  if (!history.oven.length) { add(ov, el("div", "hint", T("line.side.oven_none"))); }
-  for (const o of history.oven) {
-    add(ov, add(el("div", "agerow"), el("span", "mono", "…" + o.uid.slice(-8)),
-      el("span", "time", T("line.side.oven_away", { t: fmt(histNow - Date.parse(o.since)) }))));
-  }
-  // The latest records across every station.
-  const sc = el("div", "card"); add(sc, el("h3", null, T("line.side.subs")));
-  if (!history.subs.length) { add(sc, el("div", "hint", T("line.side.subs_none"))); }
-  else {
-    const tb = el("table");
-    add(tb, add(el("tr"), el("th", null, T("line.col.time")), el("th", null, T("line.col.board")),
-      el("th", null, T("line.col.step")), el("th", null, T("line.detail.outcome"))));
-    for (const x of history.subs) {
-      const tr = el("tr"), at = new Date(x.at);
-      add(tr, el("td", "mono", String(at.getHours()).padStart(2, "0") + ":" + String(at.getMinutes()).padStart(2, "0")),
-        el("td", "mono", "…" + x.uid.slice(-8)), el("td", null, stepName(x.step)), add(el("td"), pill(x.outcome)));
-      tr.style.cursor = "pointer"; tr.onclick = () => showRecord(x.uid, x.file);
-      tb.appendChild(tr);
-    }
-    sc.appendChild(tb);
-  }
-  add(side, ac, ov, sc);
 }
 
-// One record's numbered items, or its reason when it has none.
-async function recordTable(uid, file) {
-  const box = el("div");
-  const j = await api("/api/line/record?uid=" + encodeURIComponent(uid) + "&file=" + encodeURIComponent(file));
-  const rep = j.record || {};
-  add(box, el("div", "hint mono", T("line.detail.record", { file })));
-  for (const st of rep.steps || []) {
-    if (st.reason) { add(box, el("div", "hint", T("line.detail.reason", { r: st.reason }))); }
-    if (!(st.items || []).length) { continue; }
-    const tb = el("table"), hr = el("tr");
-    add(hr, el("th", null, T("line.detail.where")), el("th", null, T("line.detail.outcome")), el("th", null, T("line.detail.value")));
-    tb.appendChild(hr);
-    for (const it of st.items) { add(tb, add(el("tr"), el("td", null, it.where || ""), add(el("td"), pill(it.outcome)), el("td", "mono", it.value || ""))); }
-    box.appendChild(tb);
-  }
-  return box;
+async function boot() {
+  document.title = T("line.title");
+  const memo = await api("/api/memo"), ui = memo.ui || {};
+  if (ui.type === "rd") { location.href = "/st/1/"; return; }
+  if (ui.leftw) { document.documentElement.style.setProperty("--leftw", ui.leftw + "px"); }
+  leftGrip();
+  $("#lnmodal").onclick = e => { if (e.target.id === "lnmodal") { closeModal(); refresh(); } };
+  await refresh();
+  await refreshSlow();
+  route();
+  setInterval(refresh, 1000);
+  setInterval(refreshSlow, 5000);
+  setInterval(refreshBoard, 2000);
 }
-
-async function showRecord(uid, file) {
-  const tbl = await recordTable(uid, file);
-  modal(b => {
-    add(b, el("h2", null, "…" + uid.slice(-8)), tbl);
-    const close = el("button", null, T("line.detail.close")); close.onclick = closeModal;
-    add(b, add(el("div", "acts"), close));
-  });
-}
-
-function modal(build) {
-  const m = $("#lnmodal"), b = $("#lnbox");
-  b.textContent = ""; build(b); m.classList.add("open");
-}
-function closeModal() { $("#lnmodal").classList.remove("open"); }
-
-// Station settings: its control port and its ST-Link.
-async function settings(t) {
-  const [ports, conn, list] = await Promise.all([api("/api/ports"), api("/api/conn", { stlink: true }), api("/api/stations")]);
-  const me = (list.stations || []).find(x => x.n === t.n) || {};
-  modal(b => {
-    add(b, el("h2", null, T("line.set.title", { n: t.n })));
-    const f = el("div", "lnform"), ctl = el("select"), sw = el("select");
-    for (const p of ports.ports || []) {
-      const o = el("option", null, p.name === "sim" ? T("line.set.sim") : p.label || p.name); o.value = p.name;
-      if (p.unavailable) { o.disabled = true; }
-      ctl.appendChild(o);
-    }
-    ctl.value = t.port || "";
-    const none = el("option", null, T("line.set.none")); none.value = ""; sw.appendChild(none);
-    for (const p of ((conn.stlink || {}).probes || [])) { const o = el("option", "mono", p.sn + (p.board ? " · " + p.board : "")); o.value = p.sn; sw.appendChild(o); }
-    sw.value = me.stlink || "";
-    add(f, el("span", null, T("line.set.control")), ctl, el("span", null, T("line.set.stlink")), sw);
-    const save = el("button", "primary", T("line.set.save")), cancel = el("button", null, T("line.set.cancel"));
-    save.onclick = async () => { const r = await api("/api/stations/set", { n: t.n, control: ctl.value, sn: sw.value }); if (r.error) { alert(r.error); return; } closeModal(); refresh(); };
-    cancel.onclick = closeModal;
-    add(b, f, add(el("div", "acts"), save, cancel));
-  });
-}
-
-// One board: what each step left, from the station's own panel.
-async function detail(t) {
-  const f = await api("/st/" + t.n + "/api/full");
-  modal(b => {
-    add(b, el("h2", null, T("line.detail.title", { n: t.n, uid: t.uid || T("line.uid_unknown") })));
-    if (t.state === "done") {
-      add(b, el("h3", null, T("line.detail.ship")), el("div", null, T("line.detail.ship_ok")));
-    }
-    for (let i = 1; i <= 5; i++) {
-      const head = add(el("div", "agerow"), el("b", null, T(STEP_KEY[i])));
-      if ((t.results || {})[i]) { head.appendChild(pill(t.results[i])); }
-      add(b, head);
-      const rec = (t.records || {})[i];
-      if (rec && t.uid) {
-        const show = el("button", "act", T("line.detail.show"));
-        show.onclick = async () => { show.replaceWith(await recordTable(t.uid, rec)); };
-        add(b, show);
-      }
-      if (t.step === i && f.run && f.run.steps && f.run.steps.length) {
-        const tb = el("table"), hr = el("tr");
-        add(hr, el("th", null, T("line.detail.where")), el("th", null, T("line.detail.outcome")), el("th", null, T("line.detail.value")));
-        tb.appendChild(hr);
-        for (const s of f.run.steps) {
-          const tr = el("tr");
-          add(tr, el("td", null, s.where || ""), el("td", null, s.outcome === "PASS" ? T("line.res.pass") : s.outcome ? T("line.res.fail") + " · " + s.outcome : ""), el("td", "mono", s.value || ""));
-          tb.appendChild(tr);
-        }
-        b.appendChild(tb);
-      } else if (!rec) {
-        add(b, el("div", "hint", T("line.detail.none")));
-      }
-    }
-    const close = el("button", null, T("line.detail.close")), open = el("button", "act", T("line.btn.open_panel"));
-    close.onclick = closeModal; open.onclick = () => { location.href = "/st/" + t.n + "/"; };
-    add(b, add(el("div", "acts"), open, close));
-  });
-}
-
-// Fixture test or R&D test, remembered in the page memo (decision 190).
-async function initType() {
-  const sel = $("#lntype");
-  for (const [v, k] of [["line", "line.type.line"], ["rd", "line.type.rd"]]) { const o = el("option", null, T(k)); o.value = v; sel.appendChild(o); }
-  sel.value = "line";
-  sel.onchange = async () => {
-    const ui = Object.assign({}, ((await api("/api/memo")) || {}).ui || {}, { type: sel.value });
-    await api("/api/memo", { section: "ui", cells: ui });
-    if (sel.value === "rd") { location.href = "/st/1/"; }
-  };
-  const memo = await api("/api/memo");
-  if ((memo.ui || {}).type === "rd") { location.href = "/st/1/"; }
-}
-
-document.title = T("line.title");
-$("#lntitle").textContent = T("line.title");
-$("#lnmodal").onclick = e => { if (e.target.id === "lnmodal") { closeModal(); } };
-initType();
-refresh();
-refreshSide();
-setInterval(refresh, 1000);
-setInterval(refreshSide, 5000);
+boot();

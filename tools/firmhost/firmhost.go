@@ -46,6 +46,8 @@ func Args(repo, boot, mainC, out string) ([]string, error) {
 	cdir := CDir(repo)
 	args := []string{
 		"-std=c11", "-Wall", "-Wextra", "-O0", "-g",
+		// musl declares strnlen (porttool_age.c) only with POSIX 2008 on.
+		"-D_DEFAULT_SOURCE",
 		"-DPORTTOOL_ENABLE=1",
 		// testcase_hal_guard.h's CubeMX check is meaningless here, and mingw's
 		// own <adc.h> would trip it.

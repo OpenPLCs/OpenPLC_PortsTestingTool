@@ -63,7 +63,7 @@ func TestJournalNumbersChannelsAndItems(t *testing.T) {
 func TestJournalGivesEachChannelItsOwnStep(t *testing.T) {
 	relay, _ := catalogueItem("relay.cycle")
 	j := newJournal(2, nil)
-	st := ptstages.Aging
+	st := ptstages.Functional
 	j.stageStart(st)
 	p := ItemPick{Item: relay, Peer: ptitems.PeerRef, Params: map[string]string{"ch": "1,2"}}
 	j.observe(st, p, ptlib.State{ID: relay.ID, Running: true})

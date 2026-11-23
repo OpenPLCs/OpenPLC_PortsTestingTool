@@ -42,6 +42,7 @@ type scriptBoard struct {
 	mu    sync.Mutex
 	line  []byte
 	runs  int
+	canOn bool // pt.caps reports the CAN session running
 }
 
 func newScriptBoard(reply func() string) *scriptBoard {
@@ -73,7 +74,13 @@ func (b *scriptBoard) Write(p []byte) (int, error) {
 		switch {
 		case c == "":
 		case c == "pt.caps":
-			b.out <- []byte(matchCaps)
+			caps := matchCaps
+			b.mu.Lock()
+			if b.canOn {
+				caps = strings.Replace(caps, "params=baud,mode,period running=0", "params=baud,mode,period running=1", 1)
+			}
+			b.mu.Unlock()
+			b.out <- []byte(caps)
 		case strings.HasPrefix(c, "pt.run rtc.read"):
 			b.out <- []byte("OK rtc.read init=1 clk=lse date=26-10-23 time=10:00:00\r\n")
 		case strings.HasPrefix(c, "pt.run match"):
@@ -253,7 +260,8 @@ func (mb *matchBench) waitMatch(t *testing.T, after time.Time) matchResult {
 		st.mu.Lock()
 		res, running := st.matchResult, st.running
 		st.mu.Unlock()
-		if !running && res.at.After(after) {
+		// Not Before: a quick run can end on the very tick of after (Windows clock).
+		if !running && !res.at.Before(after) {
 			return res
 		}
 		time.Sleep(50 * time.Millisecond)
@@ -356,16 +364,13 @@ func TestMatchSaysWhenARunningTestHoldsTheTerminals(t *testing.T) {
 	mb.post(t, "/api/connect", map[string]any{"port": "COM3"})
 	mb.waitMatch(t, start)
 
-	mb.s.mu.Lock()
-	for i, p := range mb.s.caps.Ports {
-		if p.Name == "can" {
-			mb.s.caps.Ports[i].Running = true
-		}
-	}
-	mb.s.mu.Unlock()
+	// The board says so in pt.caps: the panel re-reads it after commands, so a
+	// change made only to the panel's copy would not last.
 	mb.board.mu.Lock()
+	mb.board.canOn = true
 	runs := mb.board.runs
 	mb.board.mu.Unlock()
+	mb.post(t, "/api/command", map[string]any{"cmd": "pt.caps"})
 
 	again := time.Now()
 	mb.post(t, "/api/match", map[string]any{})
