@@ -18,7 +18,7 @@
 
 /* The fixture firmware's PORTTOOL_VERSION this follows. T4-05 fails when the
  * two differ, so a protocol change on the firmware side is noticed here. */
-#define FX_PROTOCOL_VERSION "0.18.11"
+#define FX_PROTOCOL_VERSION "0.18.13"
 
 /* This sketch's own version, reported as demo= so the panel can tell it from
  * the fixture firmware. Keep in step with OPENPLC_APP_VERSION in the .ino. */

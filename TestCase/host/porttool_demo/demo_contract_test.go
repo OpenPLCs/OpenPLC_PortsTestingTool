@@ -91,6 +91,7 @@ var sameReply = []string{
 	"pt.start rs232 baud=1234",
 	"pt.start eth ip=abc",
 	"pt.start sdram wait=abc",
+	"pt.start sdram wait=500",
 }
 
 type board struct {

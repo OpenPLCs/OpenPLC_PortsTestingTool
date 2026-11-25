@@ -2247,9 +2247,8 @@ static int sdram_apply(const char *args, char *err, size_t err_len)
         /* Refused rather than clamped: the plan should learn its wait is wrong. */
         if (v < SDRAM_WAIT_MIN_MS) {
             snprintf(err, err_len,
-                     "wait=%lu is below %lu ms - cells hold for tens of "
-                     "milliseconds unrefreshed, so a shorter wait passes on a "
-                     "board whose refresh never started",
+                     "wait=%lu is below %lu ms: a shorter wait passes even "
+                     "when SDRAM refresh never started",
                      (unsigned long)v, (unsigned long)SDRAM_WAIT_MIN_MS);
             return 0;
         }
