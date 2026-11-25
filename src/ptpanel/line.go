@@ -376,10 +376,9 @@ func (x *lineStation) connect(port string) bool {
 // rdLookSWD looks behind the ST-Link when nothing answers on the control port,
 // at most every 5 s: an empty chip or one without the fixture firmware.
 func (x *lineStation) rdLookSWD() {
-	if time.Since(x.lastSWD) < 5*time.Second {
+	if !x.swdDue() {
 		return
 	}
-	x.lastSWD = time.Now()
 	clear := func() { x.set(func(t *lineTile) { t.State, t.UID, t.FW = lnEmpty, "", "" }) }
 	p, err := stlink.OpenSN(x.srv.STLinkSN)
 	if err != nil {
@@ -429,17 +428,16 @@ func (x *lineStation) detect() {
 				}
 				t.UID, t.FW = uid, fw
 			})
-			x.enter(lnNeedFlash, m("line.why.old_fw", "have", fw, "want", want))
+			x.needFlash(m("line.why.old_fw", "have", fw, "want", want))
 			return
 		}
 		x.attach(uid, fw)
 		return
 	}
 	// Nothing answers on the control port: an empty chip shows only on SWD.
-	if time.Since(x.lastSWD) < 5*time.Second || simboard.IsSim(port) {
+	if simboard.IsSim(port) || !x.swdDue() {
 		return
 	}
-	x.lastSWD = time.Now()
 	p, err := stlink.OpenSN(x.srv.STLinkSN)
 	if err != nil {
 		return
@@ -461,7 +459,28 @@ func (x *lineStation) detect() {
 		}
 		t.UID, t.FW = "", fwText
 	})
-	x.enter(lnNeedFlash, m("line.why.no_fw"))
+	x.needFlash(m("line.why.no_fw"))
+}
+
+// swdDue paces the ST-Link look to once every 5 s; a flash counts as one, so a
+// board still booting is not shown as needing the firmware (C.3.10).
+func (x *lineStation) swdDue() bool {
+	x.mu.Lock()
+	defer x.mu.Unlock()
+	if time.Since(x.lastSWD) < 5*time.Second {
+		return false
+	}
+	x.lastSWD = time.Now()
+	return true
+}
+
+// needFlash asks for the fixture firmware; a failed flash keeps its reason up
+// until the next try or the board leaves (PORTTOOL-FLOW.md C.3.10).
+func (x *lineStation) needFlash(why msg) {
+	if t := x.view(); t.State == lnNeedFlash && t.Why.Key == "line.why.flash_failed" {
+		return
+	}
+	x.enter(lnNeedFlash, why)
 }
 
 // attach connects the station's panel to the board and starts the wiring check.
@@ -592,7 +611,10 @@ func (x *lineStation) writeOwn(i int, o ptreport.Outcome, reason string) string 
 		Port: t.Port, Station: x.n, StartedAt: now, EndedAt: now,
 		Steps: []ptreport.StepResult{{ID: lineSteps[i-1].ID, Type: "line" + strconv.Itoa(i), Outcome: o,
 			Reason: reason, StartedAt: now}}})
-	return f
+	if f == "" {
+		return ""
+	}
+	return filepath.Base(f) // the board page asks for the report by name (C.3.10 「记录」)
 }
 
 func (x *lineStation) watchRun() {
@@ -699,6 +721,9 @@ func (x *lineStation) do(a string) {
 				return
 			}
 			setStepTime("flash", time.Since(began))
+			x.mu.Lock()
+			x.lastSWD = time.Now()
+			x.mu.Unlock()
 			x.set(func(t *lineTile) { *t = lineTile{N: t.N, State: lnEmpty, Want: t.Want, Port: t.Port} })
 		}()
 	case "continue":
@@ -765,7 +790,7 @@ func loadLine(uid string) (map[int]bool, map[int]string, tplRef) {
 			passed[i] = true
 		}
 		for k, v := range f.Records {
-			recs[k] = v
+			recs[k] = filepath.Base(v) // older files kept the whole path
 		}
 	}
 	return passed, recs, f.Tpl

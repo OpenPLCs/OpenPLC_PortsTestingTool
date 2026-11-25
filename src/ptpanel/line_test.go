@@ -144,3 +144,20 @@ func TestLinePauseAndRemove(t *testing.T) {
 		t.Fatalf("after remove: state %q paused %v, want empty and not paused", v.State, v.Paused)
 	}
 }
+
+// A failed flash keeps its reason up while detect keeps finding the old
+// firmware; any other reason is replaced (PORTTOOL-FLOW.md C.3.10).
+func TestLineFlashFailureStaysShown(t *testing.T) {
+	x := &lineStation{}
+	x.enter(lnNeedFlash, m("line.why.flash_failed", "detail", "sn not found"))
+	x.needFlash(m("line.why.old_fw", "have", "0.18.10", "want", "0.18.11"))
+	if k := x.view().Why.Key; k != "line.why.flash_failed" {
+		t.Fatalf("after detect: why %q, want the flash failure kept", k)
+	}
+
+	x.enter(lnNeedFlash, m("line.why.no_fw"))
+	x.needFlash(m("line.why.old_fw", "have", "0.18.10", "want", "0.18.11"))
+	if k := x.view().Why.Key; k != "line.why.old_fw" {
+		t.Fatalf("without a failure: why %q, want old_fw", k)
+	}
+}
