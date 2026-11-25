@@ -2347,20 +2347,6 @@
    "de": "{item} Runde {n}: {verdict}; {vals}",
    "de_of": "207cdc8e"
   },
-  "run.log.round": {
-   "zh": "第 {n} 轮：{verdict}",
-   "en": "Round {n}: {verdict}",
-   "en_of": "a1d915f2",
-   "de": "Runde {n}: {verdict}",
-   "de_of": "a1d915f2"
-  },
-  "run.log.round_vals": {
-   "zh": "第 {n} 轮：{verdict}；{vals}",
-   "en": "Round {n}: {verdict}; {vals}",
-   "en_of": "06a4495e",
-   "de": "Runde {n}: {verdict}; {vals}",
-   "de_of": "06a4495e"
-  },
   "html.filter.timed": {
    "zh": "时长测试逐帧",
    "en": "Timed test, every sample",
@@ -3432,13 +3418,6 @@
    "de": "Kalibrierwerte auf die Platine gebrannt (UID {uid}) und identisch zurückgelesen: {kb}",
    "de_of": "58921cce"
   },
-  "ui.full.what": {
-   "zh": "工装完整测试：在上面三块里勾要跑的子测试、选时间，点「配置完成，开始测试」，按顺序依次跑，某项没通过后面的就不跑。要测的 AI / AO 在板子上没有校准值时不让开始。每次跑完给这块板写一份记录，在 exe 旁边的 records 文件夹里按板子 UID 分；中途停下的，下次接上这块板可以从停下的那一项接着跑。",
-   "en": "Full fixture test: tick the sub-tests to run in the three boxes above, pick their times and click “Configuration done, start test”. They run in order, and once one does not pass the rest do not run. It does not start while an AI / AO to be tested has no calibration on the board. Each run writes one record for the board, in the records folder beside the exe, by board UID; a run that stopped can continue from that sub-test the next time the board is connected.",
-   "en_of": "84480f86",
-   "de": "Vollständiger Vorrichtungstest: In den drei Feldern oben die Teiltests ankreuzen, Zeiten wählen und „Konfiguration fertig, Test starten“ klicken. Sie laufen nacheinander; besteht einer nicht, laufen die übrigen nicht. Startet nicht, solange ein zu prüfender AI / AO keine Kalibrierung auf der Platine hat. Jeder Lauf schreibt einen Bericht für die Platine in den Ordner records neben der exe, nach Platinen-UID; ein gestoppter Lauf kann beim nächsten Anschließen dieser Platine bei diesem Teiltest fortgesetzt werden.",
-   "de_of": "84480f86"
-  },
   "ui.full.step2": {
    "zh": "功能测试",
    "en": "Functional test",
@@ -3459,132 +3438,6 @@
    "en_of": "0970139a",
    "de": "Funktionsprüfung auf Anwenderebene",
    "de_of": "0970139a"
-  },
-  "ui.full.running": {
-   "zh": "正在跑",
-   "en": "Running",
-   "en_of": "de3b4ae1",
-   "de": "Läuft",
-   "de_of": "de3b4ae1"
-  },
-  "ui.full.stop": {
-   "zh": "停止",
-   "en": "Stop",
-   "en_of": "a17f70a8",
-   "de": "Stopp",
-   "de_of": "a17f70a8"
-  },
-  "ui.full.ask": {
-   "zh": "这块板（UID {uid}）上次没测完，{passed} 已经通过。",
-   "en": "This board (UID {uid}) did not finish last time; {passed} already passed.",
-   "en_of": "674a757f",
-   "de": "Diese Platine (UID {uid}) wurde letztes Mal nicht fertig geprüft; {passed} bereits bestanden.",
-   "de_of": "674a757f"
-  },
-  "ui.full.continue": {
-   "zh": "从「{step}」继续",
-   "en": "Continue from \"{step}\"",
-   "en_of": "39b8e6e9",
-   "de": "Ab „{step}“ fortsetzen",
-   "de_of": "39b8e6e9"
-  },
-  "ui.full.restart": {
-   "zh": "从头",
-   "en": "Start over",
-   "en_of": "ee80479d",
-   "de": "Von vorn",
-   "de_of": "ee80479d"
-  },
-  "ui.full.cancel": {
-   "zh": "取消",
-   "en": "Cancel",
-   "en_of": "4d0b4688",
-   "de": "Abbrechen",
-   "de_of": "4d0b4688"
-  },
-  "ui.full.safety_title": {
-   "zh": "安规测试：人测完后填好，点「提交」才往下走",
-   "en": "Safety test: fill this in once the test is done; the run goes on only after Submit",
-   "en_of": "9eaa0e70",
-   "de": "Sicherheitsprüfung: nach der Prüfung ausfüllen; der Lauf geht erst nach „Absenden“ weiter",
-   "de_of": "9eaa0e70"
-  },
-  "ui.full.sn": {
-   "zh": "SN：扫码枪扫这里（可空）",
-   "en": "SN: scan it here (may stay empty)",
-   "en_of": "a3eb83e3",
-   "de": "SN: hier scannen (darf leer bleiben)",
-   "de_of": "a3eb83e3"
-  },
-  "ui.full.no_questions": {
-   "zh": "方案里没有问卷题目，只填 SN 和结论",
-   "en": "The plan has no questions; only SN and the verdict",
-   "en_of": "2837f2d7",
-   "de": "Der Prüfplan enthält keine Fragen; nur SN und Ergebnis",
-   "de_of": "2837f2d7"
-  },
-  "ui.full.yes": {
-   "zh": "是",
-   "en": "Yes",
-   "en_of": "30160a21",
-   "de": "Ja",
-   "de_of": "30160a21"
-  },
-  "ui.full.no": {
-   "zh": "否",
-   "en": "No",
-   "en_of": "8bf5c10a",
-   "de": "Nein",
-   "de_of": "8bf5c10a"
-  },
-  "ui.full.note": {
-   "zh": "备注（可空）",
-   "en": "Note (optional)",
-   "en_of": "9232e074",
-   "de": "Anmerkung (optional)",
-   "de_of": "9232e074"
-  },
-  "ui.full.verdict": {
-   "zh": "结论：",
-   "en": "Verdict:",
-   "en_of": "06fe13b1",
-   "de": "Ergebnis:",
-   "de_of": "06fe13b1"
-  },
-  "ui.full.pass": {
-   "zh": "合格",
-   "en": "Pass",
-   "en_of": "4fd078e9",
-   "de": "Bestanden",
-   "de_of": "4fd078e9"
-  },
-  "ui.full.fail": {
-   "zh": "不合格",
-   "en": "Fail",
-   "en_of": "0efa0f59",
-   "de": "Nicht bestanden",
-   "de_of": "0efa0f59"
-  },
-  "ui.full.submit": {
-   "zh": "提交",
-   "en": "Submit",
-   "en_of": "09cbc97a",
-   "de": "Absenden",
-   "de_of": "09cbc97a"
-  },
-  "ui.full.record": {
-   "zh": "记录写在：{path}",
-   "en": "Record written to: {path}",
-   "en_of": "91950b06",
-   "de": "Protokoll gespeichert unter: {path}",
-   "de_of": "91950b06"
-  },
-  "ui.full.root_left": {
-   "zh": "这块板带着产线的根，接上 ST-Link 恢复出厂后再放走",
-   "en": "This board still carries the production root; connect ST-Link and factory reset it before it leaves",
-   "en_of": "ae1cfe30",
-   "de": "Diese Platine trägt noch den Produktions-Root; ST-Link anschließen und auf Werkszustand zurücksetzen, bevor sie geht",
-   "de_of": "ae1cfe30"
   },
   "ui.cal.burning": {
    "zh": "正在经控制口写，板子擦写扇区 15 要一两秒",
@@ -4657,34 +4510,6 @@
    "de": "Anschlüsse",
    "de_of": "6cbb7335"
   },
-  "shell.type.func": {
-   "zh": "功能测试",
-   "en": "Functional test",
-   "en_of": "a8a8f074",
-   "de": "Funktionsprüfung",
-   "de_of": "a8a8f074"
-  },
-  "shell.type.safety": {
-   "zh": "安规测试",
-   "en": "Safety test",
-   "en_of": "8c2cabf8",
-   "de": "Sicherheitsprüfung",
-   "de_of": "8c2cabf8"
-  },
-  "shell.type.user": {
-   "zh": "用户级功能测试",
-   "en": "User-level functional test",
-   "en_of": "0970139a",
-   "de": "Funktionsprüfung auf Anwenderebene",
-   "de_of": "0970139a"
-  },
-  "shell.entry.full": {
-   "zh": "工装完整测试",
-   "en": "Full fixture test",
-   "en_of": "d36236aa",
-   "de": "Vollständige Vorrichtungsprüfung",
-   "de_of": "d36236aa"
-  },
   "shell.safety.noports": {
    "zh": "安规不分端口",
    "en": "The safety test has no ports",
@@ -4768,13 +4593,6 @@
    "en_of": "6b60cdf2",
    "de": "Der Haken vor einem Anschluss links legt fest, ob dieser Teiltest ihn prüft; hier Prüfpunkte anhaken, Gegenstelle wählen und Parameter ändern. Änderungen werden sofort gespeichert und starten nichts.",
    "de_of": "6b60cdf2"
-  },
-  "shell.safety.what": {
-   "zh": "安规测试没有可配的测试项。跑到这一步时会让你扫码、回答问卷、选结论。",
-   "en": "The safety test has nothing to configure. When the run reaches it, you scan the barcode, answer the questionnaire and pick the verdict.",
-   "en_of": "a2a2ee87",
-   "de": "Die Sicherheitsprüfung hat nichts zu konfigurieren. Erreicht der Lauf sie, scannen Sie den Barcode, beantworten den Fragebogen und wählen das Ergebnis.",
-   "de_of": "a2a2ee87"
   },
   "shell.item.notrun": {
    "zh": "未测",
@@ -6196,20 +6014,6 @@
    "en_of": "73b66f83",
    "de": "Die Platine hat keine Kalibrierwerte für {list}, daher kann der Lauf nicht starten: die gewählten Schritte vergleichen die Messwerte dieser Kanäle mit der Kalibrierformel der Platine",
    "de_of": "73b66f83"
-  },
-  "flow.goto_rd": {
-   "zh": "去研发测试",
-   "en": "Go to R&D test",
-   "en_of": "969af52c",
-   "de": "Zur Entwicklungsprüfung",
-   "de_of": "969af52c"
-  },
-  "flow.cal_hint": {
-   "zh": "先到研发测试里对应的 AI / AO 卡片上校准、存到本地、烧进板子；或者在配置里不测这几路",
-   "en": "First calibrate on the matching AI / AO card in R&D test, save locally and burn it into the board; or leave these channels out of the configuration",
-   "en_of": "7d655df7",
-   "de": "Zuerst auf der passenden AI-/AO-Karte in der Entwicklungsprüfung kalibrieren, lokal speichern und in die Platine brennen; oder diese Kanäle in der Konfiguration abwählen",
-   "de_of": "7d655df7"
   },
   "lib.res.events": {
    "zh": "收发的报文（板子原文，最近 {n} 条）：",
@@ -9025,68 +8829,12 @@
    "de": "Der Befehl für „{item}“ ist länger als eine Zeile, die die Platine annimmt ({why} Byte): mehreren Relais dieselben Werte geben oder nacheinander laufen lassen, dann starten.",
    "de_of": "2fd56a74"
   },
-  "full.go": {
-   "zh": "配置完成，开始测试",
-   "en": "Configuration done, start test",
-   "en_of": "4ec8a31c",
-   "de": "Konfiguration fertig, Prüfung starten",
-   "de_of": "4ec8a31c"
-  },
-  "full.plan": {
-   "zh": "将依次跑：{list}",
-   "en": "Will run in order: {list}",
-   "en_of": "464e8df0",
-   "de": "Läuft der Reihe nach: {list}",
-   "de_of": "464e8df0"
-  },
-  "full.plan_none": {
-   "zh": "下面一项都没勾",
-   "en": "Nothing below is ticked",
-   "en_of": "f18d7f63",
-   "de": "Unten ist nichts angekreuzt",
-   "de_of": "f18d7f63"
-  },
-  "full.plan_item": {
-   "zh": "{name}（{dur}）",
-   "en": "{name} ({dur})",
-   "en_of": "8c94204d",
-   "de": "{name} ({dur})",
-   "de_of": "8c94204d"
-  },
-  "full.time": {
-   "zh": "时间",
-   "en": "Time",
-   "en_of": "89b4aa63",
-   "de": "Zeit",
-   "de_of": "89b4aa63"
-  },
-  "full.safety_d": {
-   "zh": "人工：扫码、问卷、选结论",
-   "en": "By hand: barcode, questionnaire, verdict",
-   "en_of": "b9cc10ca",
-   "de": "Von Hand: Barcode, Fragebogen, Ergebnis",
-   "de_of": "b9cc10ca"
-  },
   "full.picked": {
    "zh": "已选 {n} 项",
    "en": "{n} items picked",
    "en_of": "ffb3a419",
    "de": "{n} Punkte gewählt",
    "de_of": "ffb3a419"
-  },
-  "full.st.wait": {
-   "zh": "等着",
-   "en": "Waiting",
-   "en_of": "42729591",
-   "de": "Wartet",
-   "de_of": "42729591"
-  },
-  "full.st.skip": {
-   "zh": "没勾，跳过",
-   "en": "Not ticked, skipped",
-   "en_of": "22fd8c3b",
-   "de": "Nicht angekreuzt, übersprungen",
-   "de_of": "22fd8c3b"
   },
   "full.port_off": {
    "zh": "这个端口在「{sub}」里没勾。左边端口前面打上勾，它的测试项才会跑。",
@@ -9333,103 +9081,12 @@
    "de": "{n}/{of}",
    "de_of": "5265e93a"
   },
-  "run.now.title": {
-   "zh": "正在进行",
-   "en": "Running now",
-   "en_of": "4ebb362c",
-   "de": "Läuft gerade",
-   "de_of": "4ebb362c"
-  },
-  "run.tab.results": {
-   "zh": "结果",
-   "en": "Results",
-   "en_of": "0a2c91ce",
-   "de": "Ergebnisse",
-   "de_of": "0a2c91ce"
-  },
-  "run.tab.log": {
-   "zh": "日志",
-   "en": "Log",
-   "en_of": "4de50894",
-   "de": "Protokoll",
-   "de_of": "4de50894"
-  },
-  "run.res.only_bad": {
-   "zh": "只看不过",
-   "en": "Failed only",
-   "en_of": "d90befb6",
-   "de": "Nur nicht bestanden",
-   "de_of": "d90befb6"
-  },
-  "run.res.click": {
-   "zh": "点一行：中间跳到那个端口和测试项，日志只看这一步",
-   "en": "Click a row: the middle jumps to that port and item, the log shows only that step",
-   "en_of": "bb0ce7e6",
-   "de": "Zeile anklicken: Mitte springt zu Anschluss und Prüfpunkt, Protokoll zeigt nur diesen Schritt",
-   "de_of": "bb0ce7e6"
-  },
-  "run.res.empty": {
-   "zh": "还没有结果。每跑一步（逐路的项每一路）这里加一行。",
-   "en": "No results yet. Each step (each channel of a channel-by-channel item) adds a row here.",
-   "en_of": "f2fcbc28",
-   "de": "Noch keine Ergebnisse. Jeder Schritt (bei kanalweisen Prüfpunkten jeder Kanal) fügt hier eine Zeile hinzu.",
-   "de_of": "f2fcbc28"
-  },
-  "run.res.took": {
-   "zh": "用时 {t}",
-   "en": "took {t}",
-   "en_of": "4f1dee32",
-   "de": "Dauer {t}",
-   "de_of": "4f1dee32"
-  },
-  "run.log.only_bad": {
-   "zh": "只看不过 / 超时",
-   "en": "Failed / timed out only",
-   "en_of": "d5efbe55",
-   "de": "Nur nicht bestanden / Zeitüberschreitung",
-   "de_of": "d5efbe55"
-  },
-  "run.log.raw": {
-   "zh": "显示协议原文",
-   "en": "Show protocol lines",
-   "en_of": "6285d645",
-   "de": "Protokollzeilen zeigen",
-   "de_of": "6285d645"
-  },
-  "run.log.only_step": {
-   "zh": "只看 {where} ✕",
-   "en": "Only {where} ✕",
-   "en_of": "384fdec1",
-   "de": "Nur {where} ✕",
-   "de_of": "384fdec1"
-  },
-  "run.log.chip_clear": {
-   "zh": "点掉，看全部",
-   "en": "Click to show everything",
-   "en_of": "05072bd7",
-   "de": "Klicken, um alles zu zeigen",
-   "de_of": "05072bd7"
-  },
-  "run.log.empty": {
-   "zh": "还没有日志。点「配置完成，开始测试」后，每一步的经过写在这里。",
-   "en": "No log yet. After 「配置完成，开始测试」 each step is written here.",
-   "en_of": "658d5bb5",
-   "de": "Noch kein Protokoll. Nach 「配置完成，开始测试」 wird hier jeder Schritt festgehalten.",
-   "de_of": "658d5bb5"
-  },
   "run.log.start": {
    "zh": "开始",
    "en": "Started",
    "en_of": "79cc871c",
    "de": "Gestartet",
    "de_of": "79cc871c"
-  },
-  "run.log.params": {
-   "zh": "（{list}）",
-   "en": " ({list})",
-   "en_of": "0f8abc2f",
-   "de": " ({list})",
-   "de_of": "0f8abc2f"
   },
   "run.log.sep": {
    "zh": "—— {sub} 开始 ——",
@@ -9536,258 +9193,6 @@
    "de": "Ganzer Schritt",
    "de_of": "5bc18f96"
   },
-  "run.val.drop": {
-   "zh": "人填 {v} V",
-   "en": "typed {v} V",
-   "en_of": "9d7fe534",
-   "de": "eingegeben {v} V",
-   "de_of": "9d7fe534"
-  },
-  "run.val.din": {
-   "zh": "读到 {v}",
-   "en": "read {v}",
-   "en_of": "6292f1e9",
-   "de": "gelesen {v}",
-   "de_of": "6292f1e9"
-  },
-  "run.val.why": {
-   "zh": "原因原文：{why}",
-   "en": "reason as reported: {why}",
-   "en_of": "48a7bfe6",
-   "de": "Grund im Wortlaut: {why}",
-   "de_of": "48a7bfe6"
-  },
-  "run.crit.safety": {
-   "zh": "人选结论：合格 / 不合格",
-   "en": "The person picks the verdict: pass / fail",
-   "en_of": "d8cd3679",
-   "de": "Die Person wählt das Urteil: bestanden / nicht bestanden",
-   "de_of": "d8cd3679"
-  },
-  "run.now.idle": {
-   "zh": "没在跑。点「配置完成，开始测试」后，这里显示正在跑哪一个子测试、哪个端口、哪一项、读到的数据和用了多久。",
-   "en": "Nothing running. After 「配置完成，开始测试」 this shows the sub-test, port and item running, the latest data and the time taken.",
-   "en_of": "e27a35a2",
-   "de": "Nichts läuft. Nach 「配置完成，开始测试」 steht hier, welche Teilprüfung, welcher Anschluss und Prüfpunkt läuft, die letzten Daten und die Dauer.",
-   "de_of": "e27a35a2"
-  },
-  "run.now.sub": {
-   "zh": "子测试",
-   "en": "Sub-test",
-   "en_of": "a5c52367",
-   "de": "Teilprüfung",
-   "de_of": "a5c52367"
-  },
-  "run.now.done": {
-   "zh": "全部跑完",
-   "en": "All done",
-   "en_of": "8732eedd",
-   "de": "Alles fertig",
-   "de_of": "8732eedd"
-  },
-  "run.now.starting": {
-   "zh": "正在开始…",
-   "en": "Starting…",
-   "en_of": "8d865935",
-   "de": "Startet…",
-   "de_of": "8d865935"
-  },
-  "run.now.dur": {
-   "zh": "（{dur}）",
-   "en": " ({dur})",
-   "en_of": "963b205c",
-   "de": " ({dur})",
-   "de_of": "963b205c"
-  },
-  "run.now.more": {
-   "zh": "（还有 {n} 项同时在跑）",
-   "en": " ({n} more running at the same time)",
-   "en_of": "eff4d84d",
-   "de": " ({n} weitere laufen gleichzeitig)",
-   "de_of": "eff4d84d"
-  },
-  "run.now.port": {
-   "zh": "端口",
-   "en": "Port",
-   "en_of": "6cbb7335",
-   "de": "Anschluss",
-   "de_of": "6cbb7335"
-  },
-  "run.now.item": {
-   "zh": "测试项",
-   "en": "Item",
-   "en_of": "9ee24b5a",
-   "de": "Prüfpunkt",
-   "de_of": "9ee24b5a"
-  },
-  "run.now.peer": {
-   "zh": "对端",
-   "en": "Peer",
-   "en_of": "58e5dbe7",
-   "de": "Gegenstelle",
-   "de_of": "58e5dbe7"
-  },
-  "run.now.step": {
-   "zh": "第几步",
-   "en": "Step",
-   "en_of": "e511db7c",
-   "de": "Schritt",
-   "de_of": "e511db7c"
-  },
-  "run.now.data": {
-   "zh": "最新数据",
-   "en": "Latest data",
-   "en_of": "8e188cd3",
-   "de": "Letzte Daten",
-   "de_of": "8e188cd3"
-  },
-  "run.now.crit": {
-   "zh": "判据",
-   "en": "Criterion",
-   "en_of": "e18ed4da",
-   "de": "Kriterium",
-   "de_of": "e18ed4da"
-  },
-  "run.now.item_t": {
-   "zh": "本项用时",
-   "en": "Item time",
-   "en_of": "b3b7eff1",
-   "de": "Dauer Prüfpunkt",
-   "de_of": "b3b7eff1"
-  },
-  "run.now.sub_t": {
-   "zh": "子测试",
-   "en": "Sub-test",
-   "en_of": "a5c52367",
-   "de": "Teilprüfung",
-   "de_of": "a5c52367"
-  },
-  "run.now.total": {
-   "zh": "总用时",
-   "en": "Total time",
-   "en_of": "05d48d08",
-   "de": "Gesamtdauer",
-   "de_of": "05d48d08"
-  },
-  "run.tally.pass": {
-   "zh": "通过 {n}",
-   "en": "{n} passed",
-   "en_of": "41aeacde",
-   "de": "{n} bestanden",
-   "de_of": "41aeacde"
-  },
-  "run.tally.fail": {
-   "zh": "不过 {n}",
-   "en": "{n} failed",
-   "en_of": "93304ce6",
-   "de": "{n} nicht bestanden",
-   "de_of": "93304ce6"
-  },
-  "run.tally.timeout": {
-   "zh": "超时 {n}",
-   "en": "{n} timed out",
-   "en_of": "4dc80144",
-   "de": "{n} Zeitüberschreitung",
-   "de_of": "4dc80144"
-  },
-  "run.tally.left": {
-   "zh": "没跑 {n}",
-   "en": "{n} not run",
-   "en_of": "1b9b497a",
-   "de": "{n} nicht gelaufen",
-   "de_of": "1b9b497a"
-  },
-  "run.lv.info": {
-   "zh": "信息",
-   "en": "Info",
-   "en_of": "2da40f40",
-   "de": "Info",
-   "de_of": "2da40f40"
-  },
-  "run.lv.pass": {
-   "zh": "通过",
-   "en": "Pass",
-   "en_of": "dcc42332",
-   "de": "OK",
-   "de_of": "dcc42332"
-  },
-  "run.lv.fail": {
-   "zh": "不过",
-   "en": "Fail",
-   "en_of": "66093fb7",
-   "de": "Fehler",
-   "de_of": "66093fb7"
-  },
-  "run.lv.timeout": {
-   "zh": "超时",
-   "en": "Timeout",
-   "en_of": "ff06c243",
-   "de": "Timeout",
-   "de_of": "ff06c243"
-  },
-  "run.lv.ask": {
-   "zh": "问人",
-   "en": "Ask",
-   "en_of": "0c570df7",
-   "de": "Frage",
-   "de_of": "0c570df7"
-  },
-  "run.v.run": {
-   "zh": "在跑",
-   "en": "Running",
-   "en_of": "05ec0c4c",
-   "de": "Läuft",
-   "de_of": "05ec0c4c"
-  },
-  "run.v.pass": {
-   "zh": "通过",
-   "en": "Passed",
-   "en_of": "dcc42332",
-   "de": "Bestanden",
-   "de_of": "dcc42332"
-  },
-  "run.v.fail": {
-   "zh": "不过",
-   "en": "Failed",
-   "en_of": "66093fb7",
-   "de": "Nicht bestanden",
-   "de_of": "66093fb7"
-  },
-  "run.v.timeout": {
-   "zh": "超时",
-   "en": "Timed out",
-   "en_of": "ff06c243",
-   "de": "Zeitüberschreitung",
-   "de_of": "ff06c243"
-  },
-  "run.v.error": {
-   "zh": "出错",
-   "en": "Error",
-   "en_of": "d66349f6",
-   "de": "Fehler beim Ablauf",
-   "de_of": "d66349f6"
-  },
-  "run.v.stopped": {
-   "zh": "停下",
-   "en": "Stopped",
-   "en_of": "03d3e153",
-   "de": "Angehalten",
-   "de_of": "03d3e153"
-  },
-  "run.v.recorded": {
-   "zh": "只记录",
-   "en": "Recorded only",
-   "en_of": "0b666628",
-   "de": "Nur aufgezeichnet",
-   "de_of": "0b666628"
-  },
-  "run.v.skipped": {
-   "zh": "跳过",
-   "en": "Skipped",
-   "en_of": "31a98593",
-   "de": "Übersprungen",
-   "de_of": "31a98593"
-  },
   "lib.reason.no_reading": {
    "zh": "有一路没填读数，这一路没法判",
    "en": "A reading was left out, so that channel could not be judged",
@@ -9850,13 +9255,6 @@
    "en_of": "43c08981",
    "de": "von der Platine nicht gemeldet, nicht geprüft",
    "de_of": "43c08981"
-  },
-  "run.val.ana": {
-   "zh": "第 {n} / {of} 点：目标 {set} {unit}，仪表 {got} {unit}，偏差 {dev} % FS",
-   "en": "Point {n} of {of}: target {set} {unit}, meter {got} {unit}, deviation {dev} % FS",
-   "en_of": "63f87a82",
-   "de": "Punkt {n} von {of}: Soll {set} {unit}, Messgerät {got} {unit}, Abweichung {dev} % FS",
-   "de_of": "63f87a82"
   },
   "field.base": {
    "zh": "起始地址",

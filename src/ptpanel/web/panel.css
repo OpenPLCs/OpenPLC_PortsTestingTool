@@ -49,27 +49,21 @@ header #guidelink{font-size:12.5px;color:var(--accent,#1a73e8)}
 main.shell{display:grid;gap:1px;background:var(--line);height:calc(100vh - 53px);grid-template-rows:auto 1fr}
 main.shell.rd{grid-template-columns:var(--leftw,320px) 6px 230px minmax(480px,1fr) 6px var(--logw,minmax(320px,26%));
   grid-template-areas:"conn grip mid head lgrip log" "conn grip mid right lgrip log"}
-main.shell.full{grid-template-columns:var(--leftw,320px) 6px 210px minmax(420px,1fr) 360px;
-  grid-template-areas:"conn grip head head stat" "conn grip mid right stat"}
 main.shell>section,#afterconn>section,#afterconn>nav{background:var(--bg);overflow-y:auto;padding:12px 14px;min-height:0}
 #connzone{grid-area:conn}
 #leftgrip{grid-area:grip}
 #loggrip{grid-area:lgrip}
 #leftgrip,#loggrip{cursor:col-resize;background:var(--line);touch-action:none}
 #leftgrip:hover,#leftgrip.drag,#loggrip:hover,#loggrip.drag{background:#9aa3b5}
-main.shell.full #loggrip{display:none}
 #mid{grid-area:mid;background:#fbfbfd}
 #rhead{grid-area:head;max-height:60vh}
 main.shell.rd #rhead{padding-bottom:0}
 #right{grid-area:right}
 main.shell.rd #right{padding-top:0}
 #logcol{grid-area:log}
-#statcol{grid-area:stat;display:flex;flex-direction:column;overflow:hidden}
-main.shell.rd #statcol{display:none}
-main.shell.full #logcol{display:none}
 #afterconn{display:contents}
 /* The big screen's template window: only the configuration (C.3.10). */
-body.embed-template>header,body.embed-template #connzone,body.embed-template #leftgrip,body.embed-template #statcol,
+body.embed-template>header,body.embed-template #connzone,body.embed-template #leftgrip,
   body.embed-template #loggrip,body.embed-template #logcol{display:none}
 body.embed-template main.shell{height:100vh;grid-template-columns:180px minmax(420px,1fr);grid-template-areas:"head head" "mid right"}
 body.embed-template #afterconn>*{opacity:1;pointer-events:auto}
@@ -82,60 +76,11 @@ body.embed-template #afterconn>*{opacity:1;pointer-events:auto}
 .tplcard label.off{opacity:.55}
 .tplcard .why{color:var(--ink3);font-size:12px}
 #afterconn:not(.live)>*{opacity:.35;pointer-events:none}
-@media(max-width:1100px){main.shell.rd,main.shell.full{grid-template-columns:1fr;grid-template-areas:"conn" "head" "mid" "right" "stat" "log";height:auto}
+@media(max-width:1100px){main.shell.rd{grid-template-columns:1fr;grid-template-areas:"conn" "head" "mid" "right" "log";height:auto}
   #leftgrip,#loggrip{display:none}}
 
 
-/* Full test, right column: a fixed-height status box (user 2026-10-14), then results and log. */
-#runstat{height:318px;flex:none;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:8px}
-#runstat .idle{color:var(--ink3);font-size:13px}
 .timednow{background:var(--line2);border-radius:4px;padding:4px 8px;margin-bottom:6px;font-size:12.5px}
-#runstat .big{font-size:12px;color:var(--ink3)}
-#runstat .now{font-size:15px;font-weight:700;margin:1px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#runstat .kv{display:grid;grid-template-columns:78px minmax(0,1fr);gap:2px 8px;font-size:12.5px}
-#runstat .kv .k{color:var(--ink3);white-space:nowrap}
-#runstat .kv .v{font-family:var(--mono);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#runstat .prog{height:7px;background:var(--line2);border-radius:4px;overflow:hidden;margin:8px 0 2px}
-#runstat .prog i{display:block;height:100%;background:#1f5fbf}
-#runstat .tally{display:flex;gap:12px;font-size:12.5px;margin-top:6px}
-#runstat .tally .ok{color:var(--ok)} #runstat .tally .bad{color:var(--err)}
-.rtabs{display:flex;gap:4px;margin:2px 0 6px;flex:none}
-.rtabs button{padding:3px 12px;font-size:12.5px}
-.rtabs button.on{background:var(--ink);border-color:var(--ink);color:#fff}
-#paneres,#panelog{display:flex;flex-direction:column;min-height:0;flex:1}
-#paneres[hidden],#panelog[hidden]{display:none}
-.rflt{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--ink2);margin-bottom:6px;align-items:center;flex:none}
-.rflt .hint{margin:0}
-.rflt .chip{border:1px solid var(--accent);color:var(--accent);background:var(--accent-bg);border-radius:10px;padding:0 8px;cursor:pointer}
-#runres,#runlog{flex:1;min-height:160px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:6px}
-#runres .rr{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:0 6px;padding:5px 8px;border-bottom:1px solid var(--line2);cursor:pointer;font-size:12.5px}
-#runres .rr:hover{background:#f7f8fa}
-#runres .rr .no{color:var(--ink3);font-family:var(--mono);font-size:11.5px}
-#runres .rr .wh{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#runres .rr .vr{text-align:right;font-weight:600;white-space:nowrap}
-#runres .rr .vl{grid-column:2/4;color:var(--ink2);font-family:var(--mono);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#runres .rr.ok .vr{color:var(--ok)} #runres .rr.bad{background:var(--err-bg)} #runres .rr.bad .vr{color:var(--err)}
-#runres .rr.run .vr{color:#1f5fbf} #runres .rr.to{background:var(--warn-bg)} #runres .rr.to .vr{color:var(--warn)}
-#runres .empty,#runlog .empty{padding:8px;color:var(--ink3);font-size:12px}
-#runlog{font-family:var(--mono);font-size:11.5px;color:var(--ink2);padding:4px 6px}
-#runlog .ln{display:grid;grid-template-columns:92px minmax(0,1fr);gap:0 6px;padding:1px 0;border-bottom:1px dotted var(--line2)}
-#runlog .ln .tm{color:var(--ink3)}
-#runlog .ln .loc{color:var(--accent);cursor:pointer;text-decoration:underline dotted;margin-right:4px}
-#runlog .ln .lv{display:inline-block;min-width:34px;text-align:center;border-radius:3px;padding:0 4px;margin-right:4px;font-size:11px}
-#runlog .lv.info{background:var(--off-bg);color:var(--ink2)}
-#runlog .lv.pass{background:var(--ok-bg);color:var(--ok)}
-#runlog .lv.fail{background:var(--err-bg);color:var(--err)}
-#runlog .lv.timeout{background:var(--warn-bg);color:var(--warn)}
-#runlog .lv.ask{background:#e6eefb;color:#1f5fbf}
-#runlog .ln.raw{color:var(--ink3)}
-#runlog .ln.raw .msg{padding-left:18px;font-size:11px;white-space:pre-wrap;word-break:break-all}
-#runlog .ln.sep{color:var(--ink);font-weight:700;border-bottom:1px solid var(--line)}
-/* Full test port list: ticked / total and the run light. */
-.lport .rdot{width:8px;height:8px;border-radius:50%;flex:none;background:transparent}
-.lport .rdot.run{background:#1f5fbf} .lport .rdot.ok{background:var(--ok)} .lport .rdot.bad{background:var(--err)}
-/* Layer 3 while a run goes: shown, not editable. */
-#itemcards.locked input,#itemcards.locked select,#itemcards.locked button,#itemcards.locked textarea{pointer-events:none;opacity:.6}
-#itemcards .hl{border-color:var(--err)!important;box-shadow:0 0 0 2px var(--err-bg)}
 
 
 /* Middle: the catalogue's ports, one picked at a time. */
@@ -457,20 +402,9 @@ table.rltab .unit{color:var(--ink3);font-size:12px;margin-left:3px}
 .rlfoot{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
 .rlfoot .sp{flex:1}
 
-/* 工装完整测试, layer 2: the four sub-tests (PORTTOOL-FLOW.md C.3.6). */
+/* The template window's step blocks (flows.js tplStep). */
 #subtiles:empty{display:none}
-.subtiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
-.subtile{background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px;cursor:pointer;
-  display:flex;flex-direction:column;gap:5px;min-width:0}
-.subtile.cur{border-color:var(--accent);background:var(--accent-bg)}
-.subtile .row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.subtile .nm{font-weight:600}
-.subtile .subwhy{margin-top:6px;padding:4px 6px;border-radius:4px;background:var(--warn-bg);color:#8a5300;font-size:12.5px;line-height:1.45}
-.subtile.cur .nm{color:var(--accent)}
-.subtile .stbar{height:6px;background:var(--line2);border-radius:3px;overflow:hidden;flex:1;min-width:40px}
-.subtile .stbar i{display:block;height:100%;background:var(--accent)}
 .sechd{font-weight:600;color:var(--ink2);margin:4px 0 8px;padding-left:8px;border-left:3px solid var(--accent)}
-@media(max-width:1300px){.subtiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* Calibration table: the per-point reference mark. */
 .anapts td.ok{color:var(--ok)}

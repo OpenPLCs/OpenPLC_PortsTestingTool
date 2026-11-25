@@ -237,7 +237,7 @@ function cfgItemNotes(v, it) {
   out.push(el("h3", null, T("cfg.run.head")));
   const r = el("div", null, cfgRunText(v, it, peer));
   r.dataset.cfgrun = it.id; out.push(r);
-  const subs = RUN_SUBS.filter(s => s.k !== "safety" && it.stages.includes(s.k)).map(s => T(s.name));
+  const subs = TPL_SUBS.filter(s => s.k !== "safety" && it.stages.includes(s.k)).map(s => T(s.name));
   const i = el("div", "hint", T("cfg.run.in", { list: subs.join(T("shell.list_sep")) }));
   i.dataset.cfgin = it.id; out.push(i);
   return out;

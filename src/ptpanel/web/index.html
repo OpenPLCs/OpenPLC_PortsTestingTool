@@ -57,41 +57,12 @@
     <section id="rhead">
       <div id="msgbox"></div>
       <div id="rtop"></div>
-      <!-- 工装完整测试's second layer: the four sub-tests (flows.js). -->
+      <!-- The template window's step blocks (flows.js tplStep). -->
       <div id="subtiles"></div>
-      <div id="fullview" hidden>
-        <div class="hint" id="flowwhat"></div>
-        <div id="fullbody"></div>
-      </div>
     </section>
     <section id="right">
       <div id="itemcards"></div>
       <div id="viewnote" class="hint"></div>
-    </section>
-    <!-- 工装完整测试's right column (runview.js): a fixed-height 「正在进行」,
-         then the results and the run log. -->
-    <section id="statcol">
-      <div class="step" data-t="run.now.title"></div>
-      <div id="runstat"></div>
-      <div class="rtabs">
-        <button id="tabres" class="on" data-t="run.tab.results"></button>
-        <button id="tablog" data-t="run.tab.log"></button>
-      </div>
-      <div id="paneres">
-        <div class="rflt">
-          <label><input type="checkbox" id="resbad"> <span data-t="run.res.only_bad"></span></label>
-          <span class="hint" data-t="run.res.click"></span>
-        </div>
-        <div id="runres"></div>
-      </div>
-      <div id="panelog" hidden>
-        <div class="rflt">
-          <label><input type="checkbox" id="logbad"> <span data-t="run.log.only_bad"></span></label>
-          <label><input type="checkbox" id="lograw"> <span data-t="run.log.raw"></span></label>
-          <span id="logchip"></span>
-        </div>
-        <div id="runlog"></div>
-      </div>
     </section>
   </div>
   <!-- Drag to widen the R&D log column; the width is remembered (core.js). -->
@@ -161,8 +132,6 @@ let LANG = /*LANG*/"zh";
 <script src="js/meter.js"></script>
 <script src="js/analog.js"></script>
 <script src="js/rangeinfo.js"></script>
-<script src="js/full.js"></script>
-<script src="js/runview.js"></script>
 <script src="js/flows.js"></script>
 <script src="js/stagecfg.js"></script>
 <script src="js/library.js"></script>

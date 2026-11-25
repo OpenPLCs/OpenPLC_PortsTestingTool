@@ -283,11 +283,26 @@ func timeoutOf(ms int) time.Duration {
 // Wait is page.wait_for_timeout.
 func (p *Page) Wait(ms int) { time.Sleep(time.Duration(ms) * time.Millisecond) }
 
-// View switches what the page shows (shell.js pickView); the R&D page has no
-// test-type menu any more, the configurations still live behind it.
+// View shows R&D ("rd") or a step of the template window, where the
+// configurations live (index.html?embed=template, PORTTOOL-FLOW.md C.3.10 「模板」).
 func (p *Page) View(k string) {
-	p.Eval("k => pickView(k)", k)
-	p.Wait(150)
+	embed := p.Eval("() => !!EMBED").B()
+	switch {
+	case k == "rd" && embed:
+		p.Goto(p.Eval("location.origin").S() + "/index.html")
+		p.WaitSel("#afterconn.live", 20000)
+	case k != "rd" && !embed:
+		p.Goto(p.Eval("location.origin").S() + "/index.html?embed=template")
+		p.WaitSel(".tplblk", 20000)
+		// Every POST the template page makes, for checks that it starts nothing.
+		p.Eval("() => { window.__posts = []; const f = window.fetch; window.fetch = (u, o) => { if (o && o.method === 'POST') { window.__posts.push(String(u)); } return f(u, o); }; }")
+	}
+	if k != "rd" {
+		p.L(`.tplblk[data-tplstep="` + k + `"]`).Click()
+	} else {
+		p.Eval("() => pickView('rd')")
+	}
+	p.Wait(250)
 }
 
 // WaitSel waits for the first match of a CSS selector to be visible.

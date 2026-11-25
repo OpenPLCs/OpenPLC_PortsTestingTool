@@ -26,6 +26,7 @@ func setRefAI1(p *Page, rng string) J {
 // changes, refused when a reference DI is wired twice, closed without saving.
 func checkRefPage(p *Page) {
 	Section("reference board settings page")
+	p.View("rd") // the reference board's row is in R&D's connection zone
 	if try(func() { p.WaitSel("#connrows [data-refopen]", 8000) }) != nil {
 		check(false, "the reference board row has 「设置标准机」")
 		return
@@ -121,10 +122,10 @@ func checkStageConfigs(p *Page) {
 	openSub(p, "user")
 	p.L(lport("temp")).Click()
 	p.Wait(300)
-	dur := p.L(`#subtiles select[data-subdur="user"]`) // the time sits on the sub-test's tile
-	dur.Select("1")
-	p.Wait(400)
-	check(p.L(`#subtiles select[data-subdur="user"]`).Value() == "1", "the user-level duration stays as picked")
+	// The template window has no time for step ⑤ (C.3.10); the configuration
+	// still takes one, and the relay checks below run by it.
+	p.Eval("() => cfgSetDuration('user', '1')")
+	p.Wait(300)
 	box := p.L(`.lport input[data-cfgport="temp"]`)
 	if check(box.Count() == 1, "a configuration page has a tick per port") {
 		box.Uncheck()
@@ -158,25 +159,25 @@ func checkStageConfigs(p *Page) {
 	// Decision 134: AI1 on current against AO1 on voltage cannot test; without
 	// the reference board the step is refused (decision 129). Step 2 says so.
 	simRef := p.Eval("api('/api/ref', {port: 'sim'})").K("connected").Truthy()
-	tileHas := func(s string) {
+	// Whether step ① can run and why not, as the big screen gets it (/api/full).
+	step1Why := func(s string) string {
 		_ = try(func() {
-			p.WaitFunc("() => (document.querySelector('#subtiles .subtile[data-sub=\"func\"]') || {}).innerText.includes('"+s+"')", nil, 8000)
+			p.WaitFunc("s => fetch('/api/full').then(r => r.json()).then(j => { const t = (j.steps || []).find(x => x.step === 2) || {}; return !t.available && JSON.stringify(t.why || '').includes(s); })", s, 8000)
 		})
+		return p.Eval("() => fetch('/api/full').then(r => r.json()).then(j => { const t = (j.steps || []).find(x => x.step === 2) || {}; return (t.available ? 'available ' : '') + JSON.stringify(t.why || ''); })").S()
 	}
-	step2 := p.L(`#subtiles input[data-fullstep="2"]`)
 	if simRef {
 		openSub(p, "func")
 		setRefAI1(p, "i")
-		tile := p.L(`#subtiles .subtile[data-sub="func"]`)
-		tileHas("档位不匹配")
-		check(strings.Contains(tile.Text(), "档位不匹配") && step2.Disabled(),
-			"ranges that do not match: step 2 cannot be picked and says so (decision 134)", tile.Text())
+		why := step1Why("go.full.range_mismatch")
+		check(strings.Contains(why, "go.full.range_mismatch") && !strings.HasPrefix(why, "available"),
+			"ranges that do not match: step ① cannot run and says so (decision 134)", why)
 		checkRefPage(p)
 		setRefAI1(p, "v")
 		p.Eval("api('/api/ref', {port: ''})")
-		tileHas("要标准机")
-		check(strings.Contains(tile.Text(), "要标准机") && step2.Disabled(),
-			"without the reference board, step 2 cannot be picked and says it needs one", tile.Text())
+		why = step1Why("go.full.no_ref")
+		check(strings.Contains(why, "go.full.no_ref") && !strings.HasPrefix(why, "available"),
+			"without the reference board, step ① cannot run and says it needs one", why)
 	}
 	if simRef {
 		p.Eval("api('/api/ref', {port: ''})")
@@ -204,7 +205,7 @@ func checkStageConfigs(p *Page) {
 
 	// Decision 135: with the reference board set to unused there is no self-loop;
 	// a card that needed it says it cannot run in the fixture tests.
-	flip := "async u => { await api('/api/stagecfg', {ref_unused: u}); stageCfgs = null; await loadStageCfgs(); await loadFull(); }"
+	flip := "async u => { await api('/api/stagecfg', {ref_unused: u}); stageCfgs = null; await loadStageCfgs(); renderShell(); }"
 	p.Eval(flip, true)
 	p.L(lport("din")).Click()
 	p.Wait(300)
@@ -215,8 +216,8 @@ func checkStageConfigs(p *Page) {
 	check(!p.L(`#itemcards input[data-pick="din.level"]`).Checked() && p.L(`#itemcards input[data-pick="din.expect"]`).Count() == 1 &&
 		strings.Contains(p.L(`#itemcards [data-cfgmethod="din.expect"]`).Text(), "外部仪器"),
 		"with the board unused, DI read-each-input starts unticked and DI against set levels is offered as an outside instrument")
-	check(!p.L(`#subtiles input[data-fullstep="2"]`).Disabled(), "and the functional test can still be ticked",
-		cut(p.L("#subtiles").Text(), 300))
+	step1 := p.Eval("() => fetch('/api/full').then(r => r.json()).then(j => JSON.stringify((j.steps || []).find(x => x.step === 2) || {}))").S()
+	check(strings.Contains(step1, `"available":true`), "and step ① can still run", step1)
 	p.L(lport("relay")).Click()
 	p.Wait(300)
 	check(p.L(`#itemcards select[data-cfgpeer="relay.cycle"]`).Value() == "ext", "relays default to the outside instrument")
@@ -227,8 +228,9 @@ func checkStageConfigs(p *Page) {
 	check(p.L(`#itemcards [data-subst="din.level"]`).Count() == 0, "and stops saying so when the reference board is back")
 
 	openSub(p, "user")
-	starts := startedLines(p.L("#log").Text())
-	check(len(starts) == 0, "configuration pages send no pt.start", cut(strings.Join(starts, " "), 200))
+	// What the template page asked the panel to do (browser.go View records it).
+	posts := p.Eval("() => (window.__posts || []).filter(u => /api\\/(command|lib\\/start|lib\\/live)/.test(u))").Strings()
+	check(len(posts) == 0, "configuration pages send no command and start nothing", strings.Join(posts, " "))
 	p.View("rd")
 	stageCfgChanged = true
 }

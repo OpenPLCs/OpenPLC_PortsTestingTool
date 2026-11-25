@@ -104,16 +104,6 @@ func runChecks(p *Page, com string) {
 	checkDoutBlink(p)
 	checkCanWindow(p, com)
 	checkAnalogCards(p)
-	// The configurations run AI / AO / DI / DO against the reference board (decision 129).
-	sim := isSim(com)
-	if sim {
-		check(p.Eval("api('/api/ref', {port: 'sim'})").K("connected"),
-			"a second simulated board connects as the reference for the full test")
-	}
-	checkFullTest(p, com)
-	if sim {
-		p.Eval("api('/api/ref', {port: ''})")
-	}
 	checkKnxFrames(p)
 	checkKnxPortVerdict(p)
 	checkKnxWindow(p, com)
@@ -231,16 +221,8 @@ func checkWhichLimits(p *Page) {
 	check(p.L("#itemcards input[data-limit]").Count() == 0, "no limit is editable on the item cards")
 }
 
-// openSub opens sub-test k (decision 125) under 工装完整测试, then its tile.
-func openSub(p *Page, k string) {
-	tile := `#subtiles .subtile[data-sub="` + k + `"]`
-	if p.L(tile).Count() == 0 {
-		p.View("full")
-		p.WaitSel(tile, 0)
-	}
-	p.L(tile + " .nm").Click()
-	p.Wait(250)
-}
+// openSub opens step k's configuration in the template window.
+func openSub(p *Page, k string) { p.View(k) }
 
 // startedLines are the log lines of a session start: the command sent and the board's answer.
 func startedLines(log string) []string {
@@ -275,7 +257,6 @@ func checkFiveBlocks(p *Page) {
 		{"#mid", "port list"}, {"#right", "test items"}, {"#logcol", "log"}} {
 		check(p.L(b[0]).Visible(), "R&D: the "+b[1]+" block is on screen")
 	}
-	check(!p.L("#statcol").Visible(), "R&D: no run-status column")
 	// The test type is the top bar's chip; the fixture test is the big screen (C.3.6 「顶栏」).
 	check(p.L("#typemenu").Count() == 0 && p.L("#tolinelink").Count() == 0, "no test-type menu and no link back: the type is the top bar's chip")
 
@@ -286,18 +267,16 @@ func checkFiveBlocks(p *Page) {
 	})
 	p.Wait(300)
 	p.L("#clear").Click()
-	for _, k := range []string{"rd", "full", "rd"} {
-		p.View(k)
-		check(p.Eval("view").S() == k || (k == "full" && p.Eval("isFullSub(view)").B()), "switching to "+k+" shows it")
-	}
-	for _, k := range []string{"func", "safety", "user"} {
+	// The configurations are the template window's five step blocks (C.3.10 「模板」).
+	for _, k := range []string{"func", "aging", "check", "safety", "user"} {
 		openSub(p, k)
-		check(strings.Contains(p.L(`#subtiles .subtile[data-sub="`+k+`"]`).Attr("class"), "cur") &&
-			p.Eval("isFullSub(view)").B(),
-			"clicking the "+k+" tile shows it, under its menu full")
+		check(strings.Contains(p.L(`.tplblk[data-tplstep="`+k+`"]`).Attr("class"), "cur") && p.Eval("view").S() == k,
+			"clicking the template window's "+k+" block shows it")
 	}
 	p.View("rd")
 	p.WaitSel(".lport", 0)
+	// Back on R&D the page is new and replays the log so far: cleared again.
+	p.L("#clear").Click()
 	rows := p.L(".lport:not(.dim)")
 	for i := 0; i < rows.Count(); i++ {
 		rows.Nth(i).Click()
@@ -349,7 +328,7 @@ func checkFiveBlocks(p *Page) {
 	p.Wait(200)
 	ids = attrs(p.L("#itemcards .item"), "data-item")
 	check(eqStrings(ids, "can.peer"), "the functional test offers only the production CAN item", show(ids))
-	checkSubTestPage(p)
+	checkTemplateCards(p)
 	p.View("rd")
 
 	// Decision 133: R&D is done by hand; the DI card has no data source.
@@ -389,55 +368,28 @@ func checkLeftResize(p *Page) {
 	p.WaitSel("#afterconn.live", 20000)
 }
 
-// checkSubTestPage: 工装完整测试's three layers (decision 125, PORTTOOL-FLOW.md
-// C.3.6): one start button on top, four tiles with their own times, cards with
-// criteria only - no Start, no group duration, no result.
-func checkSubTestPage(p *Page) {
-	Section("full fixture test: three layers")
-	// Decision 128: sub-tests and ports | cards in the middle, run status on the right.
-	check(p.L("#statcol").Visible() && !p.L("#logcol").Visible(), "the full test shows the run-status column instead of the R&D log")
-	sb, rb := p.L("#statcol").Box(), p.L("#right").Box()
-	check(sb != nil && rb != nil && sb.X >= rb.X+rb.W-1, "「正在进行」 is the rightmost column", show([]any{sb, rb}))
-	var tabs []string
-	for i := 0; i < p.L(".rtabs button").Count(); i++ {
-		tabs = append(tabs, p.L(".rtabs button").Nth(i).Text())
-	}
-	check(eqStrings(tabs, "结果", "日志"), "under it two tabs, 结果 and 日志")
-	check(p.L("#midtitle").Text() == "功能测试 · 端口", "the port list is headed by its sub-test", p.L("#midtitle").Text())
+// checkTemplateCards: the template window's layer 3 (PORTTOOL-FLOW.md C.3.10
+// 「模板」): ports with ticked / total, cards with settings and criteria only -
+// no Start, no group duration, no result. Opened on 功能测试 · CAN.
+func checkTemplateCards(p *Page) {
+	Section("template window: configuration cards")
+	check(p.L("#logcol").Count() == 0 || !p.L("#logcol").Visible(), "the template window shows no log")
+	check(strings.Contains(p.L("#midtitle").Text(), "功能测试") && strings.HasSuffix(p.L("#midtitle").Text(), "· 端口"),
+		"the port list is headed by its step", p.L("#midtitle").Text())
 	cnt := p.L(`.lport[data-lport="can"] [data-ticked]`)
 	cntText := "none"
 	if cnt.Count() > 0 {
 		cntText = cnt.Text()
 	}
 	check(cnt.Count() == 1 && regexp.MustCompile(`^\d+/\d+$`).MatchString(cnt.Text()), "each port says ticked / total", cntText)
-	starts := p.L("#afterconn button").HasText("开始")
-	var st []string
-	for i := 0; i < starts.Count(); i++ {
-		st = append(st, starts.Nth(i).Text())
-	}
-	check(starts.Count() == 1 && starts.First().Attr("id") == "shellstart" && p.L("#shellstart").Text() == "配置完成，开始测试",
-		"the only start button is 「配置完成，开始测试」 on top", strings.Join(st, " | "))
-	check(eqStrings(attrs(p.L("#subtiles .subtile"), "data-sub"), "func", "safety", "user"),
-		"layer 2 has the three sub-tests side by side (decision 191)")
-	opts := func(k string) []string {
-		return p.Eval("k => [...document.querySelectorAll(`#subtiles select[data-subdur='${k}'] option`)].map(o => o.textContent)", k).Strings()
-	}
-	// Decision 139: the functional test runs once, no time picker.
-	only := p.L(`#subtiles [data-subonly="func"]`)
-	check(len(opts("func")) == 0 && only.Count() == 1 && only.Text() == "单次",
-		"functional shows 单次 with no time picker (decision 139)", show(opts("func")))
-	check(eqStrings(opts("user"), "单次", "10 分钟", "30 分钟", "1 小时"), "user-level offers once / 10 min / 30 min / 1 h", show(opts("user")))
-	openSub(p, "func")
-	check(p.L(`#subtiles select[data-subdur="safety"]`).Count() == 0 &&
-		strings.Contains(p.L(`#subtiles .subtile[data-sub="safety"]`).Text(), "扫码"),
-		"safety has no time and says it is done by hand")
-	check(p.L(`#subtiles [data-subn="func"]`).Count() == 1, "each configurable tile says how many items are picked")
+	check(p.L("#afterconn button").HasText("开始").Count() == 0, "the template window has no start button")
+	check(p.L(".tplblk").Count() == 5, "layer 2 is the five step blocks")
 	hd := ""
 	if p.L("#itemcards [data-sechd]").Count() > 0 {
 		hd = p.L("#itemcards [data-sechd]").Text()
 	}
-	check(p.L("#itemcards [data-sechd]").Count() == 1 && p.L("#itemcards [data-sechd]").Text() == "功能测试 · CAN",
-		"layer 3 is headed 子测试 · 端口", hd)
+	check(p.L("#itemcards [data-sechd]").Count() == 1 && strings.HasSuffix(hd, "· CAN") && strings.Contains(hd, "功能测试"),
+		"layer 3 is headed step · port", hd)
 	check(p.L("#itemcards button[data-start]").Count() == 0 && p.L(`#itemcards select[data-shell="duration"]`).Count() == 0 &&
 		p.L("#itemcards .pill").Count() == 0,
 		"the cards have no Start, no group duration and no result badge")
@@ -447,15 +399,13 @@ func checkSubTestPage(p *Page) {
 		allTwo = allTwo && n.N() == 2
 	}
 	check(allTwo, "the criteria tables have 项目 / 预期 only, no 结果", heads.String())
-	plan := p.L("#rtop [data-fullplan]").Text()
-	check(strings.HasPrefix(plan, "将依次跑：") || plan == "下面一项都没勾", "layer 1 says what will run", plan)
 }
 
 var readItemRe = regexp.MustCompile(`^(ain\.read|aout\.out)\d$`)
 
-// checkCfgItemNotes: layer 3 of 工装完整测试 says, for every item of every port,
+// checkCfgItemNotes: layer 3 of the template window says, for every item of every port,
 // what it tests, the peer, what a person fills, the criteria and how it runs
-// in this sub-test (PORTTOOL-FLOW.md C.3.6). Default configurations, no
+// in this step (PORTTOOL-FLOW.md C.3.6). Default configurations, no
 // reference board connected.
 func checkCfgItemNotes(p *Page) {
 	Section("sub-test cards say what, peer, criteria and how each item runs")

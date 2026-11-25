@@ -33,6 +33,10 @@ async function loadPorts() {
   allPorts = j.ports || [];
 }
 
+// Closed when the page is left: a browser keeps six connections per host,
+// and log streams of pages already left would stall every request (C.3.6 「连接区」).
+window.addEventListener("pagehide", () => { if (evtSource) { evtSource.close(); evtSource = null; } });
+
 function startEvents() {
   if (evtSource) evtSource.close();
   evtSource = new EventSource(apiURL("/api/events"));
@@ -59,7 +63,8 @@ function applyState(j) {
   const was = state && state.connected;
   state = st;
   // Station 1 connects by itself (line.go rdAttach): the log stream follows it.
-  if (st.connected && !was) { startEvents(); }
+  // The template window shows no log (embed=template).
+  if (st.connected && !was && !EMBED) { startEvents(); }
   if (!st.connected && evtSource) { evtSource.close(); evtSource = null; }
 
   $("#toolver").textContent = st.tool ? T("html.toolver", {version: st.tool}) : "";

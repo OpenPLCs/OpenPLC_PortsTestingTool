@@ -389,15 +389,15 @@ func checkPeerErrorLine(p *Page) {
 }
 
 // checkAbsentField: a criterion judged only when reported (RS485 overrun on the
-// step-6 demo) says so, and a result without the field says it was not
-// reported - not 「✅ 空」. Drawn from an injected result.
+// step-6 demo) says so on the card, and that an absent field is not judged.
+// Drawn from an injected result.
 func checkAbsentField(p *Page) {
 	Section("a field judged only when reported")
 	got := p.Eval(`() => {
         const it = catalog.items.find(i => i.id === 'rs485.peer');
         const st = {checks: [{check: {field: 'overrun', op: 'count_zero', if_present: true}, got: '', pass: true, absent: true}], values: []};
-        return [libCritTable(it, st).innerText, runValue(Object.assign({port: 'rs485', item: 'rs485.peer', state: 'PASS'}, st))]; }`).Strings()
-	check(len(got) == 2 && strings.Contains(got[0], "板子报了才判") && strings.Contains(got[0], "板子没报，不判") && strings.Contains(got[1], "板子没报"),
+        return [libCritTable(it, st).innerText]; }`).Strings()
+	check(len(got) == 1 && strings.Contains(got[0], "板子报了才判") && strings.Contains(got[0], "板子没报，不判"),
 		"RS485 「无溢出」 says it is judged only when reported, and that it was not", strings.Join(got, " | "))
 }
 

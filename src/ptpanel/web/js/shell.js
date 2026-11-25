@@ -4,15 +4,6 @@
 // only chooses what is shown; R&D's group Starts start tests. The test type is
 // the top bar's chip (gear.js); the fixture test is the big screen.
 
-// The full test's sub-tests and the times each offers (decision 125; same
-// lists as stageDurations in stagecfg.go). Step numbers stay internal (decision 122).
-const FULL_SUBS = [
-  { k: "func",   step: 2, name: "shell.type.func",   durs: ["once"] },   // single run only (decision 139)
-  { k: "safety", step: 5, name: "shell.type.safety", durs: null },
-  { k: "user",   step: 6, name: "shell.type.user",   durs: ["once", "10m", "30m", "1"] },
-];
-// R&D aging is an R&D test with a duration, not a page of its own (decisions 190, 191).
-const RUN_SUBS = FULL_SUBS;
 // The template window's five steps (PORTTOOL-FLOW.md C.3.10 「模板」); ③ has no configuration yet.
 const TPL_SUBS = [
   { k: "func", step: 2, name: "line.step.1" }, { k: "aging", name: "line.step.2" }, { k: "check", name: "line.step.3" },
@@ -52,7 +43,6 @@ const DURATIONS = ["once", "1", "2", "3", "4", "forever"];   // R&D's repeatable
 // view is "rd" or one of the full test's sub-tests: the sub-test on screen is
 // the configuration its cards edit.
 let view = EMBED ? "func" : "rd";
-let fullSub = "func";     // the sub-test 工装完整测试 opens on
 let lport = null;         // the port picked in the middle
 let catalog = { ports: [], items: [] };
 let catalogKey = "";      // what the catalogue was fetched for
@@ -85,8 +75,8 @@ function itemOnIn(v, it) {
   return !it.exclusive || itemsOf(v, it.port).find(o => o === it || excludes(v, o, it)) === it;
 }
 
-// A sub-test of the full test's page.
-const isFullSub = v => (EMBED ? TPL_SUBS : RUN_SUBS).some(s => s.k === v);
+// A step of the template window (embed=template).
+const isFullSub = v => EMBED && TPL_SUBS.some(s => s.k === v);
 const hasPorts = v => v === "rd" || (isCfgView(v) && !(EMBED && v === "aging"));
 // R&D's wired ports list only the items the page's wiring can run (decision 191).
 const itemsOf = (v, port) => catalog.items.filter(it => it.port === port && it.stages.includes(v)
@@ -126,11 +116,6 @@ window.addEventListener("beforeunload", rdUnload);
 // Menus only: picking one sends nothing to the board (decision 97), apart
 // from turning off what a card left on.
 function pickView(v) {
-  if (v === "full") { v = fullSub; }
-  // A running test keeps the page on its own page (decision 128).
-  if (typeof fullRunning === "function" && fullRunning() && !isFullSub(v)) { return; }
-  if (isFullSub(v)) { fullSub = v; }
-  const was = view;
   if (v !== view) { outputsOff(); }
   view = v;
   if (hasPorts(v) && lport && !itemsOf(v, lport).length) {
@@ -138,12 +123,11 @@ function pickView(v) {
     lport = first ? first.port : lport;
   }
   renderShell();
-  if (isFullSub(v) && !isFullSub(was)) { flowLoad("full"); }     // flows.js
 }
 
 function renderLports() {
   const host = $("#lports"); host.textContent = "";
-  const sub = RUN_SUBS.find(s => s.k === view);
+  const sub = isFullSub(view) ? TPL_SUBS.find(s => s.k === view) : null;
   $("#midtitle").textContent = sub ? T("full.ports_of", { sub: T(sub.name) }) : T("shell.ports");
   if (view === "safety" || (EMBED && !hasPorts(view))) {
     if (!EMBED) { host.appendChild(el("div", "hint", T("shell.safety.noports"))); }
@@ -166,7 +150,6 @@ function renderLports() {
         pc.onchange = () => cfgSetPort(view, p.port, pc.checked);
         row.appendChild(pc);
       }
-      if (sub) { row.appendChild(runPortDot(sub.step, p.port)); } // runview.js
       row.appendChild(el("span", "nm", p.label));
       if (sub && n) {
         // Ticked of all this sub-test's items on the port (decision 128).
@@ -212,12 +195,8 @@ function renderRight() {
   if (rightHeld) { rightPending = true; return; }
   const top = $("#rtop"), cards = $("#itemcards"), note = $("#viewnote");
   top.textContent = ""; cards.textContent = ""; note.textContent = ""; $("#subtiles").textContent = "";
-  $("#fullview").hidden = !isFullSub(view);
-  $("#shell").className = "shell " + (isFullSub(view) ? "full" : "rd");
-  cards.classList.toggle("locked", isFullSub(view) && fullRunning());
 
   if (EMBED) { tplStep(top, $("#subtiles"), cards); return; }                     // flows.js
-  if (isFullSub(view)) { renderSubTest(top, cards, note); runHighlight(); return; } // runview.js
 
   const port = catalog.ports.find(p => p.port === lport);
   if (!port) {
@@ -241,28 +220,6 @@ function renderRight() {
     how.dataset.wirehow = pair;
     cards.appendChild(how);
   }
-  renderPortCards(cards, port);
-}
-
-// 工装完整测试: layers 1 and 2 on top (flows.js), then layer 3 - the sub-test's
-// cards for one port, settings and criteria only; shown but locked while a run
-// goes (decisions 125, 128; PORTTOOL-FLOW.md C.3.6).
-function renderSubTest(top, cards, note) {
-  fullTop(top, $("#subtiles"));
-  if (view === "safety") { note.textContent = T("shell.safety.what"); return; }
-  const port = catalog.ports.find(p => p.port === lport);
-  if (!port) { return; }
-  const sub = RUN_SUBS.find(s => s.k === view);
-  const hd = el("div", "sechd", T("full.sechd", { sub: T(sub.name), port: port.label }));
-  hd.dataset.sechd = view + "|" + port.port;
-  cards.appendChild(hd);
-  if (!cfgPortOn(view, port.port)) {
-    cards.appendChild(el("div", "hint", T("full.port_off", { sub: T(sub.name) }))).dataset.portoff = port.port;
-    return;
-  }
-  cards.appendChild(el("div", "hint", T("shell.cfg_note")));
-  // Step 6 runs the demo on a real board (PORTTOOL-FLOW.md C.3.6 「功能 / 老化 / 用户级有什么不同」).
-  if (view === "user") { cards.appendChild(el("div", "hint warn", T("cfg.user_demo"))).dataset.userdemo = "1"; }
   renderPortCards(cards, port);
 }
 

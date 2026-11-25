@@ -3,7 +3,7 @@
 // What the page remembers per test type, so switching port, item or test type,
 // reloading, changing language or restarting the panel loses nothing
 // (PORTTOOL-FLOW.md C.3.6 「页面记住什么」). The configurations keep theirs in
-// /api/stagecfg; R&D and the full test's ticked steps are kept here, as flat
+// /api/stagecfg; R&D's are kept here, as flat
 // cells in /api/memo, one section per test type. The "ui" section is the page's
 // own state whatever the test type; nothing goes to browser storage (decision 162).
 //
@@ -135,7 +135,7 @@ function memoBlocked() {
 /* ---------------- what is kept ---------------- */
 
 function memoCollect() {
-  const rd = {}, full = {};
+  const rd = {};
   const put = (k, v) => { if (v !== undefined && v !== null && String(v) !== "") { rd[k] = String(v); } };
   for (const [k, off] of Object.entries(itemOff)) { if (k.startsWith("rd|")) { rd["off|" + k.slice(3)] = off ? "1" : "0"; } }
   for (const [k, v] of Object.entries(itemPeer)) { if (k.startsWith("rd|")) { put("peer|" + k.slice(3), v); } }
@@ -163,16 +163,15 @@ function memoCollect() {
     rd["pwm|" + ch + "|on"] = r.on ? "1" : "0";
     put("pwm|" + ch + "|freq", r.freq); put("pwm|" + ch + "|duty", r.duty);
   }
-  for (const [st, on] of Object.entries(fullPick)) { full["step|" + st] = on ? "1" : "0"; }
   const ui = {};
   if (uiMemo.leftw) { ui.leftw = uiMemo.leftw; }
   if (uiMemo.logw) { ui.logw = uiMemo.logw; }
   if (uiMemo.type) { ui.type = uiMemo.type; }
-  return { rd, full, ui };
+  return { rd, ui };
 }
 
 function memoApply(f) {
-  const rd = f.rd || {}, full = f.full || {};
+  const rd = f.rd || {};
   for (const [k, v] of Object.entries(rd)) {
     const p = k.split("|");
     switch (p[0]) {
@@ -201,7 +200,6 @@ function memoApply(f) {
       }
     }
   }
-  for (const [k, v] of Object.entries(full)) { const p = k.split("|"); if (p[0] === "step") { fullPick[p[1]] = v === "1"; } }
   const ui = f.ui || {};
   uiMemo = { leftw: ui.leftw || "", logw: ui.logw || "", type: ui.type || "" };
   applyColWidth("leftw", Number(uiMemo.leftw));   // core.js
@@ -217,7 +215,7 @@ async function memoSave() {
   memoTimer = null;
   if (!memoLoaded) { return; }
   const c = memoCollect();
-  for (const section of ["rd", "full", "ui"]) {
+  for (const section of ["rd", "ui"]) {
     const j = await api("/api/memo", { section, cells: c[section] });
     if (j && j.error) { showMessage(j.error, true); }
   }
