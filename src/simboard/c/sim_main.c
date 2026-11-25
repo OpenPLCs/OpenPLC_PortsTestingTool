@@ -799,6 +799,7 @@ int main(int argc, char **argv)
     test_age_erase();
     test_set_tick((uint32_t)(wall_ms() - sim_started) + 1000u);
     PortAge_Boot(HAL_GetTick());
+    PortUsb_Boot();
 
     for (;;) {
         uint32_t now = (uint32_t)(wall_ms() - sim_started) + 1000u;
