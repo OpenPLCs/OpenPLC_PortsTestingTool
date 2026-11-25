@@ -2,6 +2,7 @@ package ptpanel
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -159,5 +160,24 @@ func TestLineFlashFailureStaysShown(t *testing.T) {
 	x.needFlash(m("line.why.old_fw", "have", "0.18.10", "want", "0.18.11"))
 	if k := x.view().Why.Key; k != "line.why.old_fw" {
 		t.Fatalf("without a failure: why %q, want old_fw", k)
+	}
+}
+
+func TestLineBoardLeft(t *testing.T) {
+	const uid = "003A00363432510339393938"
+	id := []string{"OK uid=003a00363432510339393938 porttool=0.18.12"}
+	if left, n := boardLeft(uid, id, nil, 1); left || n != 0 {
+		t.Errorf("same board after a miss: left=%v missed=%d", left, n)
+	}
+	other := []string{"OK uid=111111111111111111111111 porttool=0.18.12"}
+	if left, _ := boardLeft(uid, other, nil, 0); !left {
+		t.Error("another board was not taken as the first one leaving")
+	}
+	left, n := boardLeft(uid, nil, errors.New("timeout"), 0)
+	if left || n != 1 {
+		t.Errorf("one miss: left=%v missed=%d", left, n)
+	}
+	if left, _ = boardLeft(uid, nil, errors.New("timeout"), n); !left {
+		t.Error("two misses in a row did not count as gone")
 	}
 }

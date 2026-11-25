@@ -96,6 +96,8 @@ type lineStation struct {
 	stop    chan struct{}
 	lastSWD time.Time
 	lastAge time.Time
+	lastID  time.Time // stillThere's last pt.id
+	missed  int       // pt.id asks in a row with no answer
 }
 
 // api calls the station's own panel in-process.
@@ -293,6 +295,7 @@ func (x *lineStation) step() {
 			return
 		}
 		x.watchAging()
+		x.stillThere()
 	case lnBack:
 		if !x.connected() {
 			x.lost()
@@ -302,8 +305,38 @@ func (x *lineStation) step() {
 	case lnFail, lnBlocked, lnDone, lnShort, lnCancel:
 		if !x.connected() {
 			x.lost()
+			return
+		}
+		x.stillThere()
+	}
+}
+
+// stillThere asks a waiting real board for pt.id every 2 s: an RS232 cable
+// pulled at the board leaves the adapter and the port alive (C.3.10 「认板子」).
+func (x *lineStation) stillThere() {
+	if x.view().Sim || time.Since(x.lastID) < 2*time.Second {
+		return
+	}
+	x.lastID = time.Now()
+	lines, err := x.send("pt.id")
+	var left bool
+	if left, x.missed = boardLeft(x.view().UID, lines, err, x.missed); left {
+		x.missed = 0
+		x.lost()
+	}
+}
+
+// boardLeft judges one pt.id ask: another UID at once, or a second miss in a row.
+func boardLeft(uid string, lines []string, err error, missed int) (bool, int) {
+	if err == nil {
+		for _, l := range lines {
+			if mm := idRe.FindStringSubmatch(l); mm != nil {
+				return !strings.EqualFold(mm[1], uid), 0
+			}
 		}
 	}
+	missed++
+	return missed >= 2, missed
 }
 
 // lost is the board going away: the tile empties, the progress stays on disk.
